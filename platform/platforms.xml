@@ -6,8 +6,6 @@
 	<path>$UBENCH_PLATFORM_DIR/</path>
 	
 	<path tag="zbook15">$UBENCH_PLATFORM_DIR/Zbook15</path>
-	<path tag="z230">$UBENCH_PLATFORM_DIR/Z230</path>
-	<path tag="x250">$UBENCH_PLATFORM_DIR/X250</path>
 	
     </include-path>
     
