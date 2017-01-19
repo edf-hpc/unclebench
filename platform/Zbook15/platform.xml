@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+    <!-- Default Zbook15 Sets -->
+
+    
+    <parameterset name="compiler_set">
+	<parameter name="comp_v">0</parameter>
+	<parameter name="comp_version" mode="python">
+	    ["gnu","intel"][$comp_v]
+	</parameter>
+
+	<parameter name="cc" mode="python">
+	    ["gcc","icc"][$comp_v]
+	</parameter>	
+	<parameter name="fc" mode="python">
+	    ["gfortran","ifort"][$comp_v]
+	</parameter>
+	
+        <parameter name="cflags">-O2</parameter>
+	<parameter name="fflags">-O2</parameter>
+	<parameter name="cflags_opt" mode="python">
+	    ["-O3 -march=native","-O3 -xHOST"][$comp_v]
+	</parameter>
+	<parameter name="fflags_opt" mode="python">
+	    ["-O3 -march=native","-O3 -xHOST"][$comp_v]
+	</parameter>
+
+	<parameter name="module_compile" mode="python">
+	    ["",""][$comp_v]
+	</parameter>
+
+	<parameter name="module_blas">
+	  
+	</parameter>
+	<parameter name="blas_root">
+	    /home/PT0EE9DN/Tools/OpenBLAS-0.2.18/install
+	    <!-- Need a local blas installation path -->
+	</parameter>	
+    </parameterset>
+    
+
+    <parameterset name="mpi_set">
+	<parameter name="mpi_v">0</parameter>
+	<parameter name="mpi_version" mode="python">
+	    ["OpenMPI-1.4.5"][$mpi_v]
+	</parameter>
+	<parameter name="mpi_root" mode="python">
+	    ["/usr/lib/openmpi/"][$mpi_v]
+	</parameter>
+	<parameter name="mpi_cc" mode="python">
+	    ["mpicc"][$mpi_v]
+	</parameter>
+	<parameter name="mpi_cxx" mode="python">
+	    ["mpic++"][$mpi_v]
+	</parameter>
+	<parameter name="mpi_f90" mode="python">
+	    ["mpif90"][$mpi_v]
+	</parameter>
+	<parameter name="mpi_f77">mpif77</parameter>
+	<parameter name="module_mpi" mode="python">
+	    [""][$mpi_v]
+	</parameter>
+    </parameterset>
+    
+    <parameterset name="execute_set">
+        <!-- Jobscript handling -->
+
+        <parameter name="submit">bash</parameter>
+	<parameter name="submit_singleton">bash</parameter>
+        <parameter name="submit_script">submit.job</parameter>
+        <parameter name="starter">mpirun</parameter>
+        <parameter name="args_starter">
+        </parameter>
+
+	<parameter name="binding_full_node" separator="??">
+	  -n $tasks
+	</parameter>
+
+	<parameter name="binding_hybrid" mode="python" separator="??">
+	    ["--mca rmaps_base_schedule_policy slot --bind-to-core -cpus-per-rank 2 -num-sockets 1 --npersocket 2 -n $tasks"][$mpi_v]
+	</parameter>
+	
+	<parameter name="binding_half_node" mode="python" separator="??">
+	    ["--mca rmaps_base_schedule_policy slot --bind-to-core -cpus-per-rank 2 -num-sockets 1 --npersocket 2 -n $tasks"][$mpi_v]
+	</parameter>
+
+	<parameter name="binding_stream" mode="python" separator="??">
+	    ["--mca rmaps_base_schedule_policy slot --bind-to-core -cpus-per-rank 4 -num-sockets 1 --npersocket 1 -n $tasks"][$mpi_v]
+	</parameter>
+
+
+        <parameter name="done_file">ready</parameter>
+	
+        <!-- Chainjob handling -->
+        <parameter name="shared_folder">shared</parameter>
+        <parameter name="shared_job_info">${shared_folder}/jobid</parameter>
+        <parameter name="chainjob_script">./judge-chainJobs.sh</parameter>
+        <parameter name="chainjob_needs_submit">false</parameter>
+    </parameterset>
+
+    <parameterset name="cluster_specs">
+	<parameter name="platform_name" type="string">Zbook15</parameter>
+        <parameter name="GB_per_node" type="int">16</parameter>
+	<parameter name="MB_LLC_size" type="float">6</parameter>
+	<parameter name="LLC_cache_line_size" type="int">64</parameter>
+	<parameter name="NUMA_regions" type="int">1</parameter>
+	<parameter name="cores_per_NUMA_region" type="int">4</parameter>
+    </parameterset>
+
+    <parameterset name="system_parameters">
+        <!-- Default jobscript parameter -->
+        <parameter name="nodes" type="int">1</parameter>
+	<parameter name="taskspernode" type="int">4</parameter>
+	<parameter name="threadspertask" type="int">1</parameter>
+        <parameter name="tasks" mode="python" type="int">
+            $nodes * $taskspernode
+        </parameter>
+        <parameter name="OMP_NUM_THREADS" type="int" export="true">
+            $threadspertask
+        </parameter>
+        <parameter name="executable"></parameter>
+        <parameter name="args_exec"></parameter>
+        <parameter name="mail"></parameter>
+        <parameter name="env">$jube_wp_envstr</parameter>
+        <parameter name="notification"></parameter>
+        <parameter name="outlogfile"></parameter>
+        <parameter name="errlogfile"></parameter>
+        <parameter name="timelimit"></parameter>
+
+	<parameter name="wckey"></parameter>
+        <parameter name="modules"></parameter>	
+    </parameterset>
+
+    <substituteset name="execute_sub">
+        <!-- Default jobscript substitution -->
+        <iofile in="${submit_script}.in" out="$submit_script" />
+        <sub source="#ENV#" dest="$env" />
+        <sub source="#NOTIFY_EMAIL#" dest="$mail" />
+        <sub source="#BENCHNAME#" dest="$jube_benchmark_name" />
+        <sub source="#NODES#" dest="$nodes" />
+	<sub source="#TASKSPERNODE#" dest="$taskspernode" />
+        <sub source="#TASKS#" dest="$tasks" />
+        <sub source="#TIME_LIMIT#" dest="$timelimit" />
+        <sub source="#PREPROCESS#" dest="" />
+        <sub source="#POSTPROCESS#" dest="" />
+        <sub source="#STARTER#" dest="$starter" />
+        <sub source="#ARGS_STARTER#" dest="$args_starter" />
+        <sub source="#MEASUREMENT#" dest="" />
+        <sub source="#STDOUTLOGFILE#" dest="$outlogfile" />
+        <sub source="#STDERRLOGFILE#" dest="$errlogfile" />
+        <sub source="#EXECUTABLE#" dest="$executable" />
+        <sub source="#ARGS_EXECUTABLE#" dest="$args_exec" />
+        <sub source="#FLAG#" dest="touch $done_file" />
+	<sub source="#MODULES#" dest="$modules" />
+	<sub source="#WCKEY#" dest="$wckey" />
+    </substituteset>
+
+    <substituteset name="chainsub">
+        <!-- Default chainjob substitution -->
+    </substituteset>
+
+    <fileset name="jobfiles">
+        <!-- Default jobscript access -->
+        <copy>${submit_script}.in</copy>
+    </fileset>
+
+    <fileset name="chainfiles">
+        <!-- Chainjob script access -->
+        <copy>$chainjob_script</copy>
+    </fileset>
+</jube>
