@@ -1,0 +1,52 @@
+Source: unclebench
+Maintainer: CCN HPC <dsp-cspito-ccn-hpc@edf.fr>
+Uploaders: Rémi Palancher <remi-externe.palancher@edf.fr>,
+           Cristian Ruiz <cristian-externe.ruiz@edf.fr>,
+           Pierre Trespeuch <pierre-externe.trespeuch@edf.fr>
+Section: web
+Priority: extra
+Standards-Version: 3.9.6
+Build-Depends: asciidoctor,
+               debhelper (>= 9),
+               dh-python,
+               pandoc,
+               python-all,
+               python-setuptools
+
+Package: unclebench
+Architecture: all
+Depends: asciidoctor,
+         clustershell,
+         jube,
+         python-jinja2,
+         python-matplotlib,
+         unclebench-benchmarks (= ${binary:Version}),
+         unclebench-platform (= ${binary:Version}),
+         unclebench-plugins (= ${binary:Version}),
+         ${misc:Depends},
+         ${python:Depends},
+         ${shlibs:Depends}
+Recommends: python-pyslurm
+Suggests: lmod | environment-modules
+Description: Automated benchmarking tool
+ This package provides UncleBench software suite with all its components.
+
+Package: unclebench-plugins
+Architecture: all
+Depends: ${misc:Depends}, ${python:Depends}, ${shlibs:Depends}
+Description: Benchmark specific report plugins for UncleBench benchmarking tool
+ This package provides UncleBench benchmark specific plugins examples. These plugins
+ define how to build performance report.
+
+Package: unclebench-platform
+Architecture: all
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Platform description files for UncleBench benchmarking tool
+ The package provide examples of xml platform description files.
+
+Package: unclebench-benchmarks
+Architecture: all
+Depends: python, ${misc:Depends}, ${python:Depends}, ${shlibs:Depends}
+Description: Benchmarks description files for UncleBench benchmarking tool
+ The package provide examples of xml benchmark description files.
+
