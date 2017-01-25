@@ -18,4 +18,4 @@ as a benchmark engine but it can be customized to work with any benchmark engine
 Licence
 -------
 
-UncleBench is distributed under the terms of the CeCILL v2 licence.
+UncleBench is distributed under the terms of the GPL v3 licence.
