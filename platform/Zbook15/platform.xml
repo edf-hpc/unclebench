@@ -33,7 +33,6 @@
 	  
 	</parameter>
 	<parameter name="blas_root">
-	    /home/PT0EE9DN/Tools/OpenBLAS-0.2.18/install
 	    <!-- Need a local blas installation path -->
 	</parameter>	
     </parameterset>
