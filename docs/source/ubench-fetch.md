@@ -11,7 +11,7 @@ ubench-fetch -  Fetch remote sources and test cases
 
 # DESCRIPTION
 
-*ubench fetch* fetch remote sources and test cases from http servers, local paths or git repository.
+*ubench fetch* fetch remote sources and test cases from HTTP servers, local paths or git repository.
 
 
 # ENVIRONMENT
