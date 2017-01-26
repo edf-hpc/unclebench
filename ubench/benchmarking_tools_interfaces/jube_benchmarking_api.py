@@ -34,7 +34,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     """ Constructor
     :param benchmark_name: name of the benchmark
     :type benchmark_name: str
-    :type benchmark_path: str
+    :param platform_name: name of the platform
+    :type platform_name: str
     """
     bapi.BenchmarkingAPI.__init__(self,benchmark_name,platform_name)
     self.uconf=uconfig.UbenchConfig()

@@ -22,15 +22,14 @@
 class BenchmarkingAPI:
     """ Interface class for benchmarking environnement tools """
 
-    def __init__(self,benchmark_name,platform):
+    def __init__(self,benchmark_name,platform_name):
         """ Constructor
         :param benchmark_name: name of the benchmark
         :type benchmark_name: str
-        :param benchmark_path: absolute path of the benchmark root directory.
-        :type benchmark_path: str
+        :param platform_name: name of the platform
+        :type platform_name: str
         """
-        self.platform=platform
-        self.benchmark_name=benchmark_name
+        pass
 
     def analyse_benchmark(self,benchmark_id):
         """ Analyze benchmark results
