@@ -13,7 +13,7 @@ ubench -  benchmarking tool
 
 # DESCRIPTION
 
-Unclebench is a high level benchmarking tool using Jube benchmarking environment by default.
+UncleBench is a high level benchmarking tool using Jube benchmarking environment by default.
 
 # UBENCH COMMANDS
 

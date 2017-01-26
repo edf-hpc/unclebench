@@ -16,7 +16,7 @@ ubench-log -  Print log of a benchmark run
 
 
 *ubench log*  Print log of a benchmark run given its name, the platform on which it has been run and its id.
-              Avaible benchmarks runs and their IDs can be found using *ubench list* command.
+              Available benchmarks runs and their IDs can be found using *ubench list* command.
 
 # OPTIONS
 

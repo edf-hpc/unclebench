@@ -22,7 +22,7 @@ ubench-run -  Run benchmarks
 
 
 # -p <platform>
-  Name of the configuration that prodives platform settings needed to run the benchmark.
+  Name of the configuration that provides platform settings needed to run the benchmark.
 
 
 # -b <bench> [<bench> ...]
@@ -33,7 +33,7 @@ ubench-run -  Run benchmarks
   Nodes on which benchmarks should be run ex: -w 6 cn184 cn[380,431-433] would\
   run the benchmark on three different configurations (6 available nodes, one node\
   named cn184 and four nodes named cn[380,431-433]). You can also launch a job on all idle nodes\
-  ex : -w all4 to launch a benchmark with 4 nodes jobs covering evry idle node.
+  ex : -w all4 to launch a benchmark with 4 nodes jobs covering every idle node.
 
 
 # -customp <CUSTOMP> [<CUSTOMP> ...]

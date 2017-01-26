@@ -16,7 +16,7 @@ ubench-report -  Build a performance report
 
 
 *ubench report*   Build a performance report,  given a platform and a list of benchmarks.
-              Avaible benchmarks runs can be found using *ubench list* command.
+              Available benchmarks runs can be found using *ubench list* command.
 
 # OPTIONS
 
@@ -44,7 +44,7 @@ ubench-report -  Build a performance report
 
 ## UBENCH_CSS_PATH
    **default :** /usr/share/unclebench/css/asciidoctor-bench-report.css
-   Path to the CSS style sheet used to render the report in html format.
+   Path to the CSS style sheet used to render the report in HTML format.
 
 
 ubench-fetch(1), ubench-run(1), ubench-list(1), ubench-log(1), ubench-result(1), ubench-listparams(1)
