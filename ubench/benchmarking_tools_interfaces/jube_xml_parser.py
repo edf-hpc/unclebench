@@ -22,6 +22,7 @@ import xml.etree.ElementTree as ET
 import os
 import re
 
+
 class JubeXMLParser():
 
 
@@ -230,8 +231,11 @@ class JubeXMLParser():
                 link.text = "$UBENCH_RESOURCE_DIR/{0}/${{{1}}}".format(benchmark_name.lower(),name)
 
       ### Adding special tags to step prepare
+      if benchmark is None:
+        step = b_xml.findall("step[@name='prepare']")
+      else:
+        step = benchmark.findall("step[@name='prepare']")
 
-      step = b_xml.findall("step[@name='prepare']")
       if step: # not empty
         present_params = []
         for use in step[0].findall("use"):
