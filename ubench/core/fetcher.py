@@ -31,10 +31,15 @@ class Fetcher():
     self.benchmark_name = benchmark_name
     self.resource_dir = resource_dir
 
+
   def get_credentials(self):
     print 'Enter calibre password for user: ' + self.calibre_user
     self.calibre_password=getpass.getpass()
     print ''
+
+  def parse_env_variable(self,path):
+    new_path = os.popen("echo " + path).read().strip()
+    return new_path
 
   def svn_checkout(self,url,files,revision=None):
     fetch_message = 'Fetching benchmark {0} from SVN:'.format(self.benchmark_name)
@@ -84,6 +89,7 @@ class Fetcher():
       os.mkdir(benchresource_dir)
 
     for file_bench in files:
+      file_bench = self.parse_env_variable(file_bench)
       basename = os.path.basename(file_bench)
       print "Copying file: {0} into {1} ".format(basename,benchresource_dir)
       destfile_path=os.path.join(benchresource_dir,basename)

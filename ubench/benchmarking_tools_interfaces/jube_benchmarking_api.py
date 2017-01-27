@@ -40,6 +40,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     bapi.BenchmarkingAPI.__init__(self,benchmark_name,platform_name)
     self.uconf=uconfig.UbenchConfig()
     self.benchmark_path_in = os.path.join(self.uconf.benchmark_dir,benchmark_name,benchmark_name+".xml")
+    self.benchmark_name = benchmark_name
     benchmark_dir = os.path.join(self.uconf.benchmark_dir,benchmark_name)
     benchmark_files = [file_b for  file_b in os.listdir(benchmark_dir) if file_b.endswith(".xml")]
 
