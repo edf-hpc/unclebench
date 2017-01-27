@@ -157,7 +157,11 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             +result
 
   def get_status_info(self,benchmark_id):
-
+        """ Get the status for a benchmark run
+        :param benchmark_id: id of the benchmark
+        :returns: global_status
+        :rtype:dict
+        """
         if(not os.path.isdir(self.benchmark_path)):
             raise IOError
 

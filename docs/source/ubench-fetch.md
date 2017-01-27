@@ -11,18 +11,11 @@ ubench-fetch -  Fetch remote sources and test cases
 
 # DESCRIPTION
 
-*ubench fetch* fetch remote sources and test cases from HTTP servers, local paths or git repository.
+*ubench fetch* fetch remote sources and test cases from HTTP servers, local paths or revision control repositories (git,svn).
 
 
 # ENVIRONMENT
-
-## UBENCH_CONF_DIR
-  **default :** /etc/unclebench/conf  
-  Path to a directory containing a conf.ini files listing servers, paths, or repositories where to
-  find benchmark resources. It also contains benchmark subdirectories with .ini files giving
-  the path of each file needed to run the benchmark.
   
-
 ## UBENCH_RESOURCE_DIR
 
   **default :** /scratch/<user>/Ubench/resource

@@ -20,7 +20,7 @@ UncleBench is a high level benchmarking tool using Jube benchmarking environment
 Ubench provides the following commands:
 
     ubench-fetch
-	Fetch benchmarks sources and test cases from a distant server configurated in UBENCH_CONF_DIR to UBENCH_RESOURCE_DIR.
+	Fetch benchmarks sources and test cases from a distant server to UBENCH_RESOURCE_DIR.
     
     ubench-run
 	Execute benchmarks located in UBENCH_BENCHMARK_DIR in UBENCH_RUN_DIR_BENCH.
