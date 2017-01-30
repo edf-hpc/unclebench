@@ -1,6 +1,6 @@
 
 MAN = ubench.1 ubench-fetch.1 ubench-list.1 ubench-log.1 ubench-result.1  ubench-listparams.1 ubench-report.1 ubench-run.1
-MAINDOC = user_guide.html developer_guide.html
+MAINDOC = user_guide.html developer_guide.html platform_guide.html
 
 all: $(MAN) ${MAINDOC}
 clean:
