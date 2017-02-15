@@ -1,4 +1,5 @@
 css/* usr/share/unclebench/css
 templates usr/share/unclebench
+platform/template.xml usr/share/unclebench/platform/
 usr/bin/
 usr/lib
