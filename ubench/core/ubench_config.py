@@ -22,6 +22,7 @@
 import getpass
 import os
 import xml.etree.ElementTree as ET
+import ubench.benchmarking_tools_interfaces.jube_xml_parser as jube_xml_parser
 
 class UbenchConfig:
 
@@ -63,7 +64,7 @@ class UbenchConfig:
 
         if not self.templates_path:
             self.stylesheet_path='/usr/share/unclebench/templates'
-            
+
 
         # Working directories
         if not self.run_dir:
@@ -80,7 +81,10 @@ class UbenchConfig:
     def get_platform_list(self):
         """ Get list of available platforms """
         platform_list=[]
-        root=ET.parse(os.path.join(self.platform_dir,'platforms.xml')).getroot()
+        jube_xml = jube_xml_parser.JubeXMLParser("",[],"",self.platform_dir)
+        platform_dir = jube_xml.get_platform_dir()
+        root=ET.parse(os.path.join(platform_dir,'platforms.xml')).getroot()
+        jube_xml.delete_platform_dir()
         for node in root.getiterator('path'):
             tags=node.get('tag')
             if tags:
@@ -88,14 +92,11 @@ class UbenchConfig:
                     platform_list.append(tag)
 
         platform_list=list(set(platform_list))
-        
-        return sorted(platform_list, key=str.lower) 
-            
+
+        return sorted(platform_list, key=str.lower)
+
     def get_benchmark_list(self):
         """ Get list of available benchmarks """
         bench_list=[f for f in os.listdir(self.plugin_dir) \
                 if os.path.isdir(os.path.join(self.plugin_dir,f))]
         return [bench.lower() for bench in bench_list]
-
-
-    

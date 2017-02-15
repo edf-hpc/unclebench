@@ -45,7 +45,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     benchmark_files = [file_b for  file_b in os.listdir(benchmark_dir) if file_b.endswith(".xml")]
 
     self.benchmark_path = os.path.join(self.uconf.run_dir,platform_name,benchmark_name)
-    self.jube_xml_files = jube_xml_parser.JubeXMLParser(benchmark_dir,benchmark_files,self.benchmark_path,os.path.join(self.uconf.platform_dir,"platforms.xml"))
+    self.jube_xml_files = jube_xml_parser.JubeXMLParser(benchmark_dir,benchmark_files,self.benchmark_path,self.uconf.platform_dir)
     self.jube_xml_files.load_platform_xml(platform_name)
 
   def analyse_benchmark(self,benchmark_id):
@@ -273,11 +273,14 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         self.jube_xml_files.add_bench_input()
         self.jube_xml_files.remove_multisource()
         self.jube_xml_files.write_bench_xml()
+        platform_dir = self.jube_xml_files.get_platform_dir()
 
         old_run_dir=self.analyse_last_benchmark()
 
         input_str='jube run --hide-animation '+self.benchmark_name+'.xml --tag '+platform+' > /dev/null &'
-        p=Popen(input_str,cwd=os.getcwd(),shell=True)
+        my_env = os.environ
+        my_env['UBENCH_PLATFORM_DIR'] = platform_dir
+        p=Popen(input_str,cwd=os.getcwd(),shell=True,env=my_env)
 
         # Get the run directory without waiting for jube run command to finish
         run_dir = self.analyse_last_benchmark()
@@ -297,6 +300,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         absolute_run_dir=os.path.abspath(run_dir)
         # Restore working directory
         os.chdir(old_path)
+        self.jube_xml_files.delete_platform_dir()
         return (absolute_run_dir,ID)
 
 
