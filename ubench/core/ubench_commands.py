@@ -26,7 +26,7 @@ import ubench_config as uconfig
 import auto_benchmarker as abench
 import re
 try :
-  import slurm_interface as slurmi
+  import ubench.scheduler_interfaces.slurm_interface as slurmi
 except:
   pass
 
@@ -254,6 +254,7 @@ class Ubench_cmd:
     try:
       scheduler_interface=slurmi.SlurmInterface()
     except:
+      print "Warning!! Unable to load slurmi module"
       scheduler_interface=None
       return
 
