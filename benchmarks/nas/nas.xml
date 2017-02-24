@@ -1,0 +1,122 @@
+<jube>
+  
+  <include-path>
+    <path> $UBENCH_PLATFORM_DIR </path>
+  </include-path>
+
+  <include from="platforms.xml" path="include-path"/>
+
+  <multisource>
+    <source protocol="https">
+      <url>https://www.nas.nasa.gov/assets/npb</url>
+      <file>/NPB3.3.1.tar.gz</file>
+    </source>
+  </multisource>
+
+  <benchmark name="NAS" outpath="benchmarks_runs">
+
+    <comment> NAS Parallel benchmarks </comment>
+
+    <parameterset name="param_set">
+      <parameter name="processes" type="int">2,4,8,16,32</parameter>
+      <parameter name="bench">cg</parameter>
+      <parameter name="class">B</parameter>
+    </parameterset>
+
+    <!-- choosing compilator  -->
+    <parameterset name="mpi_set" init_with="platform.xml">
+      <parameter name="mpi_v">0</parameter>
+    </parameterset>
+
+    <fileset name="source">
+      <link> $UBENCH_RESOURCE_DIR/nas/NPB3.3.1.tar.gz </link>
+      <prepare>tar -xvf NPB3.3.1.tar.gz</prepare>
+    </fileset>
+
+    <step name="untar">
+      <use> source</use>
+      <use> mpi_set </use>
+    </step>
+
+    
+    <step depend="untar" name="compile">
+      <use> param_set </use>
+      <use from="platform.xml"> compiler_set </use>
+      <use from="platform.xml"> mpi_set </use>
+
+      <do> module purge </do>
+      <do> module load $module_mpi </do>
+      
+      <do work_dir="untar/NPB3.3.1/NPB3.3-MPI/">
+	cp config/make.def.template config/make.def
+	make $bench NPROCS=$processes CLASS=$class MPIF77=$mpi_f90
+      </do>
+    </step>
+
+    <fileset name="binaries">
+      <link directory="compile/untar/NPB3.3.1/NPB3.3-MPI/bin/" rel_path_ref="internal">
+	$bench.$class.$processes
+      </link>
+    </fileset>
+    
+    <parameterset init_with="platform.xml" name="system_parameters">
+      <parameter name="nodes" mode="python" type="int">int(${processes}/16)+(${processes} % 16 > 0)</parameter>
+      <parameter name="taskspernode" mode="python" type="int">int(${processes}/${nodes})</parameter>
+      <parameter name="threadspertask" type="int">1</parameter>
+      <parameter name="executable">./$bench.$class.$processes</parameter>
+      <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
+      <parameter name="timelimit">00:20:00</parameter>
+    </parameterset>
+    
+
+    
+    <parameterset init_with="platform.xml" name="execute_set">
+
+      <parameter name="args_starter" separator="??">
+	${binding_full_node}
+      </parameter>
+
+    </parameterset>
+        
+    <step depend="compile" name="execute">
+
+
+      <use from="platform.xml">cluster_specs</use>
+      <use>binaries</use>
+
+      <use>execute_set</use>
+      <use>system_parameters</use>
+
+      <use from="platform.xml">jobfiles</use>
+      <use from="platform.xml">execute_sub</use>
+
+      <do done_file="$done_file">$submit $submit_script</do>
+
+    </step>
+
+    <patternset name="pattern">
+      <pattern name="Mflops" type="float">
+	^.M.*\s(\d+\.\d+)
+      </pattern>
+    </patternset>
+
+    <analyzer name="analyse">
+      <use>pattern</use>
+      <!-- <analyse step="execute"><file>job.out</file></analyse> -->
+      <analyse step="execute"><file>stdout</file></analyse>
+    </analyzer>
+
+    <result>
+      <use>analyse</use>
+      <table name="result" sort="nodes" style="csv">
+	<column>processes</column>
+	<column>Mflops</column>
+	<column>mpi_version</column>
+      </table>
+    </result>
+    
+    
+  </benchmark>
+</jube>
+
+
