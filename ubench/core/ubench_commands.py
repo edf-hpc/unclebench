@@ -189,7 +189,7 @@ class Ubench_cmd:
     global_report_file      = open(global_report_file_path,'w')
 
     # Write report header
-    template_env = Environment(loader=PackageLoader('ubench_commands','../../templates'))
+    template_env = Environment(loader=PackageLoader('ubench.core.ubench_commands','../../templates'))
 
     template = template_env.get_template('main.html')
 

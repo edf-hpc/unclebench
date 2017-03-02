@@ -25,7 +25,7 @@ from subprocess import call, Popen, PIPE
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
-import benchmark_manager as bm
+import ubench.benchmark_managers.benchmark_manager as bm
 import matplotlib.patches as mpatches
 import itertools
 
@@ -46,7 +46,6 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
         self.nb_fields=0
         self.filtered_field_value=None
 
-
     def clear_input_formating(self):
         """ Clear data associated to the graphical manager. Need a call to format_input
         to collect new ones."""
@@ -61,7 +60,7 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
         self.nb_nodes=0
         self.nb_fields=0
         self.filtered_field_value=None
-        
+
     def keep_nth_occurence_from_field(self,id_column,nth_occurence,array):
         """ Filter array of results to keep only lines where the field id_column has got
         its nth appearing value"""
@@ -70,7 +69,7 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
         occurence_encountered=0
         value_to_keep=None
         found=False
-        
+
         for s_line in array:
             if (occurence_encountered==nth_occurence and found==False):
                 found=True
@@ -85,10 +84,9 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
         if found==False:
             raise UserWarning('Field number '+str(id_column)+' does not have '+str(nth_occurence)+ ' distinct values.')
         self.filtered_field_value=value_to_keep
-                
+
         return filtered_array
 
-    
     def format_input(self,field_columns,env_column,\
                      nnodes_column=0,variant_name_column=1,keep_nthocc_from_field=()):
         """ Format Jube results """
@@ -96,15 +94,15 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
         self.clear_input_formating() # Erase old data if present
 
 
-        # Potentialy apply filters to Jube data 
+        # Potentialy apply filters to Jube data
         if(keep_nthocc_from_field):
             values_to_plot_array=self.keep_nth_occurence_from_field(keep_nthocc_from_field[0],keep_nthocc_from_field[1],self.result_array[1:])
         else:
             values_to_plot_array=self.result_array[1:]
 
         self.nb_fields=len(field_columns)
-            
-        # Parse result array 
+
+        # Parse result array
         for s_line in values_to_plot_array:
             try:
                 for field_column in field_columns:
@@ -112,11 +110,11 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
             except ValueError:
                 print s_line[variant_name_column]+" variant run with "+s_line[nnodes_column]+" nodes did not finish"
                 continue
-            
+
             # Keep initial variants listing order (no set can be used here)
             if s_line[variant_name_column] not in self.list_variants:
                 self.list_variants.append(s_line[variant_name_column])
-    
+
             # Keep initial node listing order (no set can be used here)
             if s_line[nnodes_column] not in self.list_nodes:
                 self.list_nodes.append(s_line[nnodes_column])
@@ -130,10 +128,10 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
                                             self.result_array[0][field_column])
                 else:
                     self.field_legends.append(s_line[variant_name_column])
-                    
+
                 self.env_legends.append(re.sub(r'\s+','\n',s_line[env_column]))
-                
-                
+
+
             self.fields[s_line[nnodes_column],s_line[variant_name_column]]=line_fields
 
             self.nb_variants=len(self.list_variants)
@@ -143,7 +141,7 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
         """ Build barchart """
         self.width = min(0.2*self.nb_nodes,1.0/(self.nb_variants+2))
         id_variant=0;self.rects_list=[];self.labels_list=[]
-                
+
         for variant in self.list_variants:
             data_time_elapsed=[]
             # Add time elapsed (special treatment for unfinished runs)
@@ -152,10 +150,10 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
                     data_time_elapsed.append(self.fields[node,variant][0])
                 except KeyError:
                     data_time_elapsed.append(0)
-                
+
             self.labels_list.append(data_time_elapsed)
             ind=np.arange(self.nb_nodes)+((id_variant+0.5)*self.width)
-            
+
            # ind=np.arange(self.nb_nodes)+((id_variant+0.5)*self.width)#+0.1
             colors=cm.jet(1.*id_variant/self.nb_variants)
             self.rects_list.append(ax.bar(ind,tuple(data_time_elapsed),width=self.width,color=colors))
@@ -164,7 +162,7 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
 
         # Each node area is 1 unit length.
         ax.set_xlim(0.0,1.0*self.nb_nodes+self.width)
-        
+
         # Build grid to help readers
         ax.grid()
 
@@ -178,7 +176,7 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
             for id_field in range(0,self.nb_fields):
                 x.append([])
                 y.append([])
-                
+
             for nodes in self.list_nodes:
                 for id_field,field in zip(list(range(0,self.nb_fields)),self.fields[nodes,variant]):
                     try:
@@ -187,8 +185,8 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
                         pass
                     else:
                         x[id_field].append(float(nodes))
-                 
- 
+
+
             marker = itertools.cycle(( 'o','^','8','H','*',','))
             for id_field in range(0,self.nb_fields):
                 #variant_color=cm.jet(1.*id_line/(self.nb_variants*self.nb_fields))
@@ -206,12 +204,12 @@ class GraphicalBenchmarkManager(bm.BenchmarkManager):
     def build_legend(self,ax,xlabel,ylabel,title):
         """ Build Legend associated to the graph"""
         legends=[]
-                
+
 # First legend: variant names
         first_legend=ax.legend(tuple([item for item in self.plot_handles]),tuple(self.field_legends),shadow=True, fancybox=True,bbox_to_anchor=(1.005, 1), loc=2, borderaxespad=0.02,prop={'size':12})
         ax.add_artist(first_legend)
 
-#Second legend: envrionment (modules)        
+#Second legend: envrionment (modules)
         ax.legend(tuple([item for item in self.plot_handles]),tuple(self.env_legends),shadow=True, fancybox=True,bbox_to_anchor=(1.005, 0.5), loc=2, borderaxespad=0.02,prop={'size':9})
 
         ax.set_xlabel(xlabel,fontsize=12)
