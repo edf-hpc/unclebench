@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+    <!-- =====================  Compile  ===================== -->
+
+    <fileset name="source">
+	<link>$UBENCH_RESOURCE_DIR/ior/master.zip</link>
+	<!-- <prepare>tar -xzvf IOR-2.10.3.tgz </prepare>	 -->
+	<prepare>unzip master.zip </prepare>
+    </fileset>
+    <!-- Choose to compile only with intel compilers -->
+    <parameterset name="compiler_set" init_with="platform.xml">
+	<parameter name="comp_v">0</parameter>
+    </parameterset>
+
+    <parameterset name="mpi_set" init_with="platform.xml">
+	<parameter name="mpi_v">0</parameter>
+    </parameterset>
+    
+
+    <step name="compile" export="true">
+
+	<use> source </use>
+	
+	<!-- Choose compiler and MPI versions -->
+	<use> compiler_set </use>
+	<use> mpi_set </use>
+	
+	<!-- Load environment -->
+	<do> module purge </do>
+	<do> module load $module_compile $module_mpi </do>
+
+	<!-- Configure and Compile -->
+	<do> mkdir build install </do>
+	<do work_dir="ior-master/">
+	    ./bootstrap
+	    ./configure
+	    make
+	</do>
+
+    </step>
+</jube>

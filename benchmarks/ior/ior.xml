@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+    <include-path>
+	<path> $UBENCH_PLATFORM_DIR </path>
+    </include-path>
+
+    <include from="platforms.xml" path="include-path"/>
+
+    <multisource>
+      <source protocol="https">
+	<url>https://github.com/LLNL/ior/archive/</url>
+      <!-- <url>https://osdn.net/projects/sfnet_ior-sio/downloads/IOR%20latest/</url> -->
+      <file>/master.zip</file>
+    </source>
+  </multisource>
+
+    <benchmark name="IOR" outpath="benchmark_runs">
+
+	<comment>IOR benchmark</comment>
+	
+	<!-- =====================  Compile  ===================== -->
+	<include from="ior_compile.xml" path="fileset"/>
+	<include from="ior_compile.xml" path="parameterset"/>
+	<include from="ior_compile.xml" path="step"/>
+
+	<!-- =====================  Execute  =====================  -->
+	<include from="ior_execute.xml" path="fileset"/>
+	<include from="ior_execute.xml" path="parameterset"/>
+	<include from="ior_execute.xml" path="substituteset"/>
+	<include from="ior_execute.xml" path="step"/>
+	
+	<!-- =====================  Results  ===================== -->
+	<include from="ior_result.xml" path="patternset"/>
+	<include from="ior_result.xml" path="analyzer"/>
+	<include from="ior_result.xml" path="result"/>
+	
+    </benchmark>
+    
+</jube>

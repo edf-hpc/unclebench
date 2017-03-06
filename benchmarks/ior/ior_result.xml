@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+    <!-- =====================  Results  ===================== -->  
+    <patternset name="pattern">
+	<pattern name="mean_write_speed" type="float" unit="MiB/s">
+	    <!-- ^\s+Elapsed\stime\s\(sec\):\s+$jube_pat_fp -->
+	    ^write\s+${jube_pat_nfp}\s+${jube_pat_fp}
+	</pattern>
+	<pattern name="mean_read_speed" type="float" unit="MiB/s">
+	    ^read\s+${jube_pat_nfp}\s+${jube_pat_fp}
+	</pattern>	
+    </patternset>
+    
+    <analyzer name="analyse">
+	<use>pattern</use>
+	<analyse step="execute"><file>job.out</file></analyse>
+    </analyzer>
+
+    <result>
+	<use>analyse</use>
+	<table name="result" style="csv" sort="nodes,variant_name_extended">
+	    <column>nodes</column>
+	    <column>variant_name_extended</column>
+	    <column>xfer</column>
+	    <column format=".3f">mean_write_speed</column>
+	    <column format=".3f">mean_read_speed</column>
+	    <column>modules</column>
+	</table>
+    </result>
+</jube>

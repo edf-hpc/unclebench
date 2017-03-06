@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+    <fileset name="binaries">
+	<link rel_path_ref="internal" directory="compile/ior-master/src/">
+	    ior
+	</link>
+    </fileset>
+
+    <parameterset name="execution_variant_set">
+	<parameter name="variant_v">0,1</parameter>
+
+	<parameter name="shared_files" mode="python" type="string">
+	    ["","-F"][$variant_v]
+	</parameter>
+	
+	<parameter name="variant_name" mode="python" type="string">
+	    ["shared_file","independent_files"][$variant_v]
+	</parameter>
+	    
+	<parameter name="xfer"> <!-- xfer in Megabytes-->
+	    6,12
+	</parameter>
+
+	<parameter name="variant_taskspernode" mode="python" type="int">
+	    $NUMA_regions*$cores_per_NUMA_region
+	</parameter>
+		
+	<parameter name="file_size" mode="python" type="int">
+	    int(round(((${GB_per_node}*1e9))/${variant_taskspernode})) <!-- File size chosen to avoid caching-->
+	</parameter>
+
+	<parameter name="block_size" mode="python" type="int">
+	    int(round(${file_size}/(${variant_taskspernode}*${xfer}*1e6)))*${xfer}
+	</parameter>
+		
+	<parameter name="variant_executable">
+	    ./ior -A MPIIO -w -o testwrite.${xfer} -c -Y -k -e -i10 -m -t ${xfer}m -b ${block_size}m -d 5
+	</parameter>
+
+	<parameter name="variant_postprocess">
+	    ./ior -A MPIIO -C -r -o testwrite.${xfer} -c -e -i10 -m -t ${xfer}m -b ${block_size}m -d 5
+	</parameter>
+
+	<parameter name="variant_starter" separator="??">
+	    $binding_full_node
+	</parameter>
+
+	<parameter name="variant_name_extended">
+	    ${mpi_version}-${variant_name}
+	</parameter>
+
+    </parameterset>
+    
+
+    <parameterset name="system_parameters" init_with="platform.xml">
+	<parameter name="nodes" type="int"> 1,2 </parameter>
+	<parameter name="taskspernode" type="int">
+	    ${variant_taskspernode}
+	</parameter>
+	
+	<parameter name="threadspertask" type="int">1</parameter>
+
+	<parameter name="executable">
+	    ${variant_executable}
+	</parameter>
+	
+	<parameter name="modules">$module_compile $module_mpi</parameter>
+	<parameter name="timelimit">02:00:00</parameter>
+
+    </parameterset>
+
+    <parameterset name="execute_set" init_with="platform.xml">
+	<parameter name="args_starter" separator="??">$variant_starter</parameter>
+    </parameterset>
+
+    <!-- IOR read phase is plugged as postprocessing -->
+    <substituteset name="execute_sub" init_with="platform.xml">
+	<sub source="#POSTPROCESS#" dest="$starter $args_starter $variant_postprocess"/>
+    </substituteset>
+
+    
+    <step name="execute" depend="compile">
+
+	<use> binaries </use>
+	<use from="platform.xml">cluster_specs</use>
+	<use> execution_variant_set </use>
+	<use> execute_set </use>
+	<use> system_parameters </use>
+	
+	<use from="platform.xml">jobfiles</use>
+	<use>execute_sub</use>
+
+	<!-- for slurm cluster use submit_singleton -->
+	<!-- <do done_file="$done_file">$submit_singleton $submit_script</do> -->
+	<do done_file="$done_file">$submit $submit_script</do>
+		
+    </step>
+   
+</jube>
