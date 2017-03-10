@@ -22,7 +22,6 @@
 import os, re, sys
 import ubench.benchmarking_tools_interfaces.jube_benchmarking_api as jba
 import time
-from jinja2 import Environment, PackageLoader
 import ubench.core.ubench_config as uconfig
 
 class BenchmarkManager:

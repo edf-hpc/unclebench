@@ -21,7 +21,6 @@
 
 import os, datetime, getpass
 from subprocess import Popen
-from jinja2 import Environment, PackageLoader
 import ubench_config as uconfig
 import auto_benchmarker as abench
 import re
@@ -173,6 +172,7 @@ class Ubench_cmd:
       bm.run_benchmark(self.platform,w_list)
 
   def report(self):
+    from jinja2 import Environment, PackageLoader
     # Get current time to name report directory
     now  = datetime.datetime.now()
     date = now.strftime("%Y-%m-%d")

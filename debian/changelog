@@ -1,5 +1,27 @@
-unclebench (0.1.0+c9+1) calibre9; urgency=medium
-  * Backport Calibre9
+unclebench (0.1.1+c9+1) calibre9; urgency=low
+
+  [ Pierre Trespeuch ]
+  * Backport calibre9
+  * New Debian release 0.1.0+c9+1
+
+  [ Pierre TRESPEUCH ]
+
+ -- Pierre Trespeuch <pierre-externe.trespeuch@edf.fr>  Fri, 10 Mar 2017 15:31:51 +0100
+
+unclebench (0.1.1) unstable; urgency=low
+
+  [ Cristian Ruiz ]
+  * Move jinja2 import and small fix to fetch command
+
+  [ Pierre Trespeuch ]
+  * Correct debian platform install file to avoid conflict with template.xml file
+
+  [ Pierre Trespeuch ]
+
+ -- Cristian Ruiz <cristian-externe.ruiz@edf.fr>  Fri, 10 Mar 2017 15:25:41 +0100
+
+unclebench (0.1.0) unstable; urgency=medium
+
   * Initial release.
 
  -- Pierre TRESPEUCH <pierre-externe.trespeuch@edf.fr>  Tue, 24 Jan 2017 09:51:21 +0100
