@@ -1,12 +1,23 @@
-unclebench (0.1.1+c9+1) calibre9; urgency=low
+unclebench (0.1.2+c9+1) calibre9; urgency=low
 
   [ Pierre Trespeuch ]
-  * Backport calibre9
-  * New Debian release 0.1.0+c9+1
+  * Backport Calibre9
+
+  [ Pierre Trespeuch ]
+
+ -- Pierre Trespeuch <pierre-externe.trespeuch@edf.fr>  Fri, 10 Mar 2017 18:20:41 +0100
+
+unclebench (0.1.2) unstable; urgency=low
+
+  [ Cristian Ruiz ]
+  * export UBENCH_BENCHMARK_DIR when not defined
+
+  [ Pierre Trespeuch ]
+  * Add python-tk package to unclebench dependencies
 
   [ Pierre TRESPEUCH ]
 
- -- Pierre Trespeuch <pierre-externe.trespeuch@edf.fr>  Fri, 10 Mar 2017 15:31:51 +0100
+ -- Cristian Ruiz <cristian-externe.ruiz@edf.fr>  Fri, 10 Mar 2017 18:17:59 +0100
 
 unclebench (0.1.1) unstable; urgency=low
 

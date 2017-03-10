@@ -58,6 +58,7 @@ class UbenchConfig:
 
         if not self.benchmark_dir:
             self.benchmark_dir='/usr/share/unclebench/benchmarks'
+            os.environ['UBENCH_BENCHMARK_DIR']=self.benchmark_dir
 
         if not self.stylesheet_path:
             self.stylesheet_path='/usr/share/unclebench/css/asciidoctor-bench-report.css'
