@@ -1,3 +1,15 @@
+unclebench (0.1.2) unstable; urgency=low
+
+  [ Cristian Ruiz ]
+  * export UBENCH_BENCHMARK_DIR when not difined
+
+  [ Pierre Trespeuch ]
+  * Add python-tk package to unclebench dependencies
+
+  [ Pierre TRESPEUCH ]
+
+ -- Cristian Ruiz <cristian-externe.ruiz@edf.fr>  Fri, 10 Mar 2017 18:17:59 +0100
+
 unclebench (0.1.1) unstable; urgency=low
 
   [ Cristian Ruiz ]
