@@ -1,16 +1,16 @@
-unclebench (0.1.2+c9+1) calibre9; urgency=low
+unclebench (1:0.1.2+c9+1) calibre9; urgency=low
 
   [ Pierre Trespeuch ]
   * Backport Calibre9
 
-  [ Pierre Trespeuch ]
+  [ Pierre TRESPEUCH ]
 
- -- Pierre Trespeuch <pierre-externe.trespeuch@edf.fr>  Fri, 10 Mar 2017 18:20:41 +0100
+ -- Pierre Trespeuch <pierre-externe.trespeuch@edf.fr>  Thu, 16 Mar 2017 16:53:35 +0100
 
-unclebench (0.1.2) unstable; urgency=low
+unclebench (1:0.1.2) unstable; urgency=low
 
   [ Cristian Ruiz ]
-  * export UBENCH_BENCHMARK_DIR when not defined
+  * export UBENCH_BENCHMARK_DIR when not difined
 
   [ Pierre Trespeuch ]
   * Add python-tk package to unclebench dependencies
