@@ -1,4 +1,4 @@
-unclebench (0.1.2) unstable; urgency=low
+unclebench (1:0.1.2) unstable; urgency=low
 
   [ Cristian Ruiz ]
   * export UBENCH_BENCHMARK_DIR when not difined
