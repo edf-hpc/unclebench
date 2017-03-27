@@ -159,6 +159,7 @@
 	    <table name="result" style="csv" sort="nodes">
 		<column>nodes</column>
 		<column>HPL_Gflops</column>
+		<column>modules</column>
 	    </table>
 	</result>
 
