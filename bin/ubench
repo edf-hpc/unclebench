@@ -61,34 +61,35 @@ subparsers = parser.add_subparsers(dest='subparser_name')
 ## parser for fetch
 
 fetch_help ='Download benchmarks sources and test cases '+\
-    'from a distant server configurated in UBENCH_CONF_DIR to UBENCH_RESOURCE_DIR.'
+    'from benchmark defined location to /scratch/<user>/Ubench/resource (customizable with UBENCH_RESOURCE_DIR environment variable).'
 
 parser_fetch =subparsers.add_parser('fetch',help=fetch_help)
 
-parser_fetch.add_argument('-b',help='Benchmark list',nargs='+',\
-                            choices=benchmark_list, required=True)
-
-parser_fetch.add_argument('-s',help='Server name. Ex: ubench fetch -s '+\
-                            'http://clay01tes.cla.edfgdf.fr/benchs-secure auth.'+\
-                            '(auth only necessary if server needs authentification.',nargs='+')
+parser_fetch.add_argument('-b',help='Benchmarks to run. Benchmark definition files should be located in /usr/share/unclebench/benchmarks/'+\
+                          ' (can be custumosized with UBENCH_BENCHMARK_DIR environment variable)',nargs='+',\
+                          choices=benchmark_list, required=True)
 
 # parser for run
-run_help ='Execute every benchmark located in UBENCH_BENCHMARK_DIR '+\
-    'in UBENCH_RUN_DIR/benchs. Use -b to choose benchmarks to be run.'
+run_help ='Execute benchmarks.'
 
 parser_run=subparsers.add_parser('run',help=run_help)
 
-parser_run.add_argument('-p',help='Name of the test platform', required=platform_required,\
-                          choices=platform_list,default=default_platform)
-parser_run.add_argument('-b',help='Benchmark list',nargs='+', required=True,\
+parser_run.add_argument('-p',help='Name of the test platform. Platform definition files should be located '+\
+                        ' in/usr/share/unclebench/platform/ (can be customized with UBENCH_PLATFORM_DIR environment variable)',\
+                        required=platform_required,\
+                        choices=platform_list,default=default_platform)
+
+parser_run.add_argument('-b',help='Benchmarks to run. Benchmark definition files should be located in /usr/share/unclebench/benchmarks/ '+\
+                        '(can be custumosized with UBENCH_BENCHMARK_DIR environment variable)',nargs='+', required=True,\
                           choices=benchmark_list)
-parser_run.add_argument('-w',help='Nodes on which to run benchmarks ex: -w 4,pocn[380,431-433]. You can also launch job on all idle nodes ex : -w all4 to launch a benchmark with 4 nodes jobs covering evry idle node. ',\
+
+parser_run.add_argument('-w',help='Nodes on which to run benchmarks ex: -w 4,pocn[380,431-433]. You can also launch job on all idle nodes ex : -w all4 to launch a benchmark with 4 nodes jobs covering evry idle node',\
                           nargs='*',action='append')
 parser_run.add_argument('-customp',help='Set custom parameters. ex : -params mpiv:0. Use ubench listparams to know which parameters are customizable',nargs='+',default=[])
 
 
 # parser list
-list_help = 'List existing runs information for a given benchmark'
+list_help = 'List existing runs information for a given benchmark.'
 
 parser_list=subparsers.add_parser('list',help=list_help)
 
@@ -109,7 +110,7 @@ parser_log.add_argument('-i',help='Benchmark run IDs',nargs='+')
 
 
 # parser listparams
-parser_listparams = subparsers.add_parser('listparams',help='List customizable parameters of a benchmark')
+parser_listparams = subparsers.add_parser('listparams',help='List customizable parameters of a benchmark.')
 parser_listparams.add_argument('-p',help='Name of the test platform', required=platform_required,\
                                    choices=platform_list,default=default_platform)
 parser_listparams.add_argument('-b',help='Benchmark names list',required=True,nargs='+',\
@@ -127,7 +128,7 @@ parser_result.add_argument('-i',help='Benchmark run IDs',nargs='+')
 
 # parser report
 report_help = 'Build a performance report in UBENCH_REPORT_DIR from the '+\
-              'last executed set of benchmark. Use -b to select benchmarks to be reported'
+              'last executed set of benchmark. Use -b to select benchmarks to be reported.'
 
 parser_report = subparsers.add_parser('report',help=report_help)
 
