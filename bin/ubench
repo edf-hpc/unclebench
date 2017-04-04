@@ -161,7 +161,7 @@ commands = ubench_commands.Ubench_cmd(platform=platform_arg,benchmark_list=args.
 if args.subparser_name=='run':
     commands.run(w_list=args.w,customp_list=args.customp)
 elif args.subparser_name=='fetch':
-  commands.fetch(server=args.s)
+    commands.fetch(server=args.b)
 elif args.subparser_name=='result':
     commands.result(id_list=args.i)
 elif args.subparser_name=='log':
