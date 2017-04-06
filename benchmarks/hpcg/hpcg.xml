@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+    <include-path>
+	<path> $UBENCH_PLATFORM_DIR </path>
+    </include-path>
+    <include from="platforms.xml" path="include-path"/>
+
+    <multisource>
+	<source protocol="https">
+	    <url>http://www.hpcg-benchmark.org/downloads/</url>
+	    <file>hpcg-3.0.tar.gz</file>
+	</source>
+    </multisource>
+
+    <benchmark name="HPCG" outpath="benchmark_runs">
+	<comment>HPCG High Performance Conjugate Gradients benchmark</comment>
+
+	<fileset name="source">
+	    <link> $UBENCH_RESOURCE_DIR/hpcg/hpcg-3.0.tar.gz</link>
+	    <prepare>tar -xzf hpcg-3.0.tar.gz</prepare>
+	</fileset>
+
+	<!-- =====================  Compile  ===================== -->
+	<step name="compile" export="true">
+
+	    <!-- Choose compiler and MPI versions -->
+	    <use from="platform.xml"> compiler_set </use>
+	    <use from="platform.xml"> mpi_set </use>
+
+	    <!-- substitute compiler in makefile -->
+	    <use>source</use>
+
+	    <!-- Load environment -->
+	    <do> module purge </do>
+	    <do> module load $module_compile $module_mpi </do>
+	    <do work_dir="hpcg-3.0">
+		./configure Linux_MPI
+		make
+	    </do>
+
+
+	</step>
+
+	<!-- =====================  Execute  ===================== -->
+
+	<fileset name="binaries">
+	    <link rel_path_ref="internal" directory="compile/hpcg-3.0/bin">
+		xhpcg
+	    </link>
+	</fileset>
+
+	<parameterset name="hpcg_parameters">
+	    <!-- Choose nz to use 1/4 of node available memory and avoid cache effects -->
+	    <parameter name="nz" mode="python" type="int">
+		16*int(round($GB_per_node/($NUMA_regions*$cores_per_NUMA_region)))
+	    </parameter>
+	</parameterset>
+
+	<parameterset name="system_parameters" init_with="platform.xml">
+	    <parameter name="nodes" type="int">1</parameter>
+
+	    <parameter name="taskspernode" mode="python" type="int">$NUMA_regions*$cores_per_NUMA_region</parameter>
+	    <parameter name="threadspertask" type="int">1</parameter>
+
+	    <parameter name="executable">./xhpcg 128 128 ${nz}</parameter>
+	    <parameter name="modules">$module_compile $module_mpi</parameter>
+	    <parameter name="timelimit">01:00:00</parameter>
+	</parameterset>
+
+	<parameterset name="execute_set" init_with="platform.xml">
+	    <parameter name="args_starter" separator="??">
+		${binding_full_node}
+	    </parameter>
+	</parameterset>
+
+
+	<step name="execute" depend="compile">
+	    <use from="platform.xml">cluster_specs</use>
+	    <use>binaries</use>
+	    <use>execute_set</use>
+	    <use>hpcg_parameters</use>
+	    <use>system_parameters</use>
+	    <use from="platform.xml">jobfiles</use>
+	    <use from="platform.xml">execute_sub</use>
+	    <do done_file="$done_file">$submit $submit_script</do>
+	</step>
+
+	<!-- =====================  Analyze  ===================== -->
+
+	<patternset name="pattern">
+	    <pattern name="hpcg_GFLOPs" type="float" unit="GFLOP/s">
+		^.*rating of:\s+$jube_pat_fp
+	    </pattern>
+	</patternset>
+
+	<analyzer name="analyze">
+	    <use>pattern</use>
+	    <analyse step="execute">
+	      <file>*.yaml</file>
+	    </analyse>
+	</analyzer>
+
+	<!-- =====================  Result  ===================== -->
+
+	<result>
+	    <use>analyze</use>
+	    <table name="result" style="csv" sort="nodes">
+		<column>nodes</column>
+		<column format=".3f">hpcg_GFLOPs</column>
+	    </table>
+	</result>
+
+
+    </benchmark>
+</jube>
