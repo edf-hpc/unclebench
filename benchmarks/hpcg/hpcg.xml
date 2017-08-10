@@ -7,23 +7,21 @@
     <include from="platforms.xml" path="include-path"/>
 
     <multisource>
-      <source protocol="https">
-        <url>https://www.cs.virginia.edu/stream/FTP/Code/</url>
-        <file>Makefile</file>
-				<file>stream.c</file>
-      </source>
+	<source protocol="https">
+	    <url>http://www.hpcg-benchmark.org/downloads/</url>
+	    <file>hpcg-3.0.tar.gz</file>
+	</source>
     </multisource>
 
-    <benchmark name="STREAM" outpath="benchmark_runs">
-	<comment>STREAM memory bandwidth benchmark</comment>
+    <benchmark name="HPCG" outpath="benchmark_runs">
+	<comment>HPCG High Performance Conjugate Gradients benchmark</comment>
 
 	<fileset name="source">
-	    <prepare>cp $UBENCH_RESOURCE_DIR/stream/Makefile .</prepare>
-	    <prepare>cp $UBENCH_RESOURCE_DIR/stream/stream.c .</prepare>
+	    <link> $UBENCH_RESOURCE_DIR/hpcg/hpcg-3.0.tar.gz</link>
+	    <prepare>tar -xzf hpcg-3.0.tar.gz</prepare>
 	</fileset>
 
 	<!-- =====================  Compile  ===================== -->
-
 	<step name="compile" export="true">
 
 	    <!-- Choose compiler and MPI versions -->
@@ -36,8 +34,9 @@
 	    <!-- Load environment -->
 	    <do> module purge </do>
 	    <do> module load $module_compile $module_mpi </do>
-	    <do>
-		 make stream_c.exe CC=${mpi_cc} FF=${mpi_f90} CFLAGS="${cflags_opt} -DSTREAM_ARRAY_SIZE=12800000 -mcmodel=large -fopenmp" FFLAGS="${fflags_opt} -fopenmp"
+	    <do work_dir="hpcg-3.0">
+		./configure Linux_MPI
+		make
 	    </do>
 
 
@@ -46,67 +45,59 @@
 	<!-- =====================  Execute  ===================== -->
 
 	<fileset name="binaries">
-	    <link rel_path_ref="internal" directory="compile/">
-		stream_c.exe
+	    <link rel_path_ref="internal" directory="compile/hpcg-3.0/bin">
+		xhpcg
 	    </link>
 	</fileset>
+
+	<parameterset name="hpcg_parameters">
+	    <!-- Choose nz to use 1/4 of node available memory and avoid cache effects -->
+	    <parameter name="nz" mode="python" type="int">
+		16*int(round($GB_per_node/($NUMA_regions*$cores_per_NUMA_region)))
+	    </parameter>
+	</parameterset>
 
 	<parameterset name="system_parameters" init_with="platform.xml">
 	    <parameter name="nodes" type="int">1</parameter>
 
+	    <parameter name="taskspernode" mode="python" type="int">$NUMA_regions*$cores_per_NUMA_region</parameter>
+	    <parameter name="threadspertask" type="int">1</parameter>
 
-	    <parameter name="taskspernode" type="int">$NUMA_regions</parameter>
-	    <parameter name="threadspertask" type="int">$cores_per_NUMA_region</parameter>
-
-	    <parameter name="executable">./stream_c.exe</parameter>
+	    <parameter name="executable">./xhpcg 128 128 ${nz}</parameter>
 	    <parameter name="modules">$module_compile $module_mpi</parameter>
-	    <parameter name="timelimit">00:30:00</parameter>
+	    <parameter name="timelimit">01:00:00</parameter>
 	</parameterset>
 
 	<parameterset name="execute_set" init_with="platform.xml">
 	    <parameter name="args_starter" separator="??">
-		$binding_stream
+		${binding_full_node}
 	    </parameter>
 	</parameterset>
+
 
 	<step name="execute" depend="compile">
 	    <use from="platform.xml">cluster_specs</use>
 	    <use>binaries</use>
 	    <use>execute_set</use>
+	    <use>hpcg_parameters</use>
 	    <use>system_parameters</use>
-
 	    <use from="platform.xml">jobfiles</use>
 	    <use from="platform.xml">execute_sub</use>
-
 	    <do done_file="$done_file">$submit $submit_script</do>
 	</step>
 
 	<!-- =====================  Analyze  ===================== -->
 
 	<patternset name="pattern">
-	    <pattern name="copy_bandwidth" type="float" reduce="sum" unit="MB/s">
-		^Copy:\s+$jube_pat_fp
-	    </pattern>
-
-	    <pattern name="scale_bandwidth" type="float" reduce="sum" unit="MB/s">
-		^Scale:\s+$jube_pat_fp
-	    </pattern>
-
-	    <pattern name="add_bandwidth" type="float" reduce="sum" unit="MB/s">
-		^Add:\s+$jube_pat_fp
-	    </pattern>
-
-	    <pattern name="triad_bandwidth" type="float" reduce="sum" unit="MB/s">
-		^Triad:\s+$jube_pat_fp
+	    <pattern name="hpcg_GFLOPs" type="float" unit="GFLOP/s">
+		^.*rating of:\s+$jube_pat_fp
 	    </pattern>
 	</patternset>
 
 	<analyzer name="analyze">
 	    <use>pattern</use>
 	    <analyse step="execute">
-	      <file>job.out</file>
-	      <file>job.err</file>
-	      <file>stdout</file>
+	      <file>*.yaml</file>
 	    </analyse>
 	</analyzer>
 
@@ -115,11 +106,8 @@
 	<result>
 	    <use>analyze</use>
 	    <table name="result" style="csv" sort="nodes">
-	      <column>nodes</column>
-	      <column format=".1f">copy_bandwidth_sum</column>
-	      <column format=".1f">scale_bandwidth_sum</column>
-	      <column format=".1f">add_bandwidth_sum</column>
-	      <column format=".1f">triad_bandwidth_sum</column>
+		<column>nodes</column>
+		<column format=".3f">hpcg_GFLOPs</column>
 	    </table>
 	</result>
 

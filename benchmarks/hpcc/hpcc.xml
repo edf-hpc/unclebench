@@ -59,8 +59,8 @@
 	</parameterset>
 
 	<parameterset name="compiler_opts">
-	  <parameter name="arch" mode="python">
-	    ["gnu","intel"][$comp_v]
+	  <parameter name="arch" tpye="string">
+	    ${comp_version}
 	  </parameter>
 	</parameterset>
 	
