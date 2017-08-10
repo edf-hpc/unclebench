@@ -1,3 +1,17 @@
+unclebench (1:0.1.3) unstable; urgency=low
+
+  [ Pierre Trespeuch ]
+  * Add loaded modules to hpl results
+  * Update ubench command help messages
+  * Correct fetch command argument
+  * Change Stream raw compilers for mpi wrappers
+  * Add hpcg benchmark description file and plugin
+  * Improve choice of compiling architecture for hpcc and hpl benchmarks
+
+  [ Pierre Trespeuch ]
+
+ -- Pierre Trespeuch <pierre-externe.trespeuch@edf.fr>  Thu, 10 Aug 2017 16:48:33 +0200
+
 unclebench (1:0.1.2) unstable; urgency=low
 
   [ Cristian Ruiz ]
