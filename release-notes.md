@@ -1,15 +1,6 @@
-unclebench (1:0.1.3+c9+1) calibre9; urgency=low
 
-  [ Pierre Trespeuch ]
-  * Backport calibre9
+unclebench (0.1.3)
 
-  [ Pierre Trespeuch ]
-
- -- Pierre Trespeuch <pierre-externe.trespeuch@edf.fr>  Thu, 10 Aug 2017 16:56:45 +0200
-
-unclebench (1:0.1.3) unstable; urgency=low
-
-  [ Pierre Trespeuch ]
   * Add loaded modules to hpl results
   * Update ubench command help messages
   * Correct fetch command argument
@@ -17,11 +8,9 @@ unclebench (1:0.1.3) unstable; urgency=low
   * Add hpcg benchmark description file and plugin
   * Improve choice of compiling architecture for hpcc and hpl benchmarks
 
-  [ Pierre Trespeuch ]
-
  -- Pierre Trespeuch <pierre-externe.trespeuch@edf.fr>  Thu, 10 Aug 2017 16:48:33 +0200
 
-unclebench (1:0.1.2) unstable; urgency=low
+unclebench (0.1.2)
 
   [ Cristian Ruiz ]
   * export UBENCH_BENCHMARK_DIR when not difined
@@ -29,11 +18,9 @@ unclebench (1:0.1.2) unstable; urgency=low
   [ Pierre Trespeuch ]
   * Add python-tk package to unclebench dependencies
 
-  [ Pierre TRESPEUCH ]
-
  -- Cristian Ruiz <cristian-externe.ruiz@edf.fr>  Fri, 10 Mar 2017 18:17:59 +0100
 
-unclebench (0.1.1) unstable; urgency=low
+unclebench (0.1.1)
 
   [ Cristian Ruiz ]
   * Move jinja2 import and small fix to fetch command
@@ -41,11 +28,9 @@ unclebench (0.1.1) unstable; urgency=low
   [ Pierre Trespeuch ]
   * Correct debian platform install file to avoid conflict with template.xml file
 
-  [ Pierre Trespeuch ]
-
  -- Cristian Ruiz <cristian-externe.ruiz@edf.fr>  Fri, 10 Mar 2017 15:25:41 +0100
 
-unclebench (0.1.0) unstable; urgency=medium
+unclebench (0.1.0)
 
   * Initial release.
 
