@@ -11,6 +11,7 @@ export UBENCH_PLATFORM_DIR=${UBENCH_PATH}/platform
 export UBENCH_CONF_DIR=${UBENCH_PATH}/conf
 export UBENCH_BENCHMARK_DIR=${UBENCH_PATH}/benchmarks
 
+export PYTHONPATH=$PYTHONPATH:${UBENCH_PATH}
 function pathadd() {
     if [ -d "$1" ] && [[ ":$PATH:" != *":$1:"* ]]; then
 	PATH="$1${PATH:+":$PATH"}"
@@ -32,4 +33,3 @@ fi
 if [ -e /usr/share/modules/init/bash ]; then
     source /usr/share/modules/init/bash
 fi
-

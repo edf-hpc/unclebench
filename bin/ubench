@@ -22,15 +22,6 @@
 import os,sys, argparse
 import socket
 
-# Add ubench library path to PYTHONPATH
-
-if os.environ.get('UBENCH_DEV'):
-    lib_dir=os.path.join(os.path.dirname(os.path.abspath(__file__)),"../")
-else:
-    lib_dir='/usr/share/unclebench/lib'
-
-sys.path.append(lib_dir)
-
 
 os.environ['JUBE_EXEC_SHELL']='/bin/bash'
 
