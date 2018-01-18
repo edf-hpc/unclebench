@@ -174,8 +174,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         global_status = {}
         for step in bench_steps:
             # Updating state with continue command
-            Popen('jube continue --hide-animation ./'+output_dir+' --id '+benchmark_id,cwd=os.getcwd(),stdout=open(os.devnull, "w"),shell=True)
-            time.sleep(0.5)
+            continue_cmd = Popen('jube continue --hide-animation ./'+output_dir+' --id '+benchmark_id,cwd=os.getcwd(),stdout=open(os.devnull, "w"),shell=True)
+            continue_cmd.wait()
             input_str='jube info ./'+output_dir+' --id '+benchmark_id+' --step '+step
             status_from_jube=Popen(input_str,cwd=os.getcwd(),shell=True,stdout=PIPE)
             global_status[step]=[]
