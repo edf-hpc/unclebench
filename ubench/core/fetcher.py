@@ -71,7 +71,8 @@ class Fetcher():
           svn_command += "-r {0} ".format(rev)
 
         svn_command += "{0} {1} --username {2} --password '{3}' --trust-server-cert --non-interactive --no-auth-cache".format(url_file,base_name,self.calibre_user,self.calibre_password)
-        print Popen(svn_command,cwd=benchresource_dir,stdout=PIPE,shell=True)
+        svn_process = Popen(svn_command,cwd=benchresource_dir,shell=True)
+        svn_process.wait()
         svn_dir=os.path.join(self.resource_dir,self.benchmark_name,"svn")
         if rev > 0:
           dest_symlink = os.path.join(svn_dir,rev+"_"+base_name)

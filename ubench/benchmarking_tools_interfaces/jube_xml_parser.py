@@ -204,7 +204,6 @@ class JubeXMLParser():
             # if '-revision' in name:
             # Handling several revision
               # new_name = name.replace('-revision','')
-            # pdb.set_trace()
             num_items = bench_config[protocol].keys()
 
             if protocol == 'svn' and not '_revision' in name and len(num_items)>1:
@@ -214,7 +213,7 @@ class JubeXMLParser():
 
               custom_param = ET.SubElement(config_element,'parameter',
                                            attrib={'name':name, 'mode' : 'python'})
-              revision_name = [rev for rev in  bench_config[protocol].keys() if 'revision' in rev][0]
+              revision_name = name+'_revision'
 
               new_paths = [ "${{{0}}}_{1}".format(revision_name,item)  for item in options]
               custom_param.text = str(new_paths)+"[${{{0}}}]".format(name_id)
