@@ -162,7 +162,7 @@ class Ubench_cmd:
       dict_options = {}
       for elem in customp_list:
         try:
-          splitted_param=re.split(':',elem)
+          splitted_param=re.split(':',elem,1)
           dict_options[splitted_param[0]]=splitted_param[1]
         except Exception as e:
           print '---- {0} is not formated correctly, please consider using : -customp param:new_value'.format(elem)
