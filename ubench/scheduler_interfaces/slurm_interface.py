@@ -22,9 +22,10 @@
 import pyslurm
 import re
 from ClusterShell.NodeSet import NodeSet
-
+from subprocess import call, Popen, PIPE
+import os
 class SlurmInterface:
-    
+
      def __init__(self):
           """ Constructor """
 #          self.partition_dic{}=
@@ -45,16 +46,16 @@ class SlurmInterface:
                        #        print "\t%-20s : %s" % (part_key, value[part_key])
                        #        print "-" * 80
 
-               
+
 
      def get_available_nodes(self,slices_size=1):
           """ Returns a list of currently available nodes by slice of slices_size
           ex: for slices of size 4 ['cn[100-103]','cn[109,150-152]']
           :param slices_size: slices size
           :param type: int
-          :returns: list of nodes_id 
-          :rtype: str """          
-          
+          :returns: list of nodes_id
+          :rtype: str """
+
           node_list=[]
           a = pyslurm.node()
           node_dict = a.get()
@@ -71,13 +72,13 @@ class SlurmInterface:
                          nodeset=NodeSet()
                          slice_str=None
                          node_count=0
-                         
+
 
           return node_list
 
      def get_truncated_nodes_lists(self,nnodes_list,nodes_id):
-          """ From a list of nodes number and a list of nodes id returns a list of nodes_id 
-          truncated according to nodes number 
+          """ From a list of nodes number and a list of nodes id returns a list of nodes_id
+          truncated according to nodes number
           :param nnodes_list: ex [2,4]
           :type nnodes_list: list of int
           :param nodes_id: ex ['cn[100-104]','cn[50-84]']
@@ -93,7 +94,7 @@ class SlurmInterface:
                     raise Exception('Number of nodes is greater than the giver number of nodes id')
                nodes_id_list.append(str(nodeset[:nnode]))
 
-          
+
           return nodes_id_list
 
      def get_nnodes_from_string(self,nodes_id):
@@ -101,8 +102,33 @@ class SlurmInterface:
           the set contains.
           :param nodes_id: nodes id
           :type nodes_id: str
-          :returns: number of nodes  
+          :returns: number of nodes
           :rtype: int
           """
           nodeset=NodeSet(nodes_id)
           return len(nodeset)
+
+     def get_job_info(self,job_id):
+         """Return a hash with job information using an id
+         :param job_id: job id
+         :type job_id: int
+         :returns: hash with job information
+         :rtype: hash
+         """
+
+         job_cmd ="sacct --jobs={0} -n -p --format=JobName,Elapsed,NodeList,Submit,Start".format(job_id)
+         job_process = Popen(job_cmd,cwd=os.getcwd(),shell=True, stdout=PIPE)
+         job_info=[]
+         for line in job_process.stdout:
+           fields = line.split("|")
+           job_name = fields[0]
+           job_info_temp = {}
+           if job_name != "batch":
+             job_info_temp['job_name'] = job_name
+             job_info_temp['job_elasped'] = fields[1]
+             job_info_temp['job_nodelist'] = [node for node in NodeSet(fields[2])]
+             job_info_temp['job_submit_time'] = fields[3]
+             job_info_temp['job_start_time'] =fields[4]
+             job_info.append(job_info_temp)
+
+         return job_info

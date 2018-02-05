@@ -200,6 +200,7 @@ class BenchmarkManager:
         :param benchmark_id: id of the benchmark to analyze
         :type benchmark_id: int"""
         self.benchmark_results_path=self.benchmarking_api.analyse_benchmark(benchmark_id)
+        self.benchmarking_api.get_step_info()
 
     def extract_result_from_benchmark(self,benchmark_id):
         """ Get result from a jube benchmark with its id and build a python result array

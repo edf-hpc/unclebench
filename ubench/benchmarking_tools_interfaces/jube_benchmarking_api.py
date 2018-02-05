@@ -25,8 +25,14 @@ import sys
 from subprocess import call, Popen, PIPE
 import benchmarking_api as bapi
 import time
+import csv
+import yaml
 import ubench.core.ubench_config as uconfig
 import jube_xml_parser
+try :
+  import ubench.scheduler_interfaces.slurm_interface as slurmi
+except:
+  pass
 
 class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
@@ -75,6 +81,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         # Restore working directory
       os.chdir(old_path)
+
     return benchmark_results_path
 
 
@@ -94,7 +101,6 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         :rtype: str
         """
         return os.path.join(self.benchmark_path,self.jube_xml_files.get_bench_outputdir())
-
 
   def get_log(self,idb=-1):
         """ Get a log from a benchmark run
@@ -190,6 +196,84 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                     global_status[step].append(task)
 
         return global_status
+
+  def get_step_info(self):
+
+        try:
+          scheduler_interface=slurmi.SlurmInterface()
+        except:
+          print "Warning!! Unable to load slurmi module"
+          scheduler_interface=None
+          # return
+        os.chdir(self.benchmark_path)
+        output_dir = self.jube_xml_files.get_bench_outputdir()
+
+        print output_dir
+        dir_list=[]
+        newest_result_dir=None
+
+        for fd in os.listdir(output_dir):
+          result_dir=os.path.join(output_dir,fd)
+          if os.path.isdir(result_dir):
+            dir_list.append(result_dir)
+
+        newest_result_dir = max(dir_list, key=os.path.getmtime)
+
+        jube_cmd ='jube info ./'+output_dir+' --id last --step execute'
+
+        result_from_jube = Popen(jube_cmd,cwd=os.getcwd(),shell=True, stdout=PIPE)
+        results = {}
+
+        param_start = False
+        index = None
+        for line in result_from_jube.stdout:
+          if "Parameterization:" in line:
+            param_start = True
+            continue
+
+          if param_start:
+            new_line = line.strip()
+            temp_match=re.match('^\S+:',new_line)
+            if temp_match:
+              value = new_line.replace(temp_match.group(0),'')
+              param = temp_match.group(0).replace(':','')
+              if param == 'ID':
+                index = value.strip()
+                results[index] = {}
+              if index:
+                results[index][param] = value.strip()
+
+
+        for key, value in results.items():
+
+          # pdb.set_trace()
+          # result_file_path = os.path.join(value['jube_benchmark_rundir'],"result/imb_cvs.dat")
+          result_file_path = os.path.join(value['jube_benchmark_rundir'],"result/result.dat")
+          print result_file_path
+          with open(result_file_path) as csvfile:
+            reader = csv.DictReader(csvfile)
+            fields_names= reader.fieldnames
+            inter = list(set(value.keys()) & set(fields_names))
+            print inter
+            #pdb.set_trace()
+          #Add job information to step execute
+          job_file_path = os.path.join(value['jube_wp_abspath'],"stdout")
+          job_id = 0
+          with  open(job_file_path, 'r') as job_file:
+            for line in job_file:
+              re_result = re.findall(r'\d+',line)
+              if re_result:
+                job_id = re_result[0]
+                value['job_id_ubench'] = job_id
+                if scheduler_interface:
+                  value.update(scheduler_interface.get_job_info(job_id)[-1])
+                results[key].update(value)
+                break
+
+
+        with open(newest_result_dir+'/bench_results.yaml', 'w') as outfile:
+          yaml.dump(results, outfile, default_flow_style=False)
+
 
   def extract_result_from_benchmark(self,benchmark_id):
         """ Get result from a jube benchmark with its id and build a python result array
