@@ -290,12 +290,12 @@ class JubeXMLParser():
                                                 'separator':'??'})
           custom_nodes_id.text=str(custom_nodes_ids)+'[$custom_id]'
 
-        custom_submit=ET.SubElement(custom_element,'parameter',\
-                                      attrib={'name':'custom_submit',\
-                                              'separator':'??',\
-                                              'mode':'python',\
-                                              'type':'string',\
-                                              'separator':'??'})
+          custom_submit=ET.SubElement(custom_element,'parameter',\
+                                    attrib={'name':'custom_submit',\
+                                            'separator':'??',\
+                                            'mode':'python',\
+                                            'type':'string',\
+                                            'separator':'??'})
 
         if custom_nodes_ids:
           custom_submit.text='['

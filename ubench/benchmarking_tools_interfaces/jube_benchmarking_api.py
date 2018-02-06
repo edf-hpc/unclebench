@@ -325,7 +325,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     :type nodes_id_list:  list of strings
     """
     self.jube_xml_files.substitute_element_text('parameter','nodes','.*','$custom_nodes')
-    self.jube_xml_files.substitute_element_text('do',None,re.escape('$submit '),'$custom_submit ')
+    if nodes_id_list:
+      self.jube_xml_files.substitute_element_text('do',None,re.escape('$submit '),'$custom_submit ')
 
     # Add an xml section describing custom nodes configurations
     self.jube_xml_files.add_custom_nodes_stub(nnodes_list,nodes_id_list)

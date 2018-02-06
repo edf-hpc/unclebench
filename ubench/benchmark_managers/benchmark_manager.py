@@ -64,6 +64,10 @@ class BenchmarkManager:
             try:
                 nnodes_list=[list(t) for t in zip(*w_list)][0]
                 nodes_id_list=[list(t) for t in zip(*w_list)][1]
+                # unique values in list
+                if len(list(set(nodes_id_list))) == 1 and not nodes_id_list[0]:
+                  nodes_id_list = None
+
                 self.benchmarking_api.set_custom_nodes(nnodes_list,nodes_id_list)
             except ValueError:
                 print 'Custom node configuration is not valid.'
