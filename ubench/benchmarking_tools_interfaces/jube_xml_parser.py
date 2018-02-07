@@ -206,7 +206,7 @@ class JubeXMLParser():
               # new_name = name.replace('-revision','')
             num_items = bench_config[protocol].keys()
 
-            if protocol == 'svn' and not '_revision' in name and len(num_items)>1:
+            if ( protocol == 'svn' or protocol=='git') and not '_revision' in name and len(num_items)>1:
               name_id = name+'_id'
               custom_param = ET.SubElement(config_element,'parameter',attrib={'name': name_id})
               custom_param.text = ",".join(["{0}".format(x) for x in range(len(options))])
@@ -233,11 +233,10 @@ class JubeXMLParser():
           # create link for benchmark directory
           for name,options in bench_config[protocol].iteritems():
             if not '_revision' in name:
-              if protocol == 'svn':
-                link = ET.SubElement(files_element,'link',attrib={'rel_path_ref': 'external'})
-                link.text = "$UBENCH_RESOURCE_DIR/{0}/svn/${{{1}}}".format(benchmark_name.lower(),name)
+              link = ET.SubElement(files_element,'link',attrib={'rel_path_ref': 'external'})
+              if protocol == 'svn' or protocol == 'git':
+                link.text = "$UBENCH_RESOURCE_DIR/{0}/{1}/${{{2}}}".format(benchmark_name.lower(),protocol,name)
               else:
-                link = ET.SubElement(files_element,'link',attrib={'rel_path_ref': 'external'})
                 link.text = "$UBENCH_RESOURCE_DIR/{0}/${{{1}}}".format(benchmark_name.lower(),name)
 
       ### Adding special tags to step prepare

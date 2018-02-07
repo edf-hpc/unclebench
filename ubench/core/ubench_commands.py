@@ -227,23 +227,32 @@ class Ubench_cmd:
     print 'Report was built in '+global_report_dir_path
 
   def fetch(self,server=[]):
+
     for benchmark_name in self.benchmark_list:
       benchmark_dir = os.path.join(self.bench_dir,benchmark_name)
       benchmark_files = [file_b for  file_b in os.listdir(benchmark_dir) if file_b.endswith(".xml")]
       jube_xml_files = jube_xml_parser.JubeXMLParser(benchmark_dir,benchmark_files)
       multisource = jube_xml_files.get_bench_multisource()
+
       if multisource is None:
         print "ERROR !! : Multisource information for benchmark not found"
         return None
 
       fetch_bench = fetcher.Fetcher(resource_dir=self.resource_dir,benchmark_name=benchmark_name)
       for source in multisource:
+
         if source['protocol'] == 'https':
           fetch_bench.https(source['url'],source['files'])
-        elif source['protocol'] == 'svn':
+        elif source['protocol'] == 'svn' or source['protocol'] == 'git':
           if not source.has_key('revision'):
             source['revision'] = None
-          fetch_bench.svn_checkout(source['url'],source['files'],source['revision'])
+          if not source.has_key('branch'):
+            source['branch'] = None
+          if source['protocol'] == 'git':
+            source['files']=[source['url'].split('/')[-1].split('.')[0]]
+            
+          fetch_bench.scm_fetch(source['url'],source['files'],source['protocol'],source['revision'],source['branch'])
+          
         elif source['protocol'] == 'local':
           fetch_bench.local(source['files'])
 

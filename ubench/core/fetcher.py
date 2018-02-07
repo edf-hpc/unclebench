@@ -41,21 +41,25 @@ class Fetcher():
     new_path = os.popen("echo " + path).read().strip()
     return new_path
 
-  def svn_checkout(self,url,files,revision=None):
-    fetch_message = 'Fetching benchmark {0} from SVN:'.format(self.benchmark_name)
+
+    
+  def scm_fetch(self,url,files,scm_name="svn",revision=None,branch=None):
+    fetch_message = 'Fetching benchmark {0} from {1}:'.format(self.benchmark_name,scm_name)
     print fetch_message
     print '-'*len(fetch_message)
-    self.get_credentials()
 
-    # create directory svn if it does not exist
+    if scm_name=="svn":
+      self.get_credentials()
+
+    # create scm directory if it does not exist
     if revision is None:
       revision = [-1]
 
     for rev in revision:
       if rev is -1:
-        benchresource_dir=os.path.join(self.resource_dir,self.benchmark_name,"svn")
+        benchresource_dir=os.path.join(self.resource_dir,self.benchmark_name,scm_name)
       else:
-        benchresource_dir=os.path.join(self.resource_dir,self.benchmark_name,"svn",rev)
+        benchresource_dir=os.path.join(self.resource_dir,self.benchmark_name,scm_name,rev)
 
       if not os.path.exists(benchresource_dir):
         os.makedirs(benchresource_dir)
@@ -64,22 +68,38 @@ class Fetcher():
         urlparsed = urlparse(url)
         if not os.path.isabs(file_bench):
           file_bench ="/"+file_bench
+          
         url_file=urljoin(url,urlparsed.path+file_bench)
         base_name = os.path.basename(file_bench)
-        svn_command = "svn export "
-        if rev > 0:
-          svn_command += "-r {0} ".format(rev)
 
-        svn_command += "{0} {1} --username {2} --password '{3}' --trust-server-cert --non-interactive --no-auth-cache".format(url_file,base_name,self.calibre_user,self.calibre_password)
-        svn_process = Popen(svn_command,cwd=benchresource_dir,shell=True)
-        svn_process.wait()
-        svn_dir=os.path.join(self.resource_dir,self.benchmark_name,"svn")
+        fetch_command=""
+        if scm_name=="svn":
+          fetch_command = "svn export "
+          if rev > 0:
+            fetch_command += "-r {0} ".format(rev)
+            fetch_command += "{0} {1} --username {2} --password '{3}' --trust-server-cert --non-interactive --no-auth-cache".format(url_file,base_name,self.calibre_user,self.calibre_password)
+        elif scm_name=="git":
+          fetch_command = "git clone "
+  
+          if branch:
+            fetch_command += "--branch {0} ".format(branch)
+            
+          fetch_command += "--single-branch {0} ".format(url)
+          
+          if rev > 0:
+            git_dir=os.path.join(benchresource_dir,file_bench[1:])
+            fetch_command += "; ( cd {0}; git reset --hard {1} )".format(git_dir,rev)
+
+        fetch_process = Popen(fetch_command,cwd=benchresource_dir,shell=True)
+        fetch_process.wait()
+        fetch_dir=os.path.join(self.resource_dir,self.benchmark_name,scm_name)
         if rev > 0:
-          dest_symlink = os.path.join(svn_dir,rev+"_"+base_name)
+          dest_symlink = os.path.join(fetch_dir,rev+"_"+base_name)
           if not os.path.exists(dest_symlink):
-            os.symlink(os.path.join(svn_dir,rev,base_name),dest_symlink)
-
+            os.symlink(os.path.join(fetch_dir,rev,base_name),dest_symlink)
+              
     print 'Benchmark {0} fetched'.format(self.benchmark_name)
+
 
   def local(self,files):
     fetch_message = 'Fetching benchmark {0} from local:'.format(self.benchmark_name)
