@@ -1,0 +1,79 @@
+<jube>
+  
+  <include-path>
+    <path> $UBENCH_PLATFORM_DIR </path>
+  </include-path>
+
+  <include from="platforms.xml" path="include-path"/>
+
+  <multisource>
+  <source protocol="svn" name="simple_code">
+    <url>https://svn.test.fr/test/</url>
+    <revision>2018</revision>
+    <file>Version0</file>
+  </source>
+ 
+  <source protocol="svn" name="input">
+    <url>https://svn.test.fr/test/</url>
+    <revision>1000</revision>
+    <file>/temp/file1</file>
+    <file>/temp/file2</file>
+    <file>/temp/file3</file>
+  </source>
+
+  </multisource>
+  
+  <benchmark name="simple" outpath="benchmarks_runs">
+
+    <comment> Simple JUBE test</comment>
+
+    <!-- Configuration -->
+    <parameterset name="param_set">
+      <!-- Create a parameterspace with one template parameter -->
+      <parameter name="number" type="int">1,2,4</parameter>
+    </parameterset>
+    
+    <!-- Regex pattern -->
+    <patternset name="pattern">
+      <pattern name="number_pat" type="int">Number: $jube_pat_int</pattern>
+    </patternset>
+
+    <parameterset name="fake_hosts">
+      <parameter name="job_id" type ="int">1183013,1183014</parameter>
+    </parameterset>
+    
+    <step name="execute">
+      <use> fake_hosts</use>
+      <do>
+	sleep 30
+	echo "Submitted batch job $job_id" > stdout
+      </do>
+    </step>
+    <!-- Operation -->
+    <step depend="execute" name="write_number">
+      <use>param_set</use> <!-- use existing parameterset -->
+      <do>echo "Number: $number"</do> <!-- shell command -->
+    </step>
+    
+    <!-- Analyse -->
+    <analyser name="analyse">
+      <use>pattern</use> <!-- use existing patternset -->
+      <analyse step="write_number">
+        <file>stdout</file> <!-- file which should be scanned -->
+      </analyse>
+    </analyser>
+    
+    <!-- Create result table -->
+    <result>
+      <use>analyse</use> <!-- use existing analyser -->
+      <table name="result" style="pretty" sort="number">
+        <column>number</column>
+        <column>number_pat</column>
+      </table>
+    </result>
+    
+    
+  </benchmark>
+</jube>
+
+
