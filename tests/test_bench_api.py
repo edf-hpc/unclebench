@@ -20,6 +20,7 @@ def init_env():
   test_env = tempbench.Tempbench(config);
   test_env.copy_files()
   os.environ["UBENCH_RUN_DIR_BENCH"] = test_env.config['run_path']
+  os.environ["UBENCH_RESOURCE_DIR"] = test_env.config['resources_path']
   yield test_env
   test_env.destroy_dir_structure()
 
@@ -81,7 +82,7 @@ def test_result_custom_nodes(init_env):
 
 def test_custom_nodes_not_in_result(init_env):
   benchmarking_api=jba.JubeBenchmarkingAPI("simple","")
-  benchmarking_api.set_custom_nodes([1,2],[None,None])
+  benchmarking_api.set_custom_nodes([1,2],None)
   benchmarking_api.jube_xml_files.write_bench_xml()
   xml_file = ET.parse(os.path.join(init_env.config['run_path'],"simple/simple.xml"))
   benchmark = xml_file.find('benchmark')
@@ -120,20 +121,33 @@ def test_add_bench_input():
   assert simple_code_count < max_files
   assert input_count < max_files
 
-# def test_fetcher(monkeypatch,init_env):
-#   def mocksvncmd(self):
-#     svn_dir = os.path.join(init_env.config['resources_path'],'svn')
-#     if not os.path.exists(svn_dir):
-#       os.makedirs(svn_dir)
-#     return True
-#   def mockcredentials(self):
-#     return True
+def test_fetcher_dir(monkeypatch,init_env):
+  def mocksvncmd(self):
+    # svn_dir = os.path.join(init_env.config['resources_path'],'svn')
+    # if not os.path.exists(svn_dir):
+    #   os.makedirs(svn_dir)
+    return True
+  def mockcredentials(self):
+    return True
 
-#   monkeypatch.setattr("subprocess.Popen.communicate", mocksvncmd)
-#   monkeypatch.setattr("ubench.core.fetcher.Fetcher.get_credentials",mockcredentials)
-#   fetch_bench = fetcher.Fetcher(resource_dir='/tmp/test/resource',benchmark_name='simple')
-#   fetch_bench.svn_checkout('https://blabla.fr',['/tmp/test1','/tmp/test2','/tmp/test3'],None)
-#   assert os.path.exists(os.path.join(init_env.config['resources_path'],'svn'))
+  monkeypatch.setattr("subprocess.Popen.wait", mocksvncmd)
+  monkeypatch.setattr("ubench.core.fetcher.Fetcher.get_credentials",mockcredentials)
+  fetch_bench1 = fetcher.Fetcher(resource_dir=init_env.config['resources_path'],benchmark_name='simple')
+  fetch_bench1.scm_fetch('https://blabla.fr',['/tmp/test1','/tmp/test2','/tmp/test3'],"svn")
+  fetch_bench2 = fetcher.Fetcher(resource_dir=init_env.config['resources_path'],benchmark_name='test_bench')
+  fetch_bench2.scm_fetch('https://blabla.fr',[],"git")
+
+  # it creates directory
+  assert os.path.exists(os.path.join(init_env.config['resources_path'],'simple'))
+  assert os.path.exists(os.path.join(init_env.config['resources_path'],'test_bench'))
+
+def test_fetcher_git(monkeypatch,init_env):
+
+  fetch_bench1 = fetcher.Fetcher(resource_dir=init_env.config['resources_path'],benchmark_name='simple')
+  files=['https://github.com/poelzi/git-clone-test'.split()[-1].split('.')[0]]
+  fetch_bench1.scm_fetch('https://github.com/poelzi/git-clone-test',files,"git",['e2be38ed38e41deae05c10db56c4cbb5cc12d5b5'])
+  # it creates directory
+  assert os.path.exists(os.path.join(init_env.config['resources_path'],'simple'))
 
 
 def test_run_customp(monkeypatch,init_env):
