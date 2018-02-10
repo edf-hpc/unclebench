@@ -1,5 +1,7 @@
 # UncleBench
 
+[![Build Status](https://travis-ci.org/camilo1729/unclebench.svg?branch=master)](https://travis-ci.org/camilo1729/unclebench)
+
 UncleBench is a tool for automating the running of complex benchmarks on HPC infrastructures.
 The whole cycle is automated: downlading of necessary files, compilation and preparation of code,
 execution, analysis and generation of reports.
