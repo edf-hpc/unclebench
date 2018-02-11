@@ -2,8 +2,7 @@ language: python
 python:
   - "2.7"
 install:
-  - pip install pytest
-
+  - pip install pytest pytest_mock mock
 script:
   - source dev_env.sh
-  - pytest
+  - pytest -vv

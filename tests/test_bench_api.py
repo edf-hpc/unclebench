@@ -1,5 +1,7 @@
 # import py
 import pytest
+import mock
+import pytest_mock
 import tempbench
 import os
 import xml.etree.ElementTree as ET
@@ -12,6 +14,7 @@ import ubench.benchmark_managers.benchmark_manager as bm
 import ubench.core.ubench_config as uconfig
 import time
 
+from subprocess import Popen
 @pytest.fixture(scope="module")
 def init_env():
   config = {}
@@ -121,33 +124,57 @@ def test_add_bench_input():
   assert simple_code_count < max_files
   assert input_count < max_files
 
-def test_fetcher_dir(monkeypatch,init_env):
-  def mocksvncmd(self):
-    # svn_dir = os.path.join(init_env.config['resources_path'],'svn')
-    # if not os.path.exists(svn_dir):
-    #   os.makedirs(svn_dir)
-    return True
-  def mockcredentials(self):
-    return True
 
-  monkeypatch.setattr("subprocess.Popen.wait", mocksvncmd)
-  monkeypatch.setattr("ubench.core.fetcher.Fetcher.get_credentials",mockcredentials)
-  fetch_bench1 = fetcher.Fetcher(resource_dir=init_env.config['resources_path'],benchmark_name='simple')
-  fetch_bench1.scm_fetch('https://blabla.fr',['/tmp/test1','/tmp/test2','/tmp/test3'],"svn")
-  fetch_bench2 = fetcher.Fetcher(resource_dir=init_env.config['resources_path'],benchmark_name='test_bench')
-  fetch_bench2.scm_fetch('https://blabla.fr',[],"git")
 
+def test_fetcher_dir_rev(mocker,init_env):
+  # Test directory creation for each revision
+  # if you want to test real repo: svn://scm.gforge.inria.fr/svnroot/darshan-ruby/trunk,  https://github.com/poelzi/git-clone-test
+  scms = [
+    {'type': 'svn','url' : 'svn://toto.fr/trunk','revisions': ['20'],'files': ['file1','file2']},
+          {'type': 'git','url' : 'https://toto.fr/git-repo','revisions': ['e2be38ed38e4'],'files': ['git-repo']}]
+
+  def mocksubpopen(args,shell,cwd):
+    # simulating directory creation by scms
+    for scm in scms:
+      for rev in scm['revisions']:
+        for f in scm['files']:
+          path = os.path.join(cwd,f)
+          if not os.path.exists(path):
+            os.makedirs(path)
+    return Popen("date")
+  mock_popen = mocker.patch("ubench.core.fetcher.Popen",side_effect=mocksubpopen)
+  mock_credentials = mocker.patch("ubench.core.fetcher.Fetcher.get_credentials")
+  fetch_bench = fetcher.Fetcher(resource_dir=init_env.config['resources_path'],benchmark_name='simple')
+  for scm in scms:
+    fetch_bench.scm_fetch(scm['url'],scm['files'],scm['type'],scm['revisions'])
+    for rev in scm['revisions']:
+      assert os.path.exists(os.path.join(init_env.config['resources_path'],'simple',scm['type'],rev))
+      assert os.path.exists(os.path.join(init_env.config['resources_path'],'simple',scm['type'],rev + "_"+os.path.basename(scm['files'][0])))
+
+  assert mock_popen.call_count > 2
   # it creates directory
-  assert os.path.exists(os.path.join(init_env.config['resources_path'],'simple'))
-  assert os.path.exists(os.path.join(init_env.config['resources_path'],'test_bench'))
 
-def test_fetcher_git(monkeypatch,init_env):
+def test_fetcher_cmd(mocker,init_env):
+  scm = {'type': 'svn','url' : 'svn://toto.fr/trunk','revisions': ['20'],'files': ['file1']}
+  mock_popen = mocker.patch("ubench.core.fetcher.Popen")
+  mock_credentials = mocker.patch("ubench.core.fetcher.Fetcher.get_credentials")
+  fetch_bench = fetcher.Fetcher(resource_dir=init_env.config['resources_path'],benchmark_name='simple')
+  fetch_bench.scm_fetch(scm['url'],scm['files'],scm['type'],scm['revisions'])
+  username = os.getlogin()
+  fetch_command = "svn export -r {0} {1}/{2} {2} --username {3} --password '' ".format(scm['revisions'][0],scm['url'],scm['files'][0],username)
+  fetch_command += "--trust-server-cert --non-interactive --no-auth-cache"
+  mock_popen.assert_called_with(fetch_command,cwd=os.path.join(init_env.config['resources_path'],'simple','svn',scm['revisions'][0]) , shell=True)
 
-  fetch_bench1 = fetcher.Fetcher(resource_dir=init_env.config['resources_path'],benchmark_name='simple')
-  files=['https://github.com/poelzi/git-clone-test'.split()[-1].split('.')[0]]
-  fetch_bench1.scm_fetch('https://github.com/poelzi/git-clone-test',files,"git",['e2be38ed38e41deae05c10db56c4cbb5cc12d5b5'])
-  # it creates directory
-  assert os.path.exists(os.path.join(init_env.config['resources_path'],'simple'))
+def test_fetcher_cmd_no_revision(mocker,init_env):
+  scm = {'type': 'svn','url' : 'svn://toto.fr/trunk','revisions': ['20'],'files': ['file1']}
+  mock_popen = mocker.patch("ubench.core.fetcher.Popen")
+  mock_credentials = mocker.patch("ubench.core.fetcher.Fetcher.get_credentials")
+  fetch_bench = fetcher.Fetcher(resource_dir=init_env.config['resources_path'],benchmark_name='simple')
+  fetch_bench.scm_fetch(scm['url'],scm['files'],scm['type'],None)
+  username = os.getlogin()
+  fetch_command = "svn export {0}/{1} {1} --username {2} --password '' ".format(scm['url'],scm['files'][0],username)
+  fetch_command += "--trust-server-cert --non-interactive --no-auth-cache"
+  mock_popen.assert_called_with(fetch_command,cwd=os.path.join(init_env.config['resources_path'],'simple','svn') , shell=True)
 
 
 def test_run_customp(monkeypatch,init_env):

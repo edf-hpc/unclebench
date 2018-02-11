@@ -8,6 +8,20 @@ execution, analysis and generation of reports.
 It uses [Jube](http://www.fz-juelich.de/ias/jsc/EN/Expertise/Support/Software/JUBE/_node.html)
 as a benchmark engine but it can be customized to work with any benchmark engine.
 
+
+# Setting up a development environment
+
+In order to carry out test, you should do the following:
+
+    sudo apt-get install python-virtualenv
+    mkdir unclebench_env/
+    virtualenv unclebench_env/
+    cd unclebench_env
+    source bin/activate
+    pip install pytest
+    source dev_env.sh
+    pytest
+
 ## Features
 
 - fetch: download benchmark source codes, binaries and input files.
