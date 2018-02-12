@@ -43,7 +43,7 @@ class Fetcher():
 
 
     
-  def scm_fetch(self,url,files,scm_name="svn",revision=None,branch=None):
+  def scm_fetch(self,url,files,scm_name="svn",revision=None,branch=None,do_cmds=None):
     fetch_message = 'Fetching benchmark {0} from {1}:'.format(self.benchmark_name,scm_name)
     print fetch_message
     print '-'*len(fetch_message)
@@ -89,6 +89,11 @@ class Fetcher():
           if rev > 0:
             git_dir=os.path.join(benchresource_dir,file_bench[1:])
             fetch_command += "; ( cd {0}; git reset --hard {1} )".format(git_dir,rev)
+
+        # Execute actions from do tags
+        for do_cmd in do_cmds :
+          do_process=Popen(do_cmd,cwd=benchresource_dir,shell=True)
+          do_process.wait()
 
         fetch_process = Popen(fetch_command,cwd=benchresource_dir,shell=True)
         fetch_process.wait()

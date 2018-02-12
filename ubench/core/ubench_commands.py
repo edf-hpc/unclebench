@@ -241,6 +241,9 @@ class Ubench_cmd:
       fetch_bench = fetcher.Fetcher(resource_dir=self.resource_dir,benchmark_name=benchmark_name)
       for source in multisource:
 
+        if not source.has_key('do_cmds'):
+          source['do_cmds'] = None
+
         if source['protocol'] == 'https':
           fetch_bench.https(source['url'],source['files'])
         elif source['protocol'] == 'svn' or source['protocol'] == 'git':
@@ -251,7 +254,7 @@ class Ubench_cmd:
           if source['protocol'] == 'git':
             source['files']=[source['url'].split('/')[-1].split('.')[0]]
             
-          fetch_bench.scm_fetch(source['url'],source['files'],source['protocol'],source['revision'],source['branch'])
+          fetch_bench.scm_fetch(source['url'],source['files'],source['protocol'],source['revision'],source['branch'],source['do_cmds'])
           
         elif source['protocol'] == 'local':
           fetch_bench.local(source['files'])

@@ -102,6 +102,10 @@ class JubeXMLParser():
           for file_source in source.findall('file'):
             source_dict['files'].append(file_source.text.strip())
 
+          source_dict['do_cmds'] = []
+          for do_cmd in source.findall('do'):
+            source_dict['do_cmds'].append(do_cmd.text.strip())
+
           if source.find('revision') is not None:
             source_dict['revision'] = []
             for revision_source in source.findall('revision'):
@@ -137,7 +141,7 @@ class JubeXMLParser():
               if not protocol_config.has_key(name_revision):
                 protocol_config[name_revision] = []
 
-              protocol_config[name_revision].append(revision_source.text.strip())
+              protocol_config[name_revision].append(revision_source.text.strip())              
 
           if bench_config.has_key(protocol):
             bench_config[protocol].update(protocol_config)
