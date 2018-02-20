@@ -60,7 +60,7 @@
 	    <do> module purge </do>
 	    <do> module load $module_compile $module_mpi </do>
 	    <do>
-		${mpi_cc} ${cflags_opt} -std=c99 -DSTREAM_ARRAY_SIZE=${stream_array_size} -mcmodel=large -fopenmp stream_mpi.c -o stream_mpi.exe
+		${mpi_cc} ${cflags_opt} -ffreestanding -restrict -DSTREAM_ARRAY_SIZE=${stream_array_size} -opt-streaming-stores always -mcmodel=large -fopenmp stream_mpi.c -o stream_mpi.exe
 	    </do>
 
 
