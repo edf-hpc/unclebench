@@ -197,7 +197,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         return global_status
 
-  def get_step_info(self):
+  def get_step_info(self,benchmark_id):
 
         try:
           scheduler_interface=slurmi.SlurmInterface()
@@ -219,7 +219,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         newest_result_dir = max(dir_list, key=os.path.getmtime)
 
-        jube_cmd ='jube info ./'+output_dir+' --id last --step execute'
+        jube_cmd ="jube info ./{0} --id {1} --step execute".format(output_dir,benchmark_id)
 
         result_from_jube = Popen(jube_cmd,cwd=os.getcwd(),shell=True, stdout=PIPE)
         results = {}
@@ -248,8 +248,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
           # pdb.set_trace()
           # result_file_path = os.path.join(value['jube_benchmark_rundir'],"result/imb_cvs.dat")
-          result_file_path = os.path.join(value['jube_benchmark_rundir'],"result/result.dat")
-          print result_file_path
+          result_file_path = os.path.join(value['jube_benchmark_rundir'],"result/"+self.jube_xml_files.get_bench_resultfile())
           with open(result_file_path) as csvfile:
             reader = csv.DictReader(csvfile)
             fields_names= reader.fieldnames
