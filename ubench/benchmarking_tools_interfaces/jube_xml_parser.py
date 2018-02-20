@@ -76,6 +76,17 @@ class JubeXMLParser():
       if benchmark_tag:
         return benchmark_tag[0].get('outpath')
 
+  def get_bench_resultfile(self):
+    for b_xml in self.bench_xml_root:
+      bench_root = b_xml.find('benchmark')
+      if bench_root is not None:
+        result = bench_root.find("result")
+        if result is not None:
+          table = result.findall('table')
+          if table is not None:
+            return table[0].get('name')+".dat"
+      return None
+
   def get_bench_steps(self):
     steps = []
     for b_xml in self.bench_xml_root:
@@ -90,13 +101,14 @@ class JubeXMLParser():
     return steps
 
   def get_bench_multisource(self):
-    multisource_data = [] # [{'protocol': 'https'}, {'files' : ['file1','file2','file3']}, {'url': "http://ifjiaf"}]
+    multisource_data = [] # [{'protocol': 'https'}, {'files' : ['file1','file2','file3']}, {'url': "http://ifjiaf"}, {'name' : "fa"}]
     for b_xml in self.bench_xml_root:
       multisource = b_xml.find('multisource')
       if multisource is not None:
         for source in multisource.findall('source'):
           source_dict = {}
           source_dict['protocol'] = source.get('protocol')
+          source_dict['name'] = source.get('name')
           # file should be an array there could be many files for the benchmark
           source_dict['files'] = []
           for file_source in source.findall('file'):
@@ -113,40 +125,39 @@ class JubeXMLParser():
 
           if source.find('url') is not None:
             source_dict['url'] = source.find('url').text
+            if source_dict['protocol'] == 'git':
+              source_dict['files']=[source_dict['url'].split('/')[-1].split('.')[0]]
 
           multisource_data.append(source_dict)
 
     return multisource_data
 
   def gen_bench_config(self):
-    # bench_config is a dictionary {svn- 'bench_dir':["BENCH_F128_02","BENCH_F128_03"]}
+    # bench_config is a dictionary of files and revision organized by protocol
+    # {'svn': {'simple_code': ['tests_dir'], 'simple_code_revision': ['2018'], 'input_revision': ['1000'], 'input': ['file1', 'file2', 'file3']}}
     bench_config = {}
-    for b_xml in self.bench_xml_root:
-      multisource = b_xml.find('multisource')
-      if multisource is not None:
-        for source in multisource.findall('source'):
-          protocol_config = {}
-          name = source.get('name')
-          protocol = source.get('protocol')
-          for file_source in source.findall('file'):
-            if name:
-              if not protocol_config.has_key(name):
+    multisource_data = self.get_bench_multisource()
+    for source in multisource_data:
+      protocol_config = {}
+      name = source['name']
+      protocol = source['protocol']
+      for file_source in source['files']:
+        if name:
+          if not protocol_config.has_key(name):
                 protocol_config[name] = []
+          protocol_config[name].append(os.path.basename(file_source))
 
-              protocol_config[name].append(os.path.basename(file_source.text.strip()))
+      for revision_source in source['revision']:
+        if name:
+          name_revision=name+"_revision"
+          if not protocol_config.has_key(name_revision):
+            protocol_config[name_revision] = []
+          protocol_config[name_revision].append(revision_source)
 
-          for revision_source in source.findall('revision'):
-            if name:
-              name_revision=name+"_revision"
-              if not protocol_config.has_key(name_revision):
-                protocol_config[name_revision] = []
-
-              protocol_config[name_revision].append(revision_source.text.strip())              
-
-          if bench_config.has_key(protocol):
-            bench_config[protocol].update(protocol_config)
-          else:
-            bench_config[protocol] = protocol_config
+      if bench_config.has_key(protocol):
+        bench_config[protocol].update(protocol_config)
+      else:
+        bench_config[protocol] = protocol_config
 
     return bench_config
 

@@ -1,5 +1,5 @@
 <jube>
-
+  
   <include-path>
     <path> $UBENCH_PLATFORM_DIR </path>
   </include-path>
@@ -7,23 +7,15 @@
   <include from="platforms.xml" path="include-path"/>
 
   <multisource>
-  <source protocol="svn" name="simple_code">
-    <url>https://svn.test.fr/test/</url>
-    <revision>2018</revision>
-    <file>tests_files</file>
+  <source protocol="git" name="simple_code">
+    <url>https://github.com/edf-hpc/unclebench.git</url>
+    <revision>3454129196f</revision>
   </source>
-
-  <source protocol="svn" name="input">
-    <url>https://svn.test.fr/test/</url>
-    <revision>1000</revision>
-    <file>/temp/file1</file>
-    <file>/temp/file2</file>
-    <file>/temp/file3</file>
-  </source>
+ 
 
   </multisource>
-
-  <benchmark name="simple" outpath="benchmarks_runs">
+  
+  <benchmark name="simple_git" outpath="benchmarks_runs">
 
     <comment> Simple JUBE test</comment>
 
@@ -32,7 +24,7 @@
       <!-- Create a parameterspace with one template parameter -->
       <parameter name="number" type="int">1,2,4</parameter>
     </parameterset>
-
+    
     <!-- Regex pattern -->
     <patternset name="pattern">
       <pattern name="number_pat" type="int">Number: $jube_pat_int</pattern>
@@ -41,7 +33,7 @@
     <parameterset name="fake_hosts">
       <parameter name="job_id" type ="int">1183013,1183014</parameter>
     </parameterset>
-
+    
     <step name="execute">
       <use> fake_hosts</use>
       <do>
@@ -54,7 +46,7 @@
       <use>param_set</use> <!-- use existing parameterset -->
       <do>echo "Number: $number"</do> <!-- shell command -->
     </step>
-
+    
     <!-- Analyse -->
     <analyser name="analyse">
       <use>pattern</use> <!-- use existing patternset -->
@@ -62,7 +54,7 @@
         <file>stdout</file> <!-- file which should be scanned -->
       </analyse>
     </analyser>
-
+    
     <!-- Create result table -->
     <result>
       <use>analyse</use> <!-- use existing analyser -->
@@ -71,7 +63,9 @@
         <column>number_pat</column>
       </table>
     </result>
-
-
+    
+    
   </benchmark>
 </jube>
+
+

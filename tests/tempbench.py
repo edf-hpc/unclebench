@@ -24,6 +24,8 @@ class Tempbench:
   def copy_files(self):
     dir_path = os.path.join(os.getcwd(),'tests/data/benchmarks/simple')
     shutil.copytree(dir_path,self.config['bench_path']+'/simple')
+    dir_path = os.path.join(os.getcwd(),'tests/data/benchmarks/simple_git')
+    shutil.copytree(dir_path,self.config['bench_path']+'/simple_git')
     dir_path = os.path.join(os.getcwd(),'tests/data/benchmarks/test_bench')
     shutil.copytree(dir_path,self.config['bench_path']+'/test_bench')
 

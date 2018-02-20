@@ -59,6 +59,10 @@ def test_out_xml_path(init_env):
   print init_env.config['run_path']
   assert benchmarking_api.jube_xml_files.bench_xml_path_out == os.path.join(init_env.config['run_path'],"simple")
 
+def test_xml_get_result_file(init_env):
+  benchmarking_api=jba.JubeBenchmarkingAPI("simple","")
+  assert benchmarking_api.jube_xml_files.get_bench_resultfile() == "result.dat"
+
 def test_write_bench_xml(init_env):
   benchmarking_api=jba.JubeBenchmarkingAPI("simple","")
   init_env.create_run_dir("simple")
@@ -93,12 +97,29 @@ def test_custom_nodes_not_in_result(init_env):
   for column in table.findall('column'):
     assert column.text != 'custom_nodes_id'
 
-def test_get_bench_multisource():
+def test_get_bench_multisource_svn():
   benchmarking_api=jba.JubeBenchmarkingAPI("simple","")
   multisource = benchmarking_api.jube_xml_files.get_bench_multisource()
-  source_1 = multisource[0]
+  gen_config = benchmarking_api.jube_xml_files.gen_bench_config()
+  # import pdb
+  # pdb.set_trace()
   assert len(multisource) > 0
-  assert source_1['protocol'] == 'svn'
+  for source in multisource:
+    assert source['protocol'] == 'svn'
+  for source in multisource:
+    assert gen_config['svn'].has_key(source['name'])
+
+def test_get_bench_multisource_git():
+  benchmarking_api=jba.JubeBenchmarkingAPI("simple_git","")
+  multisource = benchmarking_api.jube_xml_files.get_bench_multisource()
+  gen_config = benchmarking_api.jube_xml_files.gen_bench_config()
+  assert len(multisource) > 0
+  for source in multisource:
+    assert source['protocol'] == 'git'
+  for source in multisource:
+    assert gen_config['git'].has_key(source['name'])
+
+
 
 def test_add_bench_input():
   #check _revision prefix are coherent

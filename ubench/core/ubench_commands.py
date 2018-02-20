@@ -251,11 +251,9 @@ class Ubench_cmd:
             source['revision'] = None
           if not source.has_key('branch'):
             source['branch'] = None
-          if source['protocol'] == 'git':
-            source['files']=[source['url'].split('/')[-1].split('.')[0]]
-            
+
           fetch_bench.scm_fetch(source['url'],source['files'],source['protocol'],source['revision'],source['branch'],source['do_cmds'])
-          
+
         elif source['protocol'] == 'local':
           fetch_bench.local(source['files'])
 
