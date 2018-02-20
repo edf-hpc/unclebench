@@ -316,20 +316,19 @@ class JubeXMLParser():
       # Add <use> custom_paremeters </use> in the appropriate section
       #for node in local_tree.iter('step'):
       for node in b_xml.getiterator('step'):
-        if node.get('name')=='execute':
-          local_found=False
-          #for subnode in node.iter('use'):
-          for subnode in node.getiterator('use'):
-            if subnode.text=='custom_parameter':
-              local_found=True
-          if not local_found:
-            update=True
-            use_custom=ET.Element('use')
-            use_custom.text='custom_parameter'
-            node.insert(0,use_custom)
+        local_found=False
+        #for subnode in node.iter('use'):
+        for subnode in node.getiterator('use'):
+          if subnode.text=='custom_parameter':
+            local_found=True
+        if not local_found:
+          update=True
+          use_custom=ET.Element('use')
+          use_custom.text='custom_parameter'
+          node.insert(0,use_custom)
 
-          # Add a node names column in result table
-          # for node in local_tree.iter('table'):
+      # Add a node names column in result table
+      # for node in local_tree.iter('table'):
       for node in b_xml.getiterator('table'):
         local_found=False
         for column in node.findall('column'):
