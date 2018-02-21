@@ -90,11 +90,6 @@ class Fetcher():
             git_dir=os.path.join(benchresource_dir,file_bench[1:])
             fetch_command += "; ( cd {0}; git reset --hard {1} )".format(git_dir,rev)
 
-        # Execute actions from do tags
-        for do_cmd in do_cmds :
-          do_process=Popen(do_cmd,cwd=benchresource_dir,shell=True)
-          do_process.wait()
-
         fetch_process = Popen(fetch_command,cwd=benchresource_dir,shell=True)
         fetch_process.wait()
         fetch_dir=os.path.join(self.resource_dir,self.benchmark_name,scm_name)
@@ -102,6 +97,12 @@ class Fetcher():
           dest_symlink = os.path.join(fetch_dir,rev+"_"+base_name)
           if not os.path.exists(dest_symlink):
             os.symlink(os.path.join(fetch_dir,rev,base_name),dest_symlink)
+            
+        # Execute actions from do tags
+        for do_cmd in do_cmds :
+          do_process=Popen(do_cmd,cwd=os.path.join(benchresource_dir,file_bench[1:]),shell=True)
+          do_process.wait()
+
               
     print 'Benchmark {0} fetched'.format(self.benchmark_name)
 
