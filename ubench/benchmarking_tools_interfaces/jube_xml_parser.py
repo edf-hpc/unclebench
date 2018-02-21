@@ -147,12 +147,13 @@ class JubeXMLParser():
                 protocol_config[name] = []
           protocol_config[name].append(os.path.basename(file_source))
 
-      for revision_source in source['revision']:
-        if name:
-          name_revision=name+"_revision"
-          if not protocol_config.has_key(name_revision):
-            protocol_config[name_revision] = []
-          protocol_config[name_revision].append(revision_source)
+      if source.has_key('revision'):
+        for revision_source in source['revision']:
+          if name:
+            name_revision=name+"_revision"
+            if not protocol_config.has_key(name_revision):
+              protocol_config[name_revision] = []
+            protocol_config[name_revision].append(revision_source)
 
       if bench_config.has_key(protocol):
         bench_config[protocol].update(protocol_config)
