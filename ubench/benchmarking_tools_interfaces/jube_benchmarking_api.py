@@ -246,9 +246,12 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         for key, value in results.items():
 
-          # pdb.set_trace()
-          # result_file_path = os.path.join(value['jube_benchmark_rundir'],"result/imb_cvs.dat")
+          if not value.has_key('jube_benchmark_rundir'):
+            print("Warning result file cannot be generated")
+            return None
+
           result_file_path = os.path.join(value['jube_benchmark_rundir'],"result/"+self.jube_xml_files.get_bench_resultfile())
+
           with open(result_file_path) as csvfile:
             reader = csv.DictReader(csvfile)
             fields_names= reader.fieldnames
