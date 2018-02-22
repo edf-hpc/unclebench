@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+  <include-path>
+	<path> $UBENCH_PLATFORM_DIR </path>
+  </include-path>
+  <include from="platforms.xml" path="include-path"/>
+
+  <!-- =====================  Compile  ===================== -->
+  
+  <step name="compile" export="true">
+
+      <use> ubench_config </use>
+      <use> ubench_files </use>
+      
+      <!-- Choose compiler and MPI versions -->
+      <use from="platform.xml">cluster_specs</use>
+      <use from="platform.xml"> compiler_set </use>
+      <use from="platform.xml"> mpi_set </use>
+
+      <do> module purge </do>
+      <do> module load $module_compile $module_mpi</do>
+      <do> cp -r --dereference ${io500} io500-local</do>
+      
+      <do>
+	  cd io500-local
+	  <!-- Remove git calls that were already done at fetching -->
+	  sed -i "s/git\ clone/true/" utilities/prepare.sh
+	  
+	  <!-- Remove setup which would remove ior sources -->
+	  sed -i "0,/setup/ s/setup//" utilities/prepare.sh
+	  
+	  <!-- Recompile on execution platform that may be different from the fetching platform -->
+	  ./utilities/prepare.sh
+      </do>
+	  
+  </step>
+  
+</jube>

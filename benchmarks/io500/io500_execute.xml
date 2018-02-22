@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+  <include-path>
+	<path> $UBENCH_PLATFORM_DIR </path>
+  </include-path>
+  <include from="platforms.xml" path="include-path"/>
+
+
+
+  <!-- =====================  Execute  ===================== -->
+
+  <parameterset name="io500_parameters">
+      <parameter name="ior_params">"-t 2048k -b 2g -F"</parameter>
+  </parameterset>
+
+  <substituteset name="sub_io500_parameters">
+      <iofile in="io500_ubench.sh" out="io500-local/io500.sh"/>
+      <sub source="#LAUNCHER#" dest="${starter}"/>
+      <sub source="#LAUNCHER_ARGS#" dest='"${args_starter}"'/>
+      <sub source="#IOR_PARAMS#" dest="${ior_params}"/>
+  </substituteset>
+  
+  <fileset name="execute_files">
+      <copy rel_path_ref="internal">compile/io500_ubench.sh</copy>
+      <copy rel_path_ref="internal">compile/io500-local</copy>
+  </fileset>
+          
+
+  <parameterset name="system_parameters" init_with="platform.xml">
+      <parameter name="executable">./io500.sh</parameter>
+      <parameter name="modules">$module_compile $module_mpi</parameter>
+      <parameter name="timelimit">4:00:00</parameter>
+      <!-- Arbitrary choice of one task per NUMA region -->
+      <parameter name="taskspernode" type="int">${NUMA_regions}</parameter>
+      <parameter name="tasks" mode="python" type="int">
+          $nodes * $taskspernode
+      </parameter>
+  </parameterset>
+
+  <parameterset name="execute_set" init_with="platform.xml">
+      <parameter name="args_starter" separator="??">
+	  -n ${tasks}
+      </parameter>
+  </parameterset>
+
+  <substituteset name="execute_sub" init_with="platform.xml">
+      <!-- parallel starter is already used by the io500 launching script -->
+      <sub source="#STARTER#" dest="bash" />
+      <sub source="#ARGS_STARTER#" dest="" />
+  </substituteset>
+
+  <step name="execute" depend="compile">
+      
+      <!-- Choose compiler and MPI versions -->
+      <use> execute_files </use>
+      <use> system_parameters </use>
+      <use> execute_set</use>
+      <use> execute_sub</use>
+      <use from="platform.xml"> jobfiles</use>
+
+      
+      <use> io500_parameters </use>
+      <use> sub_io500_parameters </use>
+      
+      <do work_dir="io500-local">
+	  chmod +x io500.sh
+	  cp ../${submit_script} .
+	  ${submit} ${submit_script}
+      </do>
+	  
+  </step>
+  
+</jube>

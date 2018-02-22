@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+    <!-- This header is needed to be able to launch the benchmark for
+	 evry platforms defined in the platform folder -->
+    <include-path>
+	<path> $UBENCH_PLATFORM_DIR </path>
+    </include-path>
+    <include from="platforms.xml" path="include-path"/>
+    
+    <multisource>
+	<source protocol="git" name="io500">
+            <url>https://github.com/VI4IO/io-500-dev.git</url>
+	    <revision>b316f68fb724172627ac5add193e3374de879d3c</revision>
+	    <!-- Remove build, just need to keep setup, get_ior and get_pfind.
+		 build is done at execute step -->
+
+	    <do> sed "0,/build_ior/ s/build_ior//" utilities/prepare.sh \
+	    | sed "s#./configure#true#;s#./bootstrap#true#" | bash </do>
+	    
+	</source>
+	
+	<source protocol="local" name="io500_script" >
+	    <file>$UBENCH_BENCHMARK_DIR/io500/io500_ubench.sh</file>
+	</source>
+    </multisource>
+    
+
+    <!-- Include xml nodes from evry xml file defining the benchmark  -->
+    <benchmark name="io500" outpath="benchmark_runs">
+	<comment>IO500 benchmark</comment>
+
+	<!-- =====================  Compile  ===================== -->
+
+	<include from="io500_compile.xml" path="step"/>
+
+	<!-- =====================  Execute  ===================== -->
+
+	<include from="io500_execute.xml" path="substituteset"/>
+	<include from="io500_execute.xml" path="fileset"/>
+	<include from="io500_execute.xml" path="parameterset"/>
+	<include from="io500_execute.xml" path="step"/>
+	
+    </benchmark>
+</jube>
