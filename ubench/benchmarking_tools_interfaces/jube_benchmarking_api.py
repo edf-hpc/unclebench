@@ -202,7 +202,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         try:
           scheduler_interface=slurmi.SlurmInterface()
         except:
-          print "Warning!! Unable to load slurmi module"
+          print "Warning!! Unable to load Slurm module"
           scheduler_interface=None
           # return
         os.chdir(self.benchmark_path)
