@@ -101,8 +101,6 @@ def test_get_bench_multisource_svn():
   benchmarking_api=jba.JubeBenchmarkingAPI("simple","")
   multisource = benchmarking_api.jube_xml_files.get_bench_multisource()
   gen_config = benchmarking_api.jube_xml_files.gen_bench_config()
-  # import pdb
-  # pdb.set_trace()
   assert len(multisource) > 0
   for source in multisource:
     assert source['protocol'] == 'svn'
@@ -163,6 +161,7 @@ def test_fetcher_dir_rev(mocker,init_env):
           if not os.path.exists(path):
             os.makedirs(path)
     return Popen("date")
+
   mock_popen = mocker.patch("ubench.core.fetcher.Popen",side_effect=mocksubpopen)
   mock_credentials = mocker.patch("ubench.core.fetcher.Fetcher.get_credentials")
   fetch_bench = fetcher.Fetcher(resource_dir=init_env.config['resources_path'],benchmark_name='simple')
@@ -191,7 +190,7 @@ def test_fetcher_cmd_no_revision(mocker,init_env):
   mock_popen = mocker.patch("ubench.core.fetcher.Popen")
   mock_credentials = mocker.patch("ubench.core.fetcher.Fetcher.get_credentials")
   fetch_bench = fetcher.Fetcher(resource_dir=init_env.config['resources_path'],benchmark_name='simple')
-  fetch_bench.scm_fetch(scm['url'],scm['files'],scm['type'],None)
+  fetch_bench.scm_fetch(scm['url'],scm['files'],scm['type'],None,None,None)
   username = os.getlogin()
   fetch_command = "svn export {0}/{1} {1} --username {2} --password '' ".format(scm['url'],scm['files'][0],username)
   fetch_command += "--trust-server-cert --non-interactive --no-auth-cache"

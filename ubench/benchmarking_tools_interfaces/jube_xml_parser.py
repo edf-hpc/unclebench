@@ -85,7 +85,7 @@ class JubeXMLParser():
           table = result.findall('table')
           if table is not None:
             return table[0].get('name')+".dat"
-      return None
+    return None
 
   def get_bench_steps(self):
     steps = []
