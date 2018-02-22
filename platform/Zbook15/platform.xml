@@ -19,10 +19,10 @@
         <parameter name="cflags">-O2</parameter>
 	<parameter name="fflags">-O2</parameter>
 	<parameter name="cflags_opt" mode="python">
-	    ["-O3 -march=native","-O3 -xHOST"][$comp_v]
+	    ["-O3 -march=native","-O3 -xHost"][$comp_v]
 	</parameter>
 	<parameter name="fflags_opt" mode="python">
-	    ["-O3 -march=native","-O3 -xHOST"][$comp_v]
+	    ["-O3 -march=native","-O3 -xHost"][$comp_v]
 	</parameter>
 
 	<parameter name="module_compile" mode="python">
@@ -41,7 +41,7 @@
     <parameterset name="mpi_set">
 	<parameter name="mpi_v">0</parameter>
 	<parameter name="mpi_version" mode="python">
-	    ["OpenMPI-1.4.5"][$mpi_v]
+	    ["OpenMPI-1.6.5"][$mpi_v]
 	</parameter>
 	<parameter name="mpi_root" mode="python">
 	    ["/usr/lib/openmpi/"][$mpi_v]
