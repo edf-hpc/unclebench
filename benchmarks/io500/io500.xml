@@ -40,6 +40,12 @@
 	<include from="io500_execute.xml" path="fileset"/>
 	<include from="io500_execute.xml" path="parameterset"/>
 	<include from="io500_execute.xml" path="step"/>
+
+	<!-- =====================  Result  ===================== -->
+
+	<include from="io500_result.xml" path="patternset"/>
+	<include from="io500_result.xml" path="analyzer"/>
+	<include from="io500_result.xml" path="result"/>
 	
     </benchmark>
 </jube>

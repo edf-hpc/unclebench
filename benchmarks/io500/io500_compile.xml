@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jube>
 
-  <include-path>
-	<path> $UBENCH_PLATFORM_DIR </path>
-  </include-path>
-  <include from="platforms.xml" path="include-path"/>
-
   <!-- =====================  Compile  ===================== -->
   
   <step name="compile" export="true">
