@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+  <!-- =====================  Analyze  ===================== -->
+
+  <patternset name="pattern">
+      <pattern name="Bandwidth" type="float" unit="GB/s">
+	  ^\[SCORE\]\s+Bandwidth\s+$jube_pat_fp
+      </pattern>
+      <pattern name="IOPS" type="float" unit="kiops">
+	  ^\[SCORE\].*IOPS\s+$jube_pat_fp
+      </pattern>
+      <pattern name="Score" type="float">
+	  ^\[SCORE\].*TOTAL\s+$jube_pat_fp
+      </pattern>
+  </patternset>
+
+  
+  <analyzer name="analyse">
+      <use>pattern</use>
+      <analyse step="execute">
+	  <file>job.out</file>
+	  <file>stdout</file>
+      </analyse>
+  </analyzer>
+
+  
+  <!-- =====================  Result  ===================== -->
+  
+  <result>
+      <use>analyse</use>
+      <table name="result" style="csv" sort="nodes">
+	  <column>nodes</column>
+	  <column>tasks</column>
+	  <column>Bandwidth</column>
+	  <column>IOPS</column>
+	  <column>Score</column>
+	  <column>modules</column>
+      </table>
+  </result>
+
+  
+</jube>
