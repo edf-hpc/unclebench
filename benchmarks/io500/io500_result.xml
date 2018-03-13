@@ -4,6 +4,58 @@
   <!-- =====================  Analyze  ===================== -->
 
   <patternset name="pattern">
+      <pattern name="ior_easy_write" type="float" unit="GB/s">
+  	^\[RESULT\].*ior\_easy\_write\s+${jube_pat_fp}
+      </pattern>
+
+      <pattern name="ior_hard_write" type="float" unit="GB/s">
+  	^\[RESULT\].*ior\_hard\_write\s+${jube_pat_fp}
+      </pattern>
+
+      <pattern name="ior_easy_read" type="float" unit="GB/s">
+  	^\[RESULT\].*ior\_easy\_read\s+${jube_pat_fp}
+      </pattern>
+
+      <pattern name="ior_hard_read" type="float" unit="GB/s">
+  	^\[RESULT\].*ior\_hard\_read\s+${jube_pat_fp}
+      </pattern>
+
+      <pattern name="mdtest_easy_write" type="float" unit="kiops">
+  	^\[RESULT\].*mdtest\_easy\_write\s+${jube_pat_fp}
+      </pattern>
+
+      <pattern name="mdtest_hard_write" type="float" unit="kiops">
+  	^\[RESULT\].*mdtest\_hard\_write\s+${jube_pat_fp}
+      </pattern>
+
+      <pattern name="find" type="float" unit="kiops">
+  	^\[RESULT\].*find\s+${jube_pat_fp}
+      </pattern>
+      
+      <pattern name="mdtest_easy_stat" type="float" unit="kiops">
+  	^\[RESULT\].*mdtest\_easy\_stat\s+${jube_pat_fp}
+      </pattern>
+
+      <pattern name="mdtest_hard_stat" type="float" unit="kiops">
+  	^\[RESULT\].*mdtest\_hard\_stat\s+${jube_pat_fp}
+      </pattern>
+
+      <pattern name="mdtest_easy_delete" type="float" unit="kiops">
+  	^\[RESULT\].*mdtest\_easy\_delete\s+${jube_pat_fp}
+      </pattern>
+
+      <pattern name="mdtest_hard_read" type="float" unit="kiops">
+  	^\[RESULT\].*mdtest\_hard\_read\s+${jube_pat_fp}
+      </pattern>
+
+      <pattern name="mdtest_hard_delete" type="float" unit="kiops">
+  	^\[RESULT\].*mdtest\_hard\_delete\s+${jube_pat_fp}
+      </pattern>
+
+      
+
+
+    
       <pattern name="Bandwidth" type="float" unit="GB/s">
 	  ^\[SCORE\]\s+Bandwidth\s+$jube_pat_fp
       </pattern>
@@ -19,7 +71,7 @@
   <analyzer name="analyse">
       <use>pattern</use>
       <analyse step="execute">
-	  <file>job.out</file>
+	  <file>io500-local/job.out</file>
 	  <file>stdout</file>
       </analyse>
   </analyzer>
@@ -29,9 +81,24 @@
   
   <result>
       <use>analyse</use>
-      <table name="result" style="csv" sort="nodes">
+      <table name="result" style="csv" sort="nodes" transpose="true">
 	  <column>nodes</column>
 	  <column>tasks</column>
+	  <column>ior_easy_write</column>
+	  <column>ior_hard_write</column>
+	  <column>ior_easy_read</column>
+	  <column>ior_hard_read</column>
+	  <column>ior_easy_write</column>
+	  <column>ior_hard_write</column>
+	  <column>find</column>
+	  <column>mdtest_easy_stat</column>
+	  <column>mdtest_hard_stat</column>
+
+	  <column>mdtest_easy_delete</column>
+	  <column>mdtest_hard_read</column>
+	  <column>mdtest_hard_delete</column>
+
+	  
 	  <column>Bandwidth</column>
 	  <column>IOPS</column>
 	  <column>Score</column>
