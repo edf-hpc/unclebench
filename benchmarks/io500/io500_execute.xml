@@ -21,6 +21,7 @@
           
 
   <parameterset name="system_parameters" init_with="platform.xml">
+      <parameter name="nodes" type="int">1</parameter>
       <parameter name="executable">./io500.sh</parameter>
       <parameter name="modules">$module_compile $module_mpi</parameter>
       <parameter name="timelimit">4:00:00</parameter>
