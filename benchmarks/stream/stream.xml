@@ -27,14 +27,16 @@
 	    <parameter name="stream_array_size" mode="python" type="int">
 		<!-- Stream array size should be at least 4 times the available
 		     LLC available memory -->
-		int((${MB_LLC_size} * 10**6 * ${NUMA_regions} * int(${nodes}) * 4)/8)
+		int((${MB_LLC_size} * 10**6 * ${NUMA_regions} * ${nodes} * 4)/8)
 	    </parameter>
+	    <parameter name="compile_options" mode="python" type="string">
+	        "${cflags_opt} -std=c99 -DSTREAM_ARRAY_SIZE=${stream_array_size} -mcmodel=large -fopenmp"
+	    </parameter>
+	    
 	</parameterset>
 	
 	<parameterset name="system_parameters" init_with="platform.xml">
 	    <parameter name="nodes" type="int">1</parameter>
-
-
 	    <parameter name="taskspernode" type="int">$NUMA_regions</parameter>
 	    <parameter name="threadspertask" type="int">$cores_per_NUMA_region</parameter>
 
@@ -42,6 +44,7 @@
 	    <parameter name="modules">$module_compile $module_mpi</parameter>
 	    <parameter name="timelimit">00:30:00</parameter>
 	</parameterset>
+
 
 	
 	<step name="compile" export="true">
@@ -60,7 +63,7 @@
 	    <do> module purge </do>
 	    <do> module load $module_compile $module_mpi </do>
 	    <do>
-		${mpi_cc} ${cflags_opt} -ffreestanding -restrict -DSTREAM_ARRAY_SIZE=${stream_array_size} -opt-streaming-stores always -mcmodel=large -fopenmp stream_mpi.c -o stream_mpi.exe
+		${mpi_cc} ${cflags_opt} -std=c99 -DSTREAM_ARRAY_SIZE=${stream_array_size} -mcmodel=large -fopenmp stream_mpi.c -o stream_mpi.exe
 	    </do>
 
 
