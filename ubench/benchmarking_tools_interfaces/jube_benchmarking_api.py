@@ -208,17 +208,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         os.chdir(self.benchmark_path)
         output_dir = self.jube_xml_files.get_bench_outputdir()
 
-        print output_dir
-        dir_list=[]
-        newest_result_dir=None
-
-        for fd in os.listdir(output_dir):
-          result_dir=os.path.join(output_dir,fd)
-          if os.path.isdir(result_dir):
-            dir_list.append(result_dir)
-
-        newest_result_dir = max(dir_list, key=os.path.getmtime)
-
+        benchmark_rundir = os.path.join(self.benchmark_path,output_dir,str(benchmark_id).zfill(6))
         jube_cmd ="jube info ./{0} --id {1} --step execute".format(output_dir,benchmark_id)
 
         result_from_jube = Popen(jube_cmd,cwd=os.getcwd(),shell=True, stdout=PIPE)
@@ -227,6 +217,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         param_start = False
         index = None
         for line in result_from_jube.stdout:
+
           if "Parameterization:" in line:
             param_start = True
             continue
@@ -243,37 +234,68 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
               if index:
                 results[index][param] = value.strip()
 
-
         for key, value in results.items():
 
-          if not value.has_key('jube_benchmark_rundir'):
-            print("Warning result file cannot be generated")
-            return None
+          result_file_path = os.path.join(benchmark_rundir,"result/"+self.jube_xml_files.get_bench_resultfile())
 
-          result_file_path = os.path.join(value['jube_benchmark_rundir'],"result/"+self.jube_xml_files.get_bench_resultfile())
-
+          # we add the part of results which corresponds to a given execute
           with open(result_file_path) as csvfile:
             reader = csv.DictReader(csvfile)
-            fields_names= reader.fieldnames
-            inter = list(set(value.keys()) & set(fields_names))
-            print inter
-            #pdb.set_trace()
+            field_names= reader.fieldnames
+            common_fields = list(set(value.keys()) & set(field_names))
+            temp_hash = {}
+
+            for field in field_names:
+              temp_hash[field]= []
+            for row in reader:
+              add_to_results = True
+              for field in common_fields:
+                if value[field] != row[field]:
+                  add_to_results = False
+                  break
+              if add_to_results:
+                for field in field_names:
+                  temp_hash[field].append(row[field])
+
+            # when there is just value we transform the array in one value
+            for field in field_names:
+              if len(temp_hash[field]) == 1:
+                temp_hash[field] = temp_hash[field][0]
+
+
+            results[key]['results_bench'] = temp_hash
+
+            # import pdb
+            # pdb.set_trace()
+
           #Add job information to step execute
-          job_file_path = os.path.join(value['jube_wp_abspath'],"stdout")
-          job_id = 0
-          with  open(job_file_path, 'r') as job_file:
-            for line in job_file:
-              re_result = re.findall(r'\d+',line)
-              if re_result:
-                job_id = re_result[0]
-                value['job_id_ubench'] = job_id
-                if scheduler_interface:
-                  value.update(scheduler_interface.get_job_info(job_id)[-1])
-                results[key].update(value)
-                break
+          if value.has_key('jube_wp_abspath'):
+            job_file_path = os.path.join(value['jube_wp_abspath'],"stdout")
+            job_id = 0
+            with  open(job_file_path, 'r') as job_file:
+              for line in job_file:
+                re_result = re.findall(r'\d+',line)
+                if re_result:
+                  job_id = re_result[0]
+                  value['job_id_ubench'] = job_id
+                  if scheduler_interface:
+                    value.update(scheduler_interface.get_job_info(job_id)[-1])
+                    results[key].update(value)
+                  break
 
 
-        with open(newest_result_dir+'/bench_results.yaml', 'w') as outfile:
+          if benchmark_id == None:
+            dir_list=[]
+            newest_result_dir=None
+
+            for fd in os.listdir(output_dir):
+              result_dir=os.path.join(output_dir,fd)
+              if os.path.isdir(result_dir):
+                dir_list.append(result_dir)
+
+            newest_result_dir = max(dir_list, key=os.path.getmtime)
+
+        with open(os.path.join(benchmark_rundir,'bench_results.yaml'), 'w') as outfile:
           yaml.dump(results, outfile, default_flow_style=False)
 
 
