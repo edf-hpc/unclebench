@@ -243,9 +243,10 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             reader = csv.DictReader(csvfile)
             field_names= reader.fieldnames
             common_fields = list(set(value.keys()) & set(field_names))
+            result_fields = list(set(field_names) - set(common_fields))
             temp_hash = {}
 
-            for field in field_names:
+            for field in result_fields:
               temp_hash[field]= []
             for row in reader:
               add_to_results = True
@@ -254,11 +255,11 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                   add_to_results = False
                   break
               if add_to_results:
-                for field in field_names:
+                for field in result_fields:
                   temp_hash[field].append(row[field])
 
             # when there is just value we transform the array in one value
-            for field in field_names:
+            for field in result_fields:
               if len(temp_hash[field]) == 1:
                 temp_hash[field] = temp_hash[field][0]
 
