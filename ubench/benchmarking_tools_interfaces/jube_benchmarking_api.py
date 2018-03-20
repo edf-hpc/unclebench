@@ -235,8 +235,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                 results[index][param] = value.strip()
 
         for key, value in results.items():
-
-          result_file_path = os.path.join(benchmark_rundir,"result/"+self.jube_xml_files.get_bench_resultfile())
+          # result_file_path = os.path.join(benchmark_rundir,"result/"+self.jube_xml_files.get_bench_resultfile())
+          result_file_path = os.path.join(benchmark_rundir,"result/ubench_results.dat")
 
           # we add the part of results which corresponds to a given execute
           with open(result_file_path) as csvfile:
@@ -319,6 +319,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         old_path=os.getcwd()
         os.chdir(self.benchmark_path)
         output_dir = self.jube_xml_files.get_bench_outputdir()
+        benchmark_rundir = os.path.join(self.benchmark_path,output_dir,str(benchmark_id).zfill(6))
         input_str='jube result ./'+output_dir+' --id '+benchmark_id
         result_from_jube = Popen(input_str,cwd=os.getcwd(),shell=True, stdout=PIPE)
 
@@ -326,7 +327,10 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         # Get data from result array
         empty=True
-        for line in result_from_jube.stdout:
+        with open(os.path.join(benchmark_rundir,'result/ubench_results.dat'),'w') as result_file:
+          for line in result_from_jube.stdout:
+            result_file.write(line)
+
             empty=False
 
             splitted_line=[]
