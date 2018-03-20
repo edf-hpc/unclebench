@@ -51,20 +51,19 @@
       <pattern name="mdtest_hard_delete" type="float" unit="kiops">
   	^\[RESULT\].*mdtest\_hard\_delete\s+${jube_pat_fp}
       </pattern>
-
-      
-
-
     
       <pattern name="Bandwidth" type="float" unit="GB/s">
 	  ^\[SCORE\]\s+Bandwidth\s+$jube_pat_fp
       </pattern>
+      
       <pattern name="IOPS" type="float" unit="kiops">
 	  ^\[SCORE\].*IOPS\s+$jube_pat_fp
       </pattern>
+      
       <pattern name="Score" type="float">
 	  ^\[SCORE\].*TOTAL\s+$jube_pat_fp
       </pattern>
+      
   </patternset>
 
   
@@ -88,8 +87,9 @@
 	  <column>ior_hard_write</column>
 	  <column>ior_easy_read</column>
 	  <column>ior_hard_read</column>
-	  <column>ior_easy_write</column>
-	  <column>ior_hard_write</column>
+	  <column>mdtest_easy_write</column>
+	  <column>mdtest_hard_write</column>
+	  
 	  <column>find</column>
 	  <column>mdtest_easy_stat</column>
 	  <column>mdtest_hard_stat</column>
