@@ -329,11 +329,14 @@ class JubeXMLParser():
       #for node in local_tree.iter('step'):
       for node in b_xml.getiterator('step'):
         local_found=False
+        need_system_parameters=False
         #for subnode in node.iter('use'):
         for subnode in node.getiterator('use'):
           if subnode.text=='custom_parameter':
             local_found=True
-        if not local_found:
+          if 'system_parameters' in subnode.text:
+            need_system_parameters=True
+        if not local_found and need_system_parameters:
           update=True
           use_custom=ET.Element('use')
           use_custom.text='custom_parameter'
