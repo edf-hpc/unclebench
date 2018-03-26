@@ -18,14 +18,9 @@
     <comment> NAS Parallel benchmarks </comment>
 
     <parameterset name="param_set">
-      <parameter name="processes" type="int">2,4,8,16,32</parameter>
+      
       <parameter name="bench">cg</parameter>
       <parameter name="class">B</parameter>
-    </parameterset>
-
-    <!-- choosing compilator  -->
-    <parameterset name="mpi_set" init_with="platform.xml">
-      <parameter name="mpi_v">0</parameter>
     </parameterset>
 
     <fileset name="source">
@@ -35,11 +30,13 @@
 
     <step name="untar">
       <use> source</use>
-      <use> mpi_set </use>
+      <use from="platform.xml"> mpi_set </use>
     </step>
 
     
     <step depend="untar" name="compile">
+      <use from="platform.xml">cluster_specs</use>
+      <use>system_parameters</use>
       <use> param_set </use>
       <use from="platform.xml"> compiler_set </use>
       <use from="platform.xml"> mpi_set </use>
@@ -49,21 +46,32 @@
       
       <do work_dir="untar/NPB3.3.1/NPB3.3-MPI/">
 	cp config/make.def.template config/make.def
-	make $bench NPROCS=$processes CLASS=$class MPIF77=$mpi_f90
+	make $bench NPROCS=$tasks CLASS=$class MPIF77=$mpi_f90
       </do>
     </step>
 
     <fileset name="binaries">
       <link directory="compile/untar/NPB3.3.1/NPB3.3-MPI/bin/" rel_path_ref="internal">
-	$bench.$class.$processes
+	$bench.$class.$tasks
       </link>
     </fileset>
     
     <parameterset init_with="platform.xml" name="system_parameters">
-      <parameter name="nodes" mode="python" type="int">int(${processes}/16)+(${processes} % 16 > 0)</parameter>
-      <parameter name="taskspernode" mode="python" type="int">int(${processes}/${nodes})</parameter>
+      <parameter name="nodes" mode="python" type="int">1</parameter>
+
+      <parameter name="id_cases" mode="python" type="string" separtor="??">
+	",".join(map(str,range(0,len([ 2**j for j in range(1,30) if (2**j)%${nodes}==0 and not(2**j>(${nodes}*${NUMA_regions}*${cores_per_NUMA_region}))]))))
+      </parameter>
+      <parameter name="tasks" mode="python" type="int">
+	<!-- List of power of 2 divisible by the number of nodes and inferior to the number of available cores
+	     Would be simpler with log (and the max would not have to be 2^30) but cannot figure out how to use math module. -->	
+	[ 2**j for j in range(1,30) if (2**j)%${nodes}==0 and not(2**j>(${nodes}*${NUMA_regions}*${cores_per_NUMA_region}))][${id_cases}]
+      </parameter>
+      <parameter name="taskspernode" mode="python" type="int">
+	int(${tasks}/${nodes})
+      </parameter>
       <parameter name="threadspertask" type="int">1</parameter>
-      <parameter name="executable">./$bench.$class.$processes</parameter>
+      <parameter name="executable">./$bench.$class.$tasks</parameter>
       <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
       <parameter name="timelimit">00:20:00</parameter>
     </parameterset>
@@ -102,14 +110,16 @@
 
     <analyzer name="analyse">
       <use>pattern</use>
-      <!-- <analyse step="execute"><file>job.out</file></analyse> -->
-      <analyse step="execute"><file>stdout</file></analyse>
+      <analyse step="execute">
+	<file>job.out</file>
+	<file>stdout</file>
+      </analyse>
     </analyzer>
 
     <result>
       <use>analyse</use>
       <table name="result" sort="nodes" style="csv">
-	<column>processes</column>
+	<column>tasks</column>
 	<column>Mflops</column>
 	<column>mpi_version</column>
       </table>
