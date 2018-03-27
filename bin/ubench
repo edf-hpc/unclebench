@@ -56,7 +56,7 @@ fetch_help ='Download benchmarks sources and test cases '+\
 
 parser_fetch =subparsers.add_parser('fetch',help=fetch_help)
 
-parser_fetch.add_argument('-b',help='Benchmarks to run. Benchmark definition files should be located in /usr/share/unclebench/benchmarks/'+\
+parser_fetch.add_argument('-b',help='Benchmarks to fetch. Benchmark definition files should be located in /usr/share/unclebench/benchmarks/'+\
                           ' (can be custumosized with UBENCH_BENCHMARK_DIR environment variable)',nargs='+',\
                           choices=benchmark_list, required=True)
 
