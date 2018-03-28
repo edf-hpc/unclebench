@@ -76,7 +76,7 @@ parser_run.add_argument('-b',help='Benchmarks to run. Benchmark definition files
 
 parser_run.add_argument('-w',help='Nodes on which to run benchmarks ex: -w 4,pocn[380,431-433]. You can also launch job on all idle nodes ex : -w all4 to launch a benchmark with 4 nodes jobs covering evry idle node',\
                           nargs='*',action='append')
-parser_run.add_argument('-customp',help='Set custom parameters. ex : -params mpiv:0. Use ubench listparams to know which parameters are customizable',nargs='+',default=[])
+parser_run.add_argument('-c','--custom-params',help='Set custom parameters. ex : --custom-params mpiv:0. Use ubench listparams to know which parameters are customizable',nargs='+',default=[])
 
 
 # parser list
@@ -116,7 +116,6 @@ parser_result.add_argument('-b',help='Benchmark names list',required=True,nargs=
                                    choices=benchmark_list)
 parser_result.add_argument('-i',help='Benchmark run IDs',nargs='+')
 
-
 # parser report
 report_help = 'Build a performance report in UBENCH_REPORT_DIR from the '+\
               'last executed set of benchmark. Use -b to select benchmarks to be reported.'
@@ -150,7 +149,7 @@ else:
 commands = ubench_commands.Ubench_cmd(platform=platform_arg,benchmark_list=args.b)
 
 if args.subparser_name=='run':
-    commands.run(w_list=args.w,customp_list=args.customp)
+    commands.run(w_list=args.w,customp_list=args.c)
 elif args.subparser_name=='fetch':
     commands.fetch(server=args.b)
 elif args.subparser_name=='result':

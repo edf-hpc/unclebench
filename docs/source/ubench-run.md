@@ -9,7 +9,7 @@ ubench-run -  Run benchmarks
 
 
     ubench run -p <platform> -b <bench> [<bench> ...] [-w <W> [<W> ...]]\
-    [-customp <param>:<new_value> [<param>:<new_value> ...]]
+    [-c <param>:<new_value> [<param>:<new_value> ...]]
 
     ubench run -h
 
@@ -36,9 +36,9 @@ ubench-run -  Run benchmarks
   ex : -w all4 to launch a benchmark with 4 nodes jobs covering every idle node.
 
 
-# -customp <CUSTOMP> [<CUSTOMP> ...]
+# -c <CUSTOMP> [<CUSTOMP> ...]
   Modify a benchmark parameter on command line.\
-  ex: -customp mpi_v:1 would launch a benchmark with the mpi_v parameter set to 1.
+  ex: -c mpi_v:1 would launch a benchmark with the mpi_v parameter set to 1.
   
 
 # ENVIRONMENT

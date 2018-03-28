@@ -165,7 +165,7 @@ class Ubench_cmd:
           splitted_param=re.split(':',elem,1)
           dict_options[splitted_param[0]]=splitted_param[1]
         except Exception as e:
-          print '---- {0} is not formated correctly, please consider using : -customp param:new_value'.format(elem)
+          print '---- {0} is not formated correctly, please consider using : -c param:new_value'.format(elem)
 
       bm.set_parameter(dict_options)
 

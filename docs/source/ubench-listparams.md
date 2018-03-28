@@ -15,7 +15,7 @@ ubench-listparams -  List benchmark parameters that are customizable.
 
 
 *ubench listparams*  lists benchmark parameters that can be modified through a
-                     *ubench run -customp* command. 
+                     *ubench run -c* command. 
 
 # OPTIONS
 
