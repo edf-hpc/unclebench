@@ -29,6 +29,8 @@ import csv
 import yaml
 import ubench.core.ubench_config as uconfig
 import jube_xml_parser
+import tempfile
+
 try :
   import ubench.scheduler_interfaces.slurm_interface as slurmi
 except:
@@ -211,31 +213,40 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         benchmark_rundir = os.path.join(self.benchmark_path,output_dir,str(benchmark_id).zfill(6))
         jube_cmd ="jube info ./{0} --id {1} --step execute".format(output_dir,benchmark_id)
 
-        result_from_jube = Popen(jube_cmd,cwd=os.getcwd(),shell=True, stdout=PIPE)
+        cmd_output = tempfile.TemporaryFile()
+        result_from_jube = Popen(jube_cmd,cwd=os.getcwd(),shell=True, stdout=cmd_output)
+        ret_code = result_from_jube.wait()
+        cmd_output.flush()
+        cmd_output.seek(0)
         results = {}
 
-        param_start = False
-        index = None
-        for line in result_from_jube.stdout:
+        workpackages=re.findall(r"Workpackages(.*?)\n{2,}",cmd_output.read(),re.DOTALL)[0]
+        workdirs = {}
+        regex_workdir = r"^\s+(\d+).*("+re.escape(output_dir)+r".*work).*"
 
-          if "Parameterization:" in line:
-            param_start = True
-            continue
+        for package in workpackages.split('\n'):
+          temp_match = re.match(regex_workdir,package)
+          if temp_match:
+            id_workpackage = temp_match.group(1)
+            path_workpackage = temp_match.group(2)
+            workdirs[id_workpackage] = path_workpackage
 
-          if param_start:
-            new_line = line.strip()
-            temp_match=re.match('^\S+:',new_line)
+        cmd_output.seek(0)
+        parameterization = re.findall(r"ID:(.*?)\n{2,}",cmd_output.read(),re.DOTALL)
+        for execution_step in parameterization:
+          id_step = [x.strip() for x in execution_step.split("\n")][0]
+          param_step = [x.strip() for x in execution_step.split("\n")][1:]
+          results[id_step] = {}
+          for parameter in param_step:
+            temp_match=re.match('^\S+:',parameter)
             if temp_match:
-              value = new_line.replace(temp_match.group(0),'')
+              value = parameter.replace(temp_match.group(0),'')
               param = temp_match.group(0).replace(':','')
-              if param == 'ID':
-                index = value.strip()
-                results[index] = {}
-              if index:
-                results[index][param] = value.strip()
+              results[id_step][param] = value.strip()
 
+
+        cmd_output.close()
         for key, value in results.items():
-          # result_file_path = os.path.join(benchmark_rundir,"result/"+self.jube_xml_files.get_bench_resultfile())
           result_file_path = os.path.join(benchmark_rundir,"result/ubench_results.dat")
 
           # we add the part of results which corresponds to a given execute
@@ -248,6 +259,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
             for field in result_fields:
               temp_hash[field]= []
+
             for row in reader:
               add_to_results = True
               for field in common_fields:
@@ -265,25 +277,22 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
 
             results[key]['results_bench'] = temp_hash
-
-            # import pdb
-            # pdb.set_trace()
+            results[key]['context_fields'] = common_fields
 
           #Add job information to step execute
-          if value.has_key('jube_wp_abspath'):
-            job_file_path = os.path.join(value['jube_wp_abspath'],"stdout")
-            job_id = 0
-            with  open(job_file_path, 'r') as job_file:
-              for line in job_file:
-                re_result = re.findall(r'\d+',line)
-                if re_result:
-                  job_id = re_result[0]
-                  value['job_id_ubench'] = job_id
-                  if scheduler_interface:
-                    value.update(scheduler_interface.get_job_info(job_id)[-1])
-                    results[key].update(value)
-                  break
+          job_file_path = os.path.join(workdirs[key],"stdout")
+          job_id = 0
 
+          with  open(job_file_path, 'r') as job_file:
+            for line in job_file:
+              re_result = re.findall(r'\d+',line)
+              if re_result:
+                job_id = re_result[0]
+                value['job_id_ubench'] = job_id
+                if scheduler_interface:
+                  value.update(scheduler_interface.get_job_info(job_id)[-1])
+                  results[key].update(value)
+                break
 
           if benchmark_id == None:
             dir_list=[]
@@ -309,11 +318,11 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         """
 
         # Checking if all tasks have finished.
-        status = self.get_status_info(benchmark_id)
-        for step in status:
-            for task in status[step]:
-                if task['done'] == "false":
-                    print "Unfinished tasks in step: "+step+", please try later on"
+        # status = self.get_status_info(benchmark_id)
+        # for step in status:
+        #     for task in status[step]:
+        #         if task['done'] == "false":
+        #             print "Unfinished tasks in step: "+step+", please try later on"
 
 
         old_path=os.getcwd()
