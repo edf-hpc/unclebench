@@ -149,12 +149,6 @@ class AutoBenchmarker:
         except IOError:
             print '----no image found'
 
-        # Copy raw results in global report directory
-        # dest_path=os.path.join(global_report_path,'raw_results_'+benchmark_name)
-
-        # copytree(bm.benchmark_results_path,dest_path,\
-        #         symlinks=True,ignore=ignore_patterns("*compile"))
-
         print ''
 
         return doc_filename
