@@ -52,13 +52,14 @@ class BenchmarkManager:
 
 #===============  Benchmarking part  ===============#
 
-    def run_benchmark(self,platform,w_list=[]):
+    def run_benchmark(self,platform,w_list=[],raw_cli=[]):
         """ Run benchmark on a given platform and write a ubench.log file in
         the benchmark run directory.
         :param platform: name of the platform used to retrieve parameters needed to run the benchmark.
         :type platform: str
         :param w_list: nodes configurations used to run the benchmark.
         :type w_list: list of tuples [(number of nodes, nodes id list), ....]
+        :param raw_cli: raw command line used to call ubench run
         """
         if w_list:
             try:
@@ -106,6 +107,7 @@ class BenchmarkManager:
             logfile.write('Date            : {0} \n'.format(date))
             logfile.write('Run_directory   : {0} \n'.format(run_dir))
             logfile.write('Nodes           : {0} \n'.format(flattened_w_list))
+            logfile.write('cmdline         : {0} \n'.format(' '.join(raw_cli)))
 
         print '---- Use the following command to follow benchmark progress :'\
             +'    " ubench log -p {0} -b {1} -i {2}"'.format(platform,self.benchmark_name,ID)
@@ -171,12 +173,15 @@ class BenchmarkManager:
                 fields = field_pattern.findall(logfile.read())
                 for field in fields :
                     if field[0] in field_dict:
+                      if field[0].strip() == 'Run_directory':
+                        field_dict[field[0]].append(os.path.dirname(filepath))
+                      else:
                         field_dict[field[0]].append(field[1])
                         max_len_key[field[0]]=max(len(field[1]),max_len_key[field[0]])
                     else:
-                        sorted_key_list.append(field[0]) # List to keep keys sorted in order of appearrance
-                        field_dict[field[0]]=[field[1]]
-                        max_len_key[field[0]]=max(len(field[1]),len(field[0]))
+                      sorted_key_list.append(field[0]) # List to keep keys sorted in order of appearrance
+                      field_dict[field[0]]=[field[1]]
+                      max_len_key[field[0]]=max(len(field[1]),len(field[0]))
 
         if not field_dict:
             print '----no benchmark run found for : {0}'.format(self.benchmark_name)

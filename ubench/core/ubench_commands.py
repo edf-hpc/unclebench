@@ -129,7 +129,7 @@ class Ubench_cmd:
           idb='last'
         bm.status(idb)
 
-  def run(self,w_list=[],customp_list=[]):
+  def run(self,w_list=[],customp_list=[],raw_cli=[]):
 
     if w_list:
       try:
@@ -169,7 +169,7 @@ class Ubench_cmd:
 
       bm.set_parameter(dict_options)
 
-      bm.run_benchmark(self.platform,w_list)
+      bm.run_benchmark(self.platform,w_list,raw_cli)
 
   def report(self):
     from jinja2 import Environment, PackageLoader
