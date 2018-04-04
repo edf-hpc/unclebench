@@ -152,7 +152,7 @@ class BenchmarkManager:
 
     def list_benchmark_runs(self):
         """ List benchmark runs with their IDs and status """
-        field_pattern = re.compile('(.*) : (.*)')
+        field_pattern = re.compile('(\S+).*: (.*)')
         field_dict={}
         max_len_key={}
         sorted_key_list=[]
@@ -167,36 +167,54 @@ class BenchmarkManager:
                     logfile_paths.append(os.path.join(result_root_dir,fd,'ubench.log'))
 
         # The second loop is need to parse files in a sorted order.
+        list_data = {}
         for filepath in sorted(logfile_paths):
             with open(filepath, 'r') as logfile:
                 nbenchs+=1
+                list_data[nbenchs] = {}
                 fields = field_pattern.findall(logfile.read())
                 for field in fields :
-                    if field[0] in field_dict:
-                      if field[0].strip() == 'Run_directory':
-                        field_dict[field[0]].append(os.path.dirname(filepath))
+                      if field[0] == 'Run_directory':
+                        list_data[nbenchs][field[0]] = os.path.dirname(filepath)
                       else:
-                        field_dict[field[0]].append(field[1])
-                        max_len_key[field[0]]=max(len(field[1]),max_len_key[field[0]])
-                    else:
-                      sorted_key_list.append(field[0]) # List to keep keys sorted in order of appearrance
-                      field_dict[field[0]]=[field[1]]
-                      max_len_key[field[0]]=max(len(field[1]),len(field[0]))
+                        list_data[nbenchs][field[0]] = field[1].strip()
 
-        if not field_dict:
+        if not list_data:
             print '----no benchmark run found for : {0}'.format(self.benchmark_name)
 
         # Print dictionnary with a table layout.
+
         separating_line=''
-        for key in sorted_key_list:
-            sys.stdout.write(key.ljust(max_len_key[key])+' | ')
-            separating_line+='-'*max_len_key[key]
+        columns = list(set([c for x in list_data.keys() for c in list_data[x].keys()]))
+
+        max_dict = {k:0 for k in columns}
+
+        for data in list_data.values():
+          max_dict.update({k:max( [ v,len(data[k]) ] ) for k,v in max_dict.items() if data.has_key(k)})
+
+        if 'Platform' in columns:
+          columns.remove('Platform')
+        if 'Benchmark_name' in columns:
+          columns.remove('Benchmark_name')
+
+        if len(list_data.values()) > 0:
+          header = list_data.values()[0]
+          print("\nPlatform: {0} \nBenchmark: {1}\n".format(header['Platform'],header['Benchmark_name']))
+
+        for column in columns:
+            sys.stdout.write(column.ljust(max_dict[column])+' | ')
+            separating_line+='-'*(max_dict[column]+2)
+
+        separating_line+='-'*(len(columns)-1)
         print ''
         print separating_line
 
-        for i in range(nbenchs):
-            for key in sorted_key_list:
-                sys.stdout.write(field_dict[key][i].ljust(max_len_key[key])+' | ')
+        for bench in list_data.values():
+            for column in columns:
+              if bench.has_key(column):
+                sys.stdout.write(bench[column].ljust(max_dict[column])+' | ')
+              else:
+                sys.stdout.write(''.ljust(max_dict[column])+' | ')
             print ''
 
 
