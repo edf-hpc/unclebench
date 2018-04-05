@@ -23,7 +23,7 @@ import yaml
 
 class DataStoreYAML(data_store.DataStore):
 
-  def __init__(self,metadata,runs_info):
+  def __init__(self,metadata=None,runs_info=None):
     data_store.DataStore.__init__(self,metadata,runs_info)
 
   def write(self, output_file):
@@ -33,5 +33,8 @@ class DataStoreYAML(data_store.DataStore):
       yaml.dump(benchdata, outfile, default_flow_style=False)
 
   def load(self,input_file):
-    with open(input_file, 'w') as inputfile:
-      yaml.load(inputfile)
+    with open(input_file, 'r') as inputfile:
+      data = yaml.load(inputfile)
+      self.runs_info = data['runs']
+      data.pop('runs',None)
+      self.metadata = data
