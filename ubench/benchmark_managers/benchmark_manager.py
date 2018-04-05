@@ -229,7 +229,7 @@ class BenchmarkManager:
         :param benchmark_id: id of the benchmark to analyze
         :type benchmark_id: int"""
         self.result_array=self.benchmarking_api.extract_result_from_benchmark(benchmark_id)
-        self.benchmarking_api.get_step_info(benchmark_id)
+        self.benchmarking_api.write_bench_data(benchmark_id)
         self.transposed_result_array=[list(x) for x in zip(*self.result_array)]
 
     def analyse_last_benchmark(self):

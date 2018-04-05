@@ -26,8 +26,8 @@ from subprocess import call, Popen, PIPE
 import benchmarking_api as bapi
 import time
 import csv
-import yaml
 import ubench.core.ubench_config as uconfig
+import ubench.data_store.data_store_yaml as data_store
 import jube_xml_parser
 import tempfile
 
@@ -199,7 +199,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         return global_status
 
-  def get_step_info(self,benchmark_id):
+  def write_bench_data(self,benchmark_id):
 
         try:
           scheduler_interface=slurmi.SlurmInterface()
@@ -209,8 +209,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
           # return
         os.chdir(self.benchmark_path)
         output_dir = self.jube_xml_files.get_bench_outputdir()
-
-        benchmark_rundir = os.path.join(self.benchmark_path,output_dir,str(benchmark_id).zfill(6))
+        benchmark_rundir = self.get_bench_rundir(benchmark_id)
         jube_cmd ="jube info ./{0} --id {1} --step execute".format(output_dir,benchmark_id)
 
         cmd_output = tempfile.TemporaryFile()
@@ -246,6 +245,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
 
         cmd_output.close()
+
         for key, value in results.items():
           result_file_path = os.path.join(benchmark_rundir,"result/ubench_results.dat")
 
@@ -294,19 +294,20 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                   results[key].update(value)
                 break
 
-          if benchmark_id == None:
-            dir_list=[]
-            newest_result_dir=None
+        # Add metadata present on ubench.log
 
-            for fd in os.listdir(output_dir):
-              result_dir=os.path.join(output_dir,fd)
-              if os.path.isdir(result_dir):
-                dir_list.append(result_dir)
+        field_pattern = re.compile('(.*) : (.*)')
+        log_file = open(os.path.join(benchmark_rundir,"ubench.log"),'r')
 
-            newest_result_dir = max(dir_list, key=os.path.getmtime)
+        metadata = {}
+        fields = field_pattern.findall(log_file.read())
 
-        with open(os.path.join(benchmark_rundir,'bench_results.yaml'), 'w') as outfile:
-          yaml.dump(results, outfile, default_flow_style=False)
+        for field in fields:
+          metadata[field[0].strip()] = field[1].strip()
+
+        bench_data = data_store.DataStoreYAML(metadata,results)
+        bench_data.write(os.path.join(benchmark_rundir,'bench_results.yaml'))
+
 
 
   def extract_result_from_benchmark(self,benchmark_id):
@@ -317,23 +318,15 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         :rtype:str
         """
 
-        # Checking if all tasks have finished.
-        # status = self.get_status_info(benchmark_id)
-        # for step in status:
-        #     for task in status[step]:
-        #         if task['done'] == "false":
-        #             print "Unfinished tasks in step: "+step+", please try later on"
-
 
         old_path=os.getcwd()
         os.chdir(self.benchmark_path)
         output_dir = self.jube_xml_files.get_bench_outputdir()
-        benchmark_rundir = os.path.join(self.benchmark_path,output_dir,str(benchmark_id).zfill(6))
+        benchmark_rundir = self.get_bench_rundir(benchmark_id)
         input_str='jube result ./'+output_dir+' --id '+benchmark_id
         result_from_jube = Popen(input_str,cwd=os.getcwd(),shell=True, stdout=PIPE)
 
         result_array=[]
-
         # Get data from result array
         empty=True
         with open(os.path.join(benchmark_rundir,'result/ubench_results.dat'),'w') as result_file:
@@ -475,3 +468,16 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     :rtype: List of 3-tuples ex:[(parameter_name,old_value,value),....]
         """
     return self.jube_xml_files.set_params_bench(dict_options)
+
+  def get_bench_rundir(self,benchmark_id):
+    """
+    Get bechmark rundir based on benchmark id
+    """
+    output_dir = self.jube_xml_files.get_bench_outputdir()
+
+    if benchmark_id == 'last':
+      jube_last_cmd = Popen('jube info ./'+output_dir+' -i last',cwd=os.getcwd(),shell=True, stdout=PIPE)
+      dir_pattern = re.compile('\S+: (\/.*)')
+      return dir_pattern.findall(jube_last_cmd.stdout.read())[0]
+    else:
+      return os.path.join(self.benchmark_path,output_dir,str(benchmark_id).zfill(6))
