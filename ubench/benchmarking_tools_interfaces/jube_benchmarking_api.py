@@ -206,7 +206,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         except:
           print "Warning!! Unable to load Slurm module"
           scheduler_interface=None
-          # return
+
         os.chdir(self.benchmark_path)
         output_dir = self.jube_xml_files.get_bench_outputdir()
         benchmark_rundir = self.get_bench_rundir(benchmark_id)
@@ -295,15 +295,20 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                 break
 
         # Add metadata present on ubench.log
-
         field_pattern = re.compile('(.*) : (.*)')
-        log_file = open(os.path.join(benchmark_rundir,"ubench.log"),'r')
+
+        try:
+          log_file = open(os.path.join(benchmark_rundir,"ubench.log"),'r')
+        except IOError:
+          print 'Warning!! file ubench log was not found. Benchmark data result could not be created'
+          return
 
         metadata = {}
         fields = field_pattern.findall(log_file.read())
 
         for field in fields:
           metadata[field[0].strip()] = field[1].strip()
+
 
         bench_data = data_store.DataStoreYAML(metadata,results)
         bench_data.write(os.path.join(benchmark_rundir,'bench_results.yaml'))
