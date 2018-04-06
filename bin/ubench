@@ -142,10 +142,8 @@ parser_status.add_argument('-i',help='Benchmark run IDs',nargs='+')
 parser_compare = subparsers.add_parser('compare',help='Compare results from different run directories.')
 
 parser_compare.add_argument('-c','--context',default=None,help='results variables to use as context and should not be compared but merged in the result table',required=False,nargs='+')
-parser_compare.add_argument('-r','--results',default=None,help='results variables to use as results that should be compared')
 
 parser_compare.add_argument('-d','--result-dirs', nargs='+',help='directories where result are to compare')
-
 
 
 # Call script according to user command
@@ -179,4 +177,4 @@ elif args.subparser_name=='report':
 elif args.subparser_name=='status':
     commands.status(id_list=args.i)
 elif args.subparser_name=='compare':
-    commands.compare(args.result_dirs,args.context,args.results)
+    commands.compare(args.result_dirs,args.context)

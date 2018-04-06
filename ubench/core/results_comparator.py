@@ -24,11 +24,10 @@ import ubench.data_store.data_store_yaml as dsy
 
 class ResultsComparator:
     
-  def __init__(self,context_field_list,result_field_list):
+  def __init__(self,context_field_list):
     """ Constructor """
     self.context_fields=context_field_list
     self.context_fields_extended=context_field_list
-    self.result_field_list=result_field_list
     self.dstore=dsy.DataStoreYAML()
 
   def print_comparison(self,result_directories):
@@ -36,50 +35,66 @@ class ResultsComparator:
       print(self.compare(result_directories))
 
   def compare(self,result_directories):
-
-    #result_name_column = 'hpcc_bench'
-
+    """
+    compare results of each result_directory, first directory is considered to contain reference results
+    """
     pandas=self.build_pandas(result_directories)
-    panda_pre=pandas[0]
-    panda_post=pandas[1]
-
-    if panda_pre.empty or panda_post.empty:
-      return "No corresponding results found, comparison is not possible"
+    panda_ref=pandas[0]
 
     for key_f in self.context_fields_extended:
-      if key_f not in panda_pre or key_f not in panda_post:
+      if key_f not in panda_ref:
         print('    '+str(key_f)+\
-              ' is not a valid context field, valid context fields for given directories are :')
-        for cfield in panda_pre:
+              ' is not a valid context field, valid context fields for given directories are:')
+        for cfield in panda_ref:
           print('     - '+str(cfield))
         return "No result"
 
-    result_columns_pre_merge=[ x for x in list(panda_pre.columns.values) if x not in self.context_fields_extended]
-    pd_compare=pd.merge(panda_pre,panda_post,how="inner",on=self.context_fields_extended,suffixes=['_pre', '_post'])
+    result_columns_pre_merge=[ x for x in list(panda_ref.columns.values) if x not in self.context_fields_extended]
+
+    
+    # Do all but last merges keeping the original result field name unchanged
+    idx=0
+    pd_compare=panda_ref
+    for pdr in pandas[1:-1]:
+      pd_compare=pd.merge(pd_compare,pdr,on=self.context_fields_extended,suffixes=['', '_post_'+str(idx)])
+      idx+=1
+      
+    # At last merge add a _pre suffix to reference result
+    if len(pandas)>1:
+      pd_compare=pd.merge(pd_compare,pandas[-1],on=self.context_fields_extended,suffixes=['_pre', '_post_'+str(idx)])
+    else:
+      pd_compare=panda_ref
+    
     pd_compare_columns_list=list(pd_compare.columns.values)
 
     result_columns=[ x for x in pd_compare_columns_list if x not in self.context_fields_extended]
         
-    context_first_columns_list= self.context_fields_extended
-    pd_compare=pd_compare[context_first_columns_list+result_columns]
+    ctxt_columns_list= self.context_fields_extended
 
+    if "nodes" in ctxt_columns_list:
+      ctxt_columns_list.insert(0, ctxt_columns_list.pop(ctxt_columns_list.index("nodes")))
+    
+    pd_compare=pd_compare[ctxt_columns_list+result_columns]
+
+    pd.options.mode.chained_assignment = None # avoid useless warning
     # Convert numeric columns to float
     for ccolumn in self.context_fields_extended:
       try:
-        pd_compare[ccolumn]=(pd_compare[ccolumn].apply(lambda x: float(x)))
-      except:
-        continue
-      
-    # Add a difference in % for numeric result columns
-    for rcolumn in result_columns_pre_merge:
-      pre_column=rcolumn+'_pre'
-      post_column=rcolumn+'_post'
-      try:
-        pd_compare[rcolumn+' diff(%)']=((pd_compare[post_column].apply(lambda x: float(x))-pd_compare[pre_column].apply(lambda x: float(x)))*100)/pd_compare[pre_column].apply(lambda x: float(x))
+        pd_compare[ccolumn]=pd_compare[ccolumn].apply(lambda x: float(x))
       except:
         continue
     
-    return(pd_compare.sort(context_first_columns_list).to_string(index=False))
+    # Add a difference in % for numeric result columns
+    for rcolumn in result_columns_pre_merge:
+      pre_column=rcolumn+'_pre'
+      for i in range(0,len(pandas[1:])):
+        post_column=rcolumn+'_post_'+str(i)
+        try:
+          pd_compare[rcolumn+' diff_'+str(i)+'(%)']=((pd_compare[post_column].apply(lambda x: float(x))-pd_compare[pre_column].apply(lambda x: float(x)))*100)/pd_compare[pre_column].apply(lambda x: float(x))
+        except:
+          continue
+    pd.options.mode.chained_assignment = 'warn' #reactivate warning
+    return(pd_compare.sort(ctxt_columns_list).to_string(index=False))
 
 
 
@@ -128,16 +143,10 @@ class ResultsComparator:
 
     # Add custom context_columns
     if self.context_fields:
-      for key in self.context_fields:
-        context_columns=set(self.context_fields)
-
-    if not(self.context_fields):
-      self.context_fields=list(context_columns)
+      context_columns=self.context_fields
     else:
-      for key in self.context_fields:
-        context_columns.add(key)
-
-    context_columns=list(context_columns)
+      self.context_fields=list(context_columns)      
+      context_columns=list(context_columns)
 
     result_name_column=None
     
@@ -164,8 +173,11 @@ class ResultsComparator:
           if result_name_column:
             report_info[result_name_column].append(key)
 
-
-    self.context_fields_extended=self.context_fields+[result_name_column]
+    if result_name_column:
+      self.context_fields_extended=self.context_fields+[result_name_column]
+    else:
+      self.context_fields_extended=self.context_fields
+    
     
     return(pd.DataFrame(report_info))
 
