@@ -23,6 +23,8 @@ import os, datetime, getpass
 from subprocess import Popen
 import ubench_config as uconfig
 import auto_benchmarker as abench
+
+
 import re
 try :
   import ubench.scheduler_interfaces.slurm_interface as slurmi
@@ -31,6 +33,7 @@ except:
 
 import ubench.benchmarking_tools_interfaces.jube_xml_parser as jube_xml_parser
 import fetcher
+import results_comparator as rc
 
 class Ubench_cmd:
 
@@ -47,6 +50,7 @@ class Ubench_cmd:
     self.benchmark_list = benchmark_list
     self.auto_bm = abench.AutoBenchmarker('')
     self.auto_bm.add_benchmark_managers_from_path(uconf.plugin_dir,benchmark_list,platform)
+    
 
   def log(self,id_list=[]):
 
@@ -256,6 +260,19 @@ class Ubench_cmd:
 
         elif source['protocol'] == 'local':
           fetch_bench.local(source['files'])
+
+
+  def compare(self,result_directories,context_list=None,result_list=None):
+    """
+    Compare bencharks results from different directories.
+    """
+    rcomparator=rc.ResultsComparator(context_list,result_list)
+    print("    comparing :")
+    for rdir in result_directories:
+      print("    - "+rdir)
+    print("")
+    rcomparator.print_comparison(result_directories)
+    
 
   def translate_wlist_to_scheduler_wlist(self,w_list_arg):
   # Translate ubench custom node list format to scheduler custome node list format

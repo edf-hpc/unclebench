@@ -137,16 +137,30 @@ parser_status.add_argument('-b',help='Benchmark names list',required=True,nargs=
                                    choices=benchmark_list)
 parser_status.add_argument('-i',help='Benchmark run IDs',nargs='+')
 
+
+# parser compare
+parser_compare = subparsers.add_parser('compare',help='Compare results from different run directories.')
+
+parser_compare.add_argument('-c','--context',default=None,help='results variables to use as context and should not be compared but merged in the result table',required=False,nargs='+')
+parser_compare.add_argument('-r','--results',default=None,help='results variables to use as results that should be compared')
+
+parser_compare.add_argument('-d','--result-dirs', nargs='+',help='directories where result are to compare')
+
+
+
 # Call script according to user command
 args = parser.parse_args()
 
 # initialize class
+platform_arg = ""
+benchmark_arg= ""
 if vars(args).has_key('p'):
     platform_arg = args.p
-else:
-    platform_arg = ""
+if vars(args).has_key('b'):
+    benchmark_arg = args.b
 
-commands = ubench_commands.Ubench_cmd(platform=platform_arg,benchmark_list=args.b)
+
+commands = ubench_commands.Ubench_cmd(platform=platform_arg,benchmark_list=benchmark_arg)
 
 if args.subparser_name=='run':
     commands.run(w_list=args.w,customp_list=args.custom_params,raw_cli=sys.argv)
@@ -164,3 +178,5 @@ elif args.subparser_name=='report':
     commands.report()
 elif args.subparser_name=='status':
     commands.status(id_list=args.i)
+elif args.subparser_name=='compare':
+    commands.compare(args.result_dirs,args.context,args.results)
