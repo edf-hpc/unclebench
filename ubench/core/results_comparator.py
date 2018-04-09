@@ -24,10 +24,10 @@ import ubench.data_store.data_store_yaml as dsy
 
 class ResultsComparator:
     
-  def __init__(self,context_field_list,threshold):
+  def __init__(self,context_fields_list=None,additional_fields_list=None,threshold=None):
     """ Constructor """
-    self.context_fields=context_field_list
-    self.context_fields_extended=context_field_list
+    self.context_fields=context_fields_list
+    self.additional_fields=additional_fields_list
     self.dstore=dsy.DataStoreYAML()
     self.threshold=threshold
 
@@ -39,10 +39,15 @@ class ResultsComparator:
     """
     compare results of each result_directory, first directory is considered to contain reference results
     """
-    pandas=self.build_pandas(result_directories)
+    # Build pandas and retrieve associated context fields from result directories
+    pandas_and_context=self.build_pandas(result_directories)
+    pandas=[item[0] for item in pandas_and_context]
+    
+    # Get intesection of all context fields found in data files
+    context_fields=list(set.intersection(*map(set,[item[1] for item in pandas_and_context ])))
     panda_ref=pandas[0]
 
-    for key_f in self.context_fields_extended:
+    for key_f in context_fields:
       if key_f not in panda_ref:
         print('    '+str(key_f)+\
               ' is not a valid context field, valid context fields for given directories are:')
@@ -50,27 +55,26 @@ class ResultsComparator:
           print('     - '+str(cfield))
         return "No result"
 
-    result_columns_pre_merge=[ x for x in list(panda_ref.columns.values) if x not in self.context_fields_extended]
-
+    result_columns_pre_merge=[ x for x in list(panda_ref.columns.values) if x not in context_fields]
     
     # Do all but last merges keeping the original result field name unchanged
     idx=0
     pd_compare=panda_ref
     for pdr in pandas[1:-1]:
-      pd_compare=pd.merge(pd_compare,pdr,on=self.context_fields_extended,suffixes=['', '_post_'+str(idx)])
+      pd_compare=pd.merge(pd_compare,pdr,on=context_fields,suffixes=['', '_post_'+str(idx)])
       idx+=1
       
     # At last merge add a _pre suffix to reference result
     if len(pandas)>1:
-      pd_compare=pd.merge(pd_compare,pandas[-1],on=self.context_fields_extended,suffixes=['_pre', '_post_'+str(idx)])
+      pd_compare=pd.merge(pd_compare,pandas[-1],on=context_fields,suffixes=['_pre', '_post_'+str(idx)])
     else:
       pd_compare=panda_ref
     
     pd_compare_columns_list=list(pd_compare.columns.values)
 
-    result_columns=[ x for x in pd_compare_columns_list if x not in self.context_fields_extended]
+    result_columns=[ x for x in pd_compare_columns_list if x not in context_fields]
         
-    ctxt_columns_list= self.context_fields_extended
+    ctxt_columns_list= context_fields
 
     if "nodes" in ctxt_columns_list:
       ctxt_columns_list.insert(0, ctxt_columns_list.pop(ctxt_columns_list.index("nodes")))
@@ -79,7 +83,7 @@ class ResultsComparator:
 
     pd.options.mode.chained_assignment = None # avoid useless warning
     # Convert numeric columns to float
-    for ccolumn in self.context_fields_extended:
+    for ccolumn in context_fields:
       try:
         pd_compare[ccolumn]=pd_compare[ccolumn].apply(lambda x: float(x))
       except:
@@ -115,7 +119,6 @@ class ResultsComparator:
     return(pd_compare.sort(ctxt_columns_list).to_string(index=False))
 
 
-
   def _dir_to_data(self,result_dir):
     data_files=[]
     data_list=[]
@@ -137,68 +140,9 @@ class ResultsComparator:
   def build_pandas(self,result_directories):
     pandas_list=[]
     for result_dir in result_directories:
-      pandas_list.append(self._data_to_pandas(self._dir_to_data(result_dir)))
+      pandas_list.append(self.dstore.data_to_pandas(self._dir_to_data(result_dir),self.context_fields,self.additional_fields))
 
     return pandas_list
-
-  def _data_to_pandas(self,data_list):
-
-    report_info={}
-          
-    if not data_list:
-      # return empty DataFrame
-      return pd.DataFrame()
-  
-    # Choose context fields as an intersection of context fields found in results
-    first=True
-    for data_b,metadata_b in data_list:
-      for id_exec in sorted(data_b.keys()): # this guarantees the order of nodes
-        if first:
-          context_columns=set(data_b[id_exec]['context_fields'])
-        else:
-          first=False
-          context_columns=context_columns.intersection(set(data_b[id_exec]['context_fields']))
-
-    # Add custom context_columns
-    if self.context_fields:
-      context_columns=self.context_fields
-    else:
-      self.context_fields=list(context_columns)      
-      context_columns=list(context_columns)
-
-    result_name_column=None
-    
-    for data_b,metadata_b in data_list:
-      for id_exec in sorted(data_b.keys()): # this guarantees the order of nodes
-        if (len(data_b[id_exec]['results_bench'].items())>1):
-          result_name_column=metadata_b['Benchmark_name']+'_bench'
-
-    for column in context_columns+['result']:
-      report_info[column] = []
-
-    if result_name_column:
-      report_info[result_name_column] = []
-
-    for data_b,metadata_b in data_list:
-      for id_exec in sorted(data_b.keys()): # this guarantees the order of nodes
-        value = data_b[id_exec]
-        # Only one value for bundle, multiple for hpcc
-        for key, result in value['results_bench'].items():
-          for column in context_columns:
-            report_info[column].append(value[column])
-            
-          report_info['result'].append(result)
-          if result_name_column:
-            report_info[result_name_column].append(key)
-
-    if result_name_column:
-      self.context_fields_extended=self.context_fields+[result_name_column]
-    else:
-      self.context_fields_extended=self.context_fields
-    
-    
-    return(pd.DataFrame(report_info))
-
         
 
 
