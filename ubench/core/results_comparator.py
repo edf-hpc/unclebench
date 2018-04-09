@@ -24,11 +24,12 @@ import ubench.data_store.data_store_yaml as dsy
 
 class ResultsComparator:
     
-  def __init__(self,context_field_list):
+  def __init__(self,context_field_list,threshold):
     """ Constructor """
     self.context_fields=context_field_list
     self.context_fields_extended=context_field_list
     self.dstore=dsy.DataStoreYAML()
+    self.threshold=threshold
 
   def print_comparison(self,result_directories):
     with pd.option_context('display.max_rows', None, 'display.max_columns', None,'expand_frame_repr', False):
@@ -84,16 +85,33 @@ class ResultsComparator:
       except:
         continue
     
-    # Add a difference in % for numeric result columns
+    # Add difference columns in % for numeric result columns
+    diff_columns=[]
+    
     for rcolumn in result_columns_pre_merge:
       pre_column=rcolumn+'_pre'
       for i in range(0,len(pandas[1:])):
         post_column=rcolumn+'_post_'+str(i)
         try:
-          pd_compare[rcolumn+' diff_'+str(i)+'(%)']=((pd_compare[post_column].apply(lambda x: float(x))-pd_compare[pre_column].apply(lambda x: float(x)))*100)/pd_compare[pre_column].apply(lambda x: float(x))
+          diff_column_name=rcolumn+'_diff_'+str(i)#+'(%)'
+          pd_compare[diff_column_name]=((pd_compare[post_column].apply(lambda x: float(x))-pd_compare[pre_column].apply(lambda x: float(x)))*100)/pd_compare[pre_column].apply(lambda x: float(x))
         except:
           continue
+        else:
+          diff_columns.append(diff_column_name)
+
+    # Remove rows with no difference above given threshold
+    if self.threshold:
+      # Add a column with max :
+      pd_compare['max_diff']=pd_compare[diff_columns].max(axis=1).abs()
+      # Use it as a filter :
+      pd_compare=pd_compare[ pd_compare.max_diff > float(self.threshold)]
+      pd_compare.drop('max_diff', 1,inplace=True)
+          
+          
     pd.options.mode.chained_assignment = 'warn' #reactivate warning
+
+
     return(pd_compare.sort(ctxt_columns_list).to_string(index=False))
 
 

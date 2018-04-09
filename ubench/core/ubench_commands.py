@@ -262,11 +262,11 @@ class Ubench_cmd:
           fetch_bench.local(source['files'])
 
 
-  def compare(self,result_directories,context_list=None):
+  def compare(self,result_directories,context_list=None,threshold=None):
     """
     Compare bencharks results from different directories.
     """
-    rcomparator=rc.ResultsComparator(context_list)
+    rcomparator=rc.ResultsComparator(context_list,threshold)
     print("    comparing :")
     for rdir in result_directories:
       print("    - "+rdir)

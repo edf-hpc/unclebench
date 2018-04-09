@@ -143,6 +143,8 @@ parser_compare = subparsers.add_parser('compare',help='Compare results from diff
 
 parser_compare.add_argument('-c','--context',default=None,help='results variables to use as context and should not be compared but merged in the result table',required=False,nargs='+')
 
+parser_compare.add_argument('-t','--threshold',default=None,help='Differences under given threshold will not be printed')
+
 parser_compare.add_argument('-d','--result-dirs', nargs='+',help='directories where result are to compare')
 
 
@@ -177,4 +179,4 @@ elif args.subparser_name=='report':
 elif args.subparser_name=='status':
     commands.status(id_list=args.i)
 elif args.subparser_name=='compare':
-    commands.compare(args.result_dirs,args.context)
+    commands.compare(args.result_dirs,args.context,args.threshold)
