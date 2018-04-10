@@ -147,7 +147,7 @@ parser_compare.add_argument('-a','--additional-fields',default=None,help='additi
 
 parser_compare.add_argument('-t','--threshold',default=None,help='Differences under given threshold will not be printed')
 
-parser_compare.add_argument('-d','--result-dirs', nargs='+',help='directories where result are to compare')
+parser_compare.add_argument('-d','--result-dirs', nargs='+',help='directories where results are to compared',required=True)
 
 
 # Call script according to user command

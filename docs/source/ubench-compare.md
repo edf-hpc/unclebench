@@ -1,0 +1,33 @@
+% ubench-run(1)
+
+# NAME
+
+
+ubench-compare -  Compare benchmark results
+
+# SYNOPSIS
+
+ubench compare [-h] [-c CONTEXT [CONTEXT ...]]\
+                    [-a ADDITIONAL_FIELDS [ADDITIONAL_FIELDS ...]]\
+                    [-t THRESHOLD] -d RESULT_DIRS [RESULT_DIRS ...]
+  
+# DESCRIPTION
+
+*ubench compare* compares benchmark result data files from different directories.
+
+# OPTIONS
+
+# -a ADDITIONAL_FIELDS [ADDITIONAL_FIELDS ...], --additional-fields ADDITIONAL_FIELDS [ADDITIONAL_FIELDS ...]
+  additional fields that will not be consired as context
+  and whose values will be compared
+
+# -t THRESHOLD, --threshold THRESHOLD
+  Differences under given threshold will not be printed
+                        
+# -d RESULT_DIRS [RESULT_DIRS ...], --result-dirs RESULT_DIRS [RESULT_DIRS ...]
+  directories where results are to be compared
+  
+
+# SEE ALSO
+
+ubench-result(1), ubench-report(1)

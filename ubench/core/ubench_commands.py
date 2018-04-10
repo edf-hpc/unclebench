@@ -33,7 +33,7 @@ except:
 
 import ubench.benchmarking_tools_interfaces.jube_xml_parser as jube_xml_parser
 import fetcher
-import results_comparator as rc
+import ubench_comparator as uc
 
 class Ubench_cmd:
 
@@ -266,12 +266,12 @@ class Ubench_cmd:
     """
     Compare bencharks results from different directories.
     """
-    rcomparator=rc.ResultsComparator(context_list,additional_fields,threshold)
+    ucomparator=uc.UbenchComparator(context_list,additional_fields,threshold)
     print("    comparing :")
     for rdir in result_directories:
       print("    - "+rdir)
     print("")
-    rcomparator.print_comparison(result_directories)
+    ucomparator.print_comparison(result_directories)
     
 
   def translate_wlist_to_scheduler_wlist(self,w_list_arg):

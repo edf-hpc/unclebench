@@ -38,7 +38,7 @@ ubench-run -  Run benchmarks
 
 # -c <CUSTOMP> [<CUSTOMP> ...]
   Modify a benchmark parameter on command line.\
-  ex: -c mpi_v:1 would launch a benchmark with the mpi_v parameter set to 1.
+  ex: -c <benchmark_paramater>:1 would launch a benchmark with <benchmark_parameter> parameter set to 1.
   
 
 # ENVIRONMENT

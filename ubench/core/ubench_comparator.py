@@ -22,7 +22,7 @@ import os
 import pandas as pd
 import ubench.data_store.data_store_yaml as dsy
 
-class ResultsComparator:
+class UbenchComparator:
     
   def __init__(self,context_fields_list=None,additional_fields_list=None,threshold=None):
     """ Constructor """
