@@ -34,7 +34,14 @@ class DataStoreYAML(data_store.DataStore):
 
   def load(self,input_file):
     with open(input_file, 'r') as inputfile:
-      data = yaml.load(inputfile)
-      self.runs_info = data['runs']
-      data.pop('runs',None)
-      self.metadata = data
+      try:
+        data = yaml.load(inputfile)
+      except Exception as e:
+        data = None
+      if data and 'runs' in data:
+        self.runs_info = data['runs']
+        data.pop('runs',None)
+        self.metadata = data
+      else:
+        self.runs_info = None
+        self.metadata = None

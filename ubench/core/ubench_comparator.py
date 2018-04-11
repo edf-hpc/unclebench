@@ -42,6 +42,9 @@ class UbenchComparator:
     # Build pandas and retrieve associated context fields from result directories
     pandas_and_context=self.build_pandas(result_directories)
     pandas=[item[0] for item in pandas_and_context]
+
+    if not pandas:
+      return("No ubench results data found in given directories ")
     
     # Get intesection of all context fields found in data files
     context_fields=list(set.intersection(*map(set,[item[1] for item in pandas_and_context ])))
@@ -124,23 +127,27 @@ class UbenchComparator:
     data_list=[]
     dstore=dsy.DataStoreYAML()
 
+    if not os.path.isdir(result_dir):
+      print("Cannot find "+result_dir+" directory")
+      exit(1)
+    
     for (dirpath, dirnames, filenames) in os.walk(result_dir):
       for fname in filenames:
         data_files.append(os.path.join(dirpath,fname))
         
     for dfile in data_files:
-      try:
-        dstore.load(dfile)
+      dstore.load(dfile)
+      if (dstore.runs_info):
         data_list.append((dstore.runs_info,dstore.metadata))
-      except Exception, e:
-        print(dfile+" is not a data file and will be ignored : "+str(e))
 
     return data_list
 
   def build_pandas(self,result_directories):
     pandas_list=[]
     for result_dir in result_directories:
-      pandas_list.append(self.dstore.data_to_pandas(self._dir_to_data(result_dir),self.context_fields,self.additional_fields))
+      data_dic=self._dir_to_data(result_dir)
+      if(data_dic):
+        pandas_list.append(self.dstore.data_to_pandas(data_dic,self.context_fields,self.additional_fields))
 
     return pandas_list
         
