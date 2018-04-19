@@ -23,7 +23,7 @@ except ImportError:
     from distutils.core import setup
         
 setup(name='ubench',
-      version='0.3',
+      version='0.2',
       description="Unclebench is a tool for automating the running of complex benchmarks on HPC clusters."\
                    "It is currently based on (JUBE http://www.fz-juelich.de/ias/jsc/EN/Expertise/Support/Software/JUBE/_node.html) but any benchmarking engine can be easily integrated."\
                    "Its architecture make it easier to handle platforms settings, benchmark descriptions, sources and test cases as separate resources."\
@@ -37,6 +37,7 @@ setup(name='ubench',
       packages=['ubench','ubench.core',
                 'ubench.benchmark_managers',
                 'ubench.benchmarking_tools_interfaces',
+                'ubench.data_store',
                 'ubench.plugins',
                 'ubench.scheduler_interfaces'],
       zip_safe=False)
