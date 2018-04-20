@@ -33,7 +33,7 @@
 	<parameterset name="param_set">
 	  <parameter name="bench_id">0,1,2,3</parameter>
 	  <parameter name="model" mode="python">["inception3","resnet50","resnet152","alexnet","vgg16"][${bench_id}]</parameter>
-	  <parameter name="batch_size" mode="python">["64","64","64","512","32"][${bench_id}]</parameter>
+	  <parameter name="batch_size" mode="python">["64","64","32","512","32"][${bench_id}]</parameter>
 	</parameterset>
 
 	<!-- =====================  Compile  ===================== -->
