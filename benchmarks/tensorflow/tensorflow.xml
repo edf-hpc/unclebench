@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+    <!-- This header is needed to be able to launch the benchmark for
+	 every platforms defined in the platform folder -->
+    <include-path>
+	<path> $UBENCH_PLATFORM_DIR </path>
+    </include-path>
+    <include from="platforms.xml" path="include-path"/>
+    
+    <multisource>
+	<source protocol="git" name="tensorflow">
+            <url>https://github.com/tensorflow/benchmarks</url>
+	    <revision>9165a70e</revision>
+	    <!-- commit used in https://www.tensorflow.org/performance/benchmarks -->
+	</source>
+
+	<source protocol="local" name="tensorflow_virtualenv">
+	  <do>
+	    ~/.local/bin/virtualenv env_tensorflow
+	    echo "source env_tensorflow/bin/activate;pip install tensorflow_gpu==1.3.0;pip install keras" | bash
+	  </do>
+	  
+	</source>
+    
+    </multisource>
+    
+
+    <!-- Include xml nodes from evry xml file defining the benchmark  -->
+    <benchmark name="tensorflow" outpath="benchmark_runs">
+	<comment>Tensorflow benchmark</comment>
+
+	<parameterset name="param_set">
+	  <parameter name="bench_id">0,1,2,3</parameter>
+	  <parameter name="model" mode="python">["inception3","resnet50","resnet152","alexnet","vgg16"][${bench_id}]</parameter>
+	  <parameter name="batch_size" mode="python">["64","64","64","512","32"][${bench_id}]</parameter>
+	</parameterset>
+
+	<!-- =====================  Compile  ===================== -->
+
+	<include from="tensorflow_prepare.xml" path="step"/>
+
+	<!-- =====================  Execute  ===================== -->
+
+	<include from="tensorflow_execute.xml" path="substituteset"/>
+	<include from="tensorflow_execute.xml" path="fileset"/>
+	<include from="tensorflow_execute.xml" path="parameterset"/>
+	<include from="tensorflow_execute.xml" path="step"/>
+
+	<!-- =====================  Result  ===================== -->
+
+	<include from="tensorflow_result.xml" path="patternset"/>
+	<include from="tensorflow_result.xml" path="analyzer"/>
+	<include from="tensorflow_result.xml" path="result"/>
+	
+    </benchmark>
+</jube>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+  <!-- =====================  Analyze  ===================== -->
+
+  <patternset name="pattern">
+      <pattern name="total_image" type="float" unit="image/s">
+  	^total images\/sec:\s+${jube_pat_fp}
+      </pattern>
+      
+  </patternset>
+
+  
+  <analyzer name="analyse">
+      <use>pattern</use>
+      <analyse step="execute">
+	  <file>job.out</file>
+      </analyse>
+  </analyzer>
+
+  
+  <!-- =====================  Result  ===================== -->
+
+  <result>
+      <use>analyse</use>
+      <table name="result" style="csv" sort="nodes">
+	<column>nodes</column>
+	<column>model</column>
+	<column>total_image</column>
+      </table>
+  </result>
+
+  
+</jube>
