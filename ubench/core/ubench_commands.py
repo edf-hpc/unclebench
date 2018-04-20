@@ -259,7 +259,7 @@ class Ubench_cmd:
           fetch_bench.scm_fetch(source['url'],source['files'],source['protocol'],source['revision'],source['branch'],source['do_cmds'])
 
         elif source['protocol'] == 'local':
-          fetch_bench.local(source['files'])
+          fetch_bench.local(source['files'],source['do_cmds'])
 
 
   def compare(self,result_directories,context_list=None,additional_fields=None,threshold=None):

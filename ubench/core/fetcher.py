@@ -119,7 +119,7 @@ class Fetcher():
     print 'Benchmark {0} fetched'.format(self.benchmark_name)
 
 
-  def local(self,files):
+  def local(self,files,do_cmds=None):
     fetch_message = 'Fetching benchmark {0} from local:'.format(self.benchmark_name)
     print fetch_message
     print '-'*len(fetch_message)
@@ -133,6 +133,12 @@ class Fetcher():
       print "Copying file: {0} into {1} ".format(basename,benchresource_dir)
       destfile_path=os.path.join(benchresource_dir,basename)
       shutil.copyfile(file_bench,destfile_path)
+
+    if do_cmds:
+      for do_cmd in do_cmds :
+        do_process=Popen(do_cmd,cwd=benchresource_dir,shell=True)
+        do_process.wait()
+
 
     print 'Benchmark {0} fetched'.format(self.benchmark_name)
 
