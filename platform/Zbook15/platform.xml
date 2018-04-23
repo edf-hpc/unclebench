@@ -60,7 +60,19 @@
 	    [""][$mpi_v]
 	</parameter>
     </parameterset>
-    
+
+    <parameterset name="cuda_set">
+      <parameter name="cuda_tlk_v">0</parameter>
+      <parameter name="cudnn_v">1</parameter>
+      	<parameter name="module_cuda" mode="python">
+	  ["Cuda-8.0.44"][$cuda_tlk_v]
+	</parameter>
+      	<parameter name="module_cudnn" mode="python">
+	  ["CuDNN-5.1"][$cudnn_v]
+	</parameter>
+    </parameterset>
+
+
     <parameterset name="execute_set">
         <!-- Jobscript handling -->
 
