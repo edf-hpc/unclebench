@@ -23,7 +23,7 @@ import pandas as pd
 import ubench.data_store.data_store_yaml as dsy
 
 class UbenchComparator:
-    
+
   def __init__(self,context_fields_list=None,additional_fields_list=None,threshold=None):
     """ Constructor """
     self.context_fields=context_fields_list
@@ -44,8 +44,8 @@ class UbenchComparator:
     pandas=[item[0] for item in pandas_and_context]
 
     if not pandas:
-      return("No ubench results data found in given directories ")
-    
+      return("No ubench results data found in given directories or not well-formated data")
+
     # Get intesection of all context fields found in data files
     context_fields=list(set.intersection(*map(set,[item[1] for item in pandas_and_context ])))
     panda_ref=pandas[0]
@@ -59,29 +59,29 @@ class UbenchComparator:
         return "No result"
 
     result_columns_pre_merge=[ x for x in list(panda_ref.columns.values) if x not in context_fields]
-    
+
     # Do all but last merges keeping the original result field name unchanged
     idx=0
     pd_compare=panda_ref
     for pdr in pandas[1:-1]:
       pd_compare=pd.merge(pd_compare,pdr,on=context_fields,suffixes=['', '_post_'+str(idx)])
       idx+=1
-      
+
     # At last merge add a _pre suffix to reference result
     if len(pandas)>1:
       pd_compare=pd.merge(pd_compare,pandas[-1],on=context_fields,suffixes=['_pre', '_post_'+str(idx)])
     else:
       pd_compare=panda_ref
-    
+
     pd_compare_columns_list=list(pd_compare.columns.values)
 
     result_columns=[ x for x in pd_compare_columns_list if x not in context_fields]
-        
+
     ctxt_columns_list= context_fields
 
     if "nodes" in ctxt_columns_list:
       ctxt_columns_list.insert(0, ctxt_columns_list.pop(ctxt_columns_list.index("nodes")))
-    
+
     pd_compare=pd_compare[ctxt_columns_list+result_columns]
 
     pd.options.mode.chained_assignment = None # avoid useless warning
@@ -91,10 +91,10 @@ class UbenchComparator:
         pd_compare[ccolumn]=pd_compare[ccolumn].apply(lambda x: float(x))
       except:
         continue
-    
+
     # Add difference columns in % for numeric result columns
     diff_columns=[]
-    
+
     for rcolumn in result_columns_pre_merge:
       pre_column=rcolumn+'_pre'
       for i in range(0,len(pandas[1:])):
@@ -114,8 +114,8 @@ class UbenchComparator:
       # Use it as a filter :
       pd_compare=pd_compare[ pd_compare.max_diff > float(self.threshold)]
       pd_compare.drop('max_diff', 1,inplace=True)
-          
-          
+
+
     pd.options.mode.chained_assignment = 'warn' #reactivate warning
 
 
@@ -130,11 +130,11 @@ class UbenchComparator:
     if not os.path.isdir(result_dir):
       print("Cannot find "+result_dir+" directory")
       exit(1)
-    
+
     for (dirpath, dirnames, filenames) in os.walk(result_dir):
       for fname in filenames:
         data_files.append(os.path.join(dirpath,fname))
-        
+
     for dfile in data_files:
       dstore.load(dfile)
       if (dstore.runs_info):
@@ -150,6 +150,3 @@ class UbenchComparator:
         pandas_list.append(self.dstore.data_to_pandas(data_dic,self.context_fields,self.additional_fields))
 
     return pandas_list
-        
-
-
