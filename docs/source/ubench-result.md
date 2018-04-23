@@ -16,6 +16,8 @@ ubench-result -  Print result of a benchmark run
 
 
 *ubench result*   Print results of a benchmark run given its name, the platform on which it has been run and its id.
+		  Additionally, it will generate a file in YAML format which contains data related to the environment of executions and results.
+		  These files are used as input for *ubench compare* comand. 
               Available benchmarks runs and their IDs can be found using *ubench list* command.
 
 # OPTIONS
