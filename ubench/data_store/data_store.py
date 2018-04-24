@@ -46,7 +46,7 @@ class DataStore():
           
     if not data_list:
       # return empty DataFrame
-      return ([],pd.DataFrame())
+      return (pd.DataFrame(),[])
   
     # Choose context fields as an intersection of context fields found in results
     first=True
@@ -77,6 +77,13 @@ class DataStore():
 
     if result_name_column:
       report_info[result_name_column] = []
+
+    for res in additional_fields:
+      if res in context_columns:
+        print("Error : {} is part of the context and is also a result field, cannot interpret data.".format(res))
+        # return empty DataFrame
+        return(pd.DataFrame(),[])
+        
 
     for data_b,metadata_b in data_list:
       for id_exec in sorted(data_b.keys()): # this guarantees the order of nodes
