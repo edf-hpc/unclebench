@@ -215,10 +215,10 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         cmd_output = tempfile.TemporaryFile()
         result_from_jube = Popen(jube_cmd,cwd=os.getcwd(),shell=True, stdout=cmd_output)
         ret_code = result_from_jube.wait()
+
         cmd_output.flush()
         cmd_output.seek(0)
         results = {}
-
         workpackages=re.findall(r"Workpackages(.*?)\n{2,}",cmd_output.read(),re.DOTALL)[0]
         workdirs = {}
         regex_workdir = r"^\s+(\d+).*("+re.escape(output_dir)+r".*work).*"
@@ -330,7 +330,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         benchmark_rundir = self.get_bench_rundir(benchmark_id)
         input_str='jube result ./'+output_dir+' --id '+benchmark_id
         result_from_jube = Popen(input_str,cwd=os.getcwd(),shell=True, stdout=PIPE)
-
+        ret_code = result_from_jube.wait()
         result_array=[]
         # Get data from result array
         empty=True
