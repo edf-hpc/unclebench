@@ -67,22 +67,26 @@ class AutoBenchmarker:
         use the class it defines instead of a standard benchmark manager """
 
         for benchmark_name in benchmark_list:
-            if benchmark_name in os.listdir(plugin_dir):
-                plugin_files=os.listdir(plugin_dir+'/'+benchmark_name)
-                pdb
-                sys.path.append(plugin_dir+'/'+benchmark_name)
-                for benchmark_manager_file in [fi for fi in plugin_files if (fi.endswith(".py")) and ('manager' in fi)]:
-                    benchmark_manager_name=os.path.splitext(benchmark_manager_file)[0]
-                    try :
-                        current_module= __import__ (benchmark_manager_name)
-                        benchmark_manager_class = getattr(current_module,'LocalBenchmarkManager')
-                        self.benchmark_manager_list.append(benchmark_manager_class(benchmark_name,platform))
+          if benchmark_name in os.listdir(plugin_dir):
+            sys.path.append(plugin_dir+'/'+benchmark_name)
 
-                    except Exception as e:
-                        print 'A plugin dir exists for '+benchmark_name+' but ubench cannot import LocalBenchmarkManager class definition'
-                        print str(e)
+            plugin_files=[fi for fi in os.listdir(plugin_dir+'/'+benchmark_name) if (fi.endswith(".py")) and ('manager' in fi)]
+
+            if plugin_files:
+              for benchmark_manager_file in plugin_files:
+                benchmark_manager_name=os.path.splitext(benchmark_manager_file)[0]
+                try :
+                  current_module= __import__ (benchmark_manager_name)
+                  benchmark_manager_class = getattr(current_module,'LocalBenchmarkManager')
+                  self.benchmark_manager_list.append(benchmark_manager_class(benchmark_name,platform))
+
+                except Exception as e:
+                  print 'A plugin dir exists for '+benchmark_name+' but ubench cannot import LocalBenchmarkManager class definition'
+                  print str(e)
             else:
-                self.benchmark_manager_list.append(bm.BenchmarkManager(benchmark_name,platform))
+              raise RuntimeError('A plugin dir exists but the file '+benchmark_name+'_benchmark_manager.py cannot be found')
+          else:
+            self.benchmark_manager_list.append(bm.BenchmarkManager(benchmark_name,platform))
 
     def run_benchmark(self,benchmark_name):
         """ Run a benchmark from its name """
