@@ -19,7 +19,10 @@
 #                                                                            #
 ##############################################################################
 import os
-import pandas as pd
+try :
+  import pandas as pd
+except:
+  pass
 import ubench.data_store.data_store_yaml as dsy
 
 class UbenchComparator:
@@ -32,7 +35,7 @@ class UbenchComparator:
     self.threshold=threshold
 
 
-    
+
 
   def print_comparison(self,result_directories):
 
@@ -51,7 +54,7 @@ class UbenchComparator:
       return("No ubench results data found in given directories or not well-formated data")
 
     if all(panda.empty for panda in pandas):
-      return("")  
+      return("")
 
     # Get intesection of all context fields found in data files
     context_fields=list(set.intersection(*map(set,[item[1] for item in pandas_and_context ])))

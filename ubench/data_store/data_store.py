@@ -18,7 +18,10 @@
 #                                                                            #
 ##############################################################################
 
-import pandas as pd
+try :
+  import pandas as pd
+except:
+  pass
 
 class DataStore():
 
@@ -32,22 +35,22 @@ class DataStore():
 
   def load(self,input_file):
     pass
-    
+
   def data_to_pandas(self,data_list,context_fields_filter=None,additional_fields=None):
     """
     context fields are read in data files but fields can be given as argument to select
     only part of available fields.
-    Return a tuple (context_list,panda) 
+    Return a tuple (context_list,panda)
     """
     report_info={}
 
     if not additional_fields:
       additional_fields=[]
-          
+
     if not data_list:
       # return empty DataFrame
       return (pd.DataFrame(),[])
-  
+
     # Choose context fields as an intersection of context fields found in results
     first=True
     for data_b,metadata_b in data_list:
@@ -66,7 +69,7 @@ class DataStore():
       context_columns=list(context_columns)
 
     result_name_column=None
-    
+
     for data_b,metadata_b in data_list:
       for id_exec in sorted(data_b.keys()): # this guarantees the order of nodes
         if (len(data_b[id_exec]['results_bench'].items())>1):
@@ -83,7 +86,7 @@ class DataStore():
         print("Error : {} is part of the context and is also a result field, cannot interpret data.".format(res))
         # return empty DataFrame
         return(pd.DataFrame(),[])
-        
+
 
     for data_b,metadata_b in data_list:
       for id_exec in sorted(data_b.keys()): # this guarantees the order of nodes
@@ -95,7 +98,7 @@ class DataStore():
               if not column in report_info:
                 report_info[column]=[]
               report_info[column].append(value[column])
-            
+
           report_info['result'].append(result)
           if result_name_column:
             report_info[result_name_column].append(key)
@@ -104,8 +107,3 @@ class DataStore():
       return(pd.DataFrame(report_info),context_fields_filter+[result_name_column])
     else:
       return(pd.DataFrame(report_info),context_fields_filter)
-
-    
-    
-    
-
