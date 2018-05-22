@@ -25,25 +25,27 @@ For a description of platform variables [see](https://github.com/edf-hpc/unclebe
 
 Fetch a benchmark:
 
-   $ubench fetch -b nas
+    $ubench fetch -b nas
 
 Run a benchmark:
 
-   $ubench run -b nas -p cluster  2 4 8 16
+    $ubench run -b nas -p cluster  2 4 8 16
 
 Print benchmark result:
 
-   $ubench result  -b nas -p cluster 
-   Processing nas benchmark :
-   ----analysing results
-   benchmark_resulst_path: /scratch/cr3db69n/Ubench/benchmarks/porthos/nas/./benchmarks_runs/000002/
-   ----extracting analysis
+```bash
+    $ubench result  -b nas -p cluster 
+    Processing nas benchmark :
+    ----analysing results
+    benchmark_resulst_path: /scratch/cr3db69n/Ubench/benchmarks/porthos/nas/./benchmarks_runs/000002/
+    ----extracting analysis
 
-   processes  Mflops    mpi_version
-   2          1358.23   OpenMPI-2.0.1
-   4          2326.29   OpenMPI-2.0.1
-   8          5173.65   OpenMPI-2.0.1
-   16         9176.02   OpenMPI-2.0.1
+    processes  Mflops    mpi_version
+    2          1358.23   OpenMPI-2.0.1
+    4          2326.29   OpenMPI-2.0.1
+    8          5173.65   OpenMPI-2.0.1
+    16         9176.02   OpenMPI-2.0.1
+```
 
 ## Features
 
