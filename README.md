@@ -47,7 +47,7 @@ Print benchmark result:
     16         9176.02   OpenMPI-2.0.1
 ```
 
-## Features
+Summary of UncleBench sub commands:
 
 - fetch: download benchmark source codes, binaries and input files.
 - run: run benchmark with parameter modification on the fly.
@@ -63,7 +63,7 @@ For a description of provided benchmarks and their parameters [see](https://gith
 
 For a description of UncleBench architecture [see](https://github.com/edf-hpc/unclebench/blob/master/docs/source/developer_guide.asc)
 
-## Setting up a development environment
+# Setting up a development environment
 
 To execute tests, the following commands are necessary:
 
