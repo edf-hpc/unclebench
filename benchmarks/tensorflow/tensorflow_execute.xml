@@ -22,7 +22,7 @@
 
 
   <substituteset name="execute_sub" init_with="platform.xml">
-    <sub source="#STARTER#" dest="" />
+    <sub source="#STARTER#" dest="srun" />
     <sub source="#PREPROCESS#" dest="source activate" />
   </substituteset>
 
@@ -30,6 +30,7 @@
       
     <!-- Choose compiler and MPI versions -->
     <use from="platform.xml"> cuda_set </use>
+    <use from="platform.xml">cluster_specs</use>
     <use> param_set </use>
     <use> tensorflow_scripts </use>
     <use from="platform.xml"> execute_set </use>   

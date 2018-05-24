@@ -27,6 +27,7 @@
 	<column>nodes</column>
 	<column>model</column>
 	<column>total_image</column>
+	<column>total_image_avg</column>
       </table>
   </result>
 
