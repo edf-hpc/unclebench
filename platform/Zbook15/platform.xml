@@ -63,7 +63,7 @@
 
     <parameterset name="cuda_set">
       <parameter name="cuda_tlk_v">0</parameter>
-      <parameter name="cudnn_v">1</parameter>
+      <parameter name="cudnn_v">0</parameter>
       	<parameter name="module_cuda" mode="python">
 	  ["Cuda-8.0.44"][$cuda_tlk_v]
 	</parameter>
