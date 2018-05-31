@@ -83,8 +83,7 @@ class UbenchConfig:
         """ Get list of available platforms """
         platform_list=[]
         jube_xml = jube_xml_parser.JubeXMLParser("",[],"",self.platform_dir)
-        platform_dir = jube_xml.get_platform_dir()
-        root=ET.parse(os.path.join(platform_dir,'platforms.xml')).getroot()
+        root=jube_xml.load_platforms_xml()
         jube_xml.delete_platform_dir()
         for node in root.getiterator('path'):
             tags=node.get('tag')

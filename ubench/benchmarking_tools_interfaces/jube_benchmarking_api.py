@@ -49,9 +49,9 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     self.uconf=uconfig.UbenchConfig()
     self.benchmark_path_in = os.path.join(self.uconf.benchmark_dir,benchmark_name,benchmark_name+".xml")
     self.benchmark_name = benchmark_name
+    self.platform_name = platform_name
     benchmark_dir = os.path.join(self.uconf.benchmark_dir,benchmark_name)
     benchmark_files = [file_b for  file_b in os.listdir(benchmark_dir) if file_b.endswith(".xml")]
-
     self.benchmark_path = os.path.join(self.uconf.run_dir,platform_name,benchmark_name)
     self.jube_xml_files = jube_xml_parser.JubeXMLParser(benchmark_dir,benchmark_files,self.benchmark_path,self.uconf.platform_dir)
     self.jube_xml_files.load_platform_xml(platform_name)
@@ -204,7 +204,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         try:
           scheduler_interface=slurmi.SlurmInterface()
         except:
-          print "Warning!! Unable to load Slurm module"
+          print("Warning!! Unable to load Slurm module")
           scheduler_interface=None
 
         os.chdir(self.benchmark_path)
@@ -300,7 +300,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         try:
           log_file = open(os.path.join(benchmark_rundir,"ubench.log"),'r')
         except IOError:
-          print 'Warning!! file ubench log was not found. Benchmark data result could not be created'
+          print('Warning!! file ubench log was not found. Benchmark data result could not be created')
           return
 
         metadata = {}
@@ -393,6 +393,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         self.jube_xml_files.add_bench_input()
         self.jube_xml_files.remove_multisource()
         self.jube_xml_files.write_bench_xml()
+        self.jube_xml_files.write_platform_xml()
         platform_dir = self.jube_xml_files.get_platform_dir()
 
         old_run_dir=self.analyse_last_benchmark()
@@ -424,16 +425,16 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         return (absolute_run_dir,ID)
 
 
-  def status(self,benchmark_id):
+  # def status(self,benchmark_id):
 
-        status = self.get_status_info(benchmark_id)
-        for step in status:
-            print "\nStatus for step: "+step
-            print "--------------------------------"
-            print "id\tstarted\tdone\tworkdir"
-            print "--------------------------------"
-            for task in status[step]:
-                print task['id'] + "\t"+ task['started']+"\t"+task['done']+"\t"+task['workdir']
+  #       status = self.get_status_info(benchmark_id)
+  #       for step in status:
+  #           print "\nStatus for step: "+step
+  #           print "--------------------------------"
+  #           print "id\tstarted\tdone\tworkdir"
+  #           print "--------------------------------"
+  #           for task in status[step]:
+  #               print task['id'] + "\t"+ task['started']+"\t"+task['done']+"\t"+task['workdir']
 
 
   def set_custom_nodes(self,nnodes_list,nodes_id_list):
@@ -460,7 +461,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     :rtype: list of tuples
     """
     parameters_list={'benchmark' : self.jube_xml_files.get_params_bench(),
-                     'platform' : self.jube_xml_files.get_params_platform()}
+                     'platform' : self.jube_xml_files.get_params_platform(self.platform_name)}
     return  parameters_list
 
   def set_parameter(self,dict_options):
@@ -472,7 +473,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     :returns: Return a list of tuples [(filename,param1,old_value,new_value),(filename,param2,old_value,new_value),....]
     :rtype: List of 3-tuples ex:[(parameter_name,old_value,value),....]
         """
-    return self.jube_xml_files.set_params_bench(dict_options)
+    return self.jube_xml_files.set_params_bench(dict_options) + self.jube_xml_files.set_params_platform(dict_options)
 
   def get_bench_rundir(self,benchmark_id):
     """

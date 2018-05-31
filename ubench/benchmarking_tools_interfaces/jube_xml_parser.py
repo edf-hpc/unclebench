@@ -40,7 +40,7 @@ class JubeXMLParser():
     self.bench_xml_root = [bench_xml.getroot() for bench_xml in self.bench_xml.values()]
     self.platforms_dir = platforms_dir
     self.platform_dir = tempfile.mkdtemp()
-    self.platform_xml = ""
+    self.platform_xml = []
     self.config_xml = ""
 
   def write_bench_xml(self):
@@ -48,12 +48,14 @@ class JubeXMLParser():
       xml_file.write(os.path.join(self.bench_xml_path_out,name))
     return True
 
+  def write_platform_xml(self):
+    for name,p_xml in self.platform_xml.iteritems():
+      p_xml.write(os.path.join(self.platform_dir,name))
 
   def delete_platform_dir(self):
     shutil.rmtree(self.platform_dir)
 
   def get_platform_dir(self):
-    self.generate_platform()
     return self.platform_dir
 
   def remove_multisource(self):
@@ -64,7 +66,7 @@ class JubeXMLParser():
 
   def load_platforms_xml(self):
     self.generate_platform()
-    return ET.parse(os.path.join(self.platform_dir,"platforms.xml")).getroot()
+    return ET.parse(os.path.join(self.platform_dir,"platforms.xml"))
 
   # The file is loaded later on, when the benchmark has already been run
   def load_config_xml(self,path):
@@ -178,6 +180,20 @@ class JubeXMLParser():
     parameters_list=[]
     for b_xml in self.bench_xml_root:
       for parameter_node in b_xml.getiterator('parameter'):
+        load_param = parameter_node.get('name')
+        if  load_param in dict_options.keys():
+          parameters_list.append((load_param,
+                                  parameter_node.text.strip(),
+                                  str(dict_options[load_param])))
+          parameter_node.text=str(dict_options[load_param])
+          upd=True
+
+    return parameters_list
+
+  def set_params_platform(self,dict_options):
+    parameters_list=[]
+    for p_xml in self.platform_xml.values():
+      for parameter_node in p_xml.getroot().getiterator('parameter'):
         load_param = parameter_node.get('name')
         if  load_param in dict_options.keys():
           parameters_list.append((load_param,
@@ -414,8 +430,8 @@ class JubeXMLParser():
     return [d for d in os.listdir(dir_path) if os.path.isdir(os.path.join(dir_path, d))]
 
   def generate_platform(self):
+    # generate a file with all platform paths
     platform_dir = self.platforms_dir
-
     template_xml = ET.parse(os.path.join(platform_dir,"template.xml")) # This contain the file platform.xml
     platform_directories = self.get_dirs(platform_dir)
     include_dir = template_xml.getroot().find("include-path")
@@ -447,21 +463,30 @@ class JubeXMLParser():
   def load_platform_xml(self,platform_name):
     platforms_xml = self.load_platforms_xml()
     path_raw = ""
-    path_platform_xml = None
-    for path in platforms_xml.iter('path'):
+    paths_platform_xml = {}
+    for path in platforms_xml.getroot().iter('path'):
       if path.get('tag') == platform_name:
         path_raw = path.text
-        for filetype in ["platform.xml","nodetype.xml"]:
-          file = os.popen("echo "+os.path.join(path_raw,filetype)).read().strip()
-          if os.path.exists(file):
-            path_platform_xml = file
+        platform_path = os.path.join(path_raw,"platform.xml")
+        nodetype_path = os.path.join(path_raw,"nodetype.xml")
 
-    if path_platform_xml:
-      self.platform_xml = ET.parse(path_platform_xml).getroot()
+        if os.path.exists(platform_path):
+          paths_platform_xml["platform.xml"] = ET.parse(platform_path)
+          path.text = self.platform_dir
+        elif os.path.exists(nodetype_path):
+          platform_updir = os.path.dirname(path_raw)
+          path.text = self.platform_dir
+          paths_platform_xml["nodetype.xml"] = ET.parse(nodetype_path)
+          paths_platform_xml["platform.xml"] = ET.parse(os.path.join(platform_updir,"platform.xml"))
 
-  def get_params_platform(self):
+    self.platform_xml = paths_platform_xml
+    platforms_xml.write(os.path.join(self.platform_dir,"platforms.xml"))
+
+  def get_params_platform(self,platform_name):
     parameters_list=[]
-    for parameter_node in self.platform_xml.getiterator('parameter'):
-      if parameter_node.text:
-        parameters_list.append((parameter_node.get('name'),parameter_node.text.strip()))
+    self.load_platform_xml(platform_name)
+    for platform_xml in self.platform_xml.values():
+      for parameter_node in platform_xml.getiterator('parameter'):
+        if parameter_node.text:
+          parameters_list.append((parameter_node.get('name'),parameter_node.text.strip()))
     return parameters_list
