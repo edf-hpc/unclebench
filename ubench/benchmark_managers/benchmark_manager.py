@@ -112,10 +112,12 @@ class BenchmarkManager:
         print '---- Use the following command to follow benchmark progress :'\
             +'    " ubench log -p {0} -b {1} -i {2}"'.format(platform,self.benchmark_name,ID)
 
-    def list_parameters(self,config_dir_path=None):
-      all_parameters = self.benchmarking_api.list_parameters(config_dir_path)
+    def list_parameters(self,default_values):
+      all_parameters = self.benchmarking_api.list_parameters(default_values)
       for type_param in all_parameters:
         print "\n"
+        if default_values:
+          print "DEFAULT PARAMETER VALUES\n"
         print type_param + " parameters"
         print "-----------------------------------------------"
         for parameter,value in all_parameters[type_param]:

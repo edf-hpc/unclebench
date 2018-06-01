@@ -89,7 +89,6 @@ parser_list.add_argument('-p',help='Name of the test platform', required=platfor
 parser_list.add_argument('-b',help='Benchmark names list',required=True,nargs='+',\
                                    choices=benchmark_list)
 
-
 # parser log
 parser_log = subparsers.add_parser('log',help='Print log of a benchmark run given its ID.')
 
@@ -106,6 +105,7 @@ parser_listparams.add_argument('-p',help='Name of the test platform', required=p
                                    choices=platform_list,default=default_platform)
 parser_listparams.add_argument('-b',help='Benchmark names list',required=True,nargs='+',\
                                    choices=benchmark_list)
+parser_listparams.add_argument('-d',help='Print default parameters values',default=False,action='store_true')
 
 # parser result
 parser_result = subparsers.add_parser('result',help='Print raw results array from a benchmark run.')
@@ -175,7 +175,7 @@ elif args.subparser_name=='log':
 elif args.subparser_name=='list':
     commands.listb()
 elif args.subparser_name=='listparams':
-    commands.list_parameters()
+    commands.list_parameters(default_values=args.d)
 elif args.subparser_name=='report':
     commands.report()
 elif args.subparser_name=='status':

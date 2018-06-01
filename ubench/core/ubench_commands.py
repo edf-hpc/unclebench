@@ -50,7 +50,7 @@ class Ubench_cmd:
     self.benchmark_list = benchmark_list
     self.auto_bm = abench.AutoBenchmarker('')
     self.auto_bm.add_benchmark_managers_from_path(uconf.plugin_dir,benchmark_list,platform)
-    
+
 
   def log(self,id_list=[]):
 
@@ -67,11 +67,11 @@ class Ubench_cmd:
     print ''
 
 
-  def list_parameters(self):
+  def list_parameters(self,default_values=False):
     for benchmark_name in self.benchmark_list:
       bm=self.auto_bm.get_benchmark_manager(benchmark_name)
       print os.path.join(self.bench_dir,benchmark_name)
-      bm.list_parameters(os.path.join(self.bench_dir,benchmark_name))
+      bm.list_parameters(default_values)
 
   def result(self,id_list):
 
@@ -272,7 +272,7 @@ class Ubench_cmd:
       print("    - "+rdir)
     print("")
     ucomparator.print_comparison(result_directories)
-    
+
 
   def translate_wlist_to_scheduler_wlist(self,w_list_arg):
   # Translate ubench custom node list format to scheduler custome node list format

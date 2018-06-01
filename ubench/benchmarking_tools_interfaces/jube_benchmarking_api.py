@@ -452,7 +452,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     # Add an xml section describing custom nodes configurations
     self.jube_xml_files.add_custom_nodes_stub(nnodes_list,nodes_id_list)
 
-  def list_parameters(self,config_dir_path=None):
+  def list_parameters(self,default_values):
     """
     List benchmark customisable parameters
     :param config_dir_path: Optional parameter reprenting the path of the config files (usefull when a benchmark has never been run).
@@ -460,8 +460,18 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     :returns: Return a list of tuples [(param1,value),(param2,value),....]
     :rtype: list of tuples
     """
-    parameters_list={'benchmark' : self.jube_xml_files.get_params_bench(),
-                     'platform' : self.jube_xml_files.get_params_platform(self.platform_name)}
+    platform_params = self.jube_xml_files.get_params_platform(self.platform_name)
+    benchmark_params =self.jube_xml_files.get_params_bench()
+    if default_values:
+      eval_platform_params = self.parse_jube_parameter(platform_params)
+      platform_const = dict((y, x) for x, y in eval_platform_params) # we convert platform values into dictionary
+      eval_benchmark_params = self.parse_jube_parameter(benchmark_params,platform_const)
+      parameters_list={'platform' : eval_platform_params,
+                       'benchmark' : eval_benchmark_params}
+    else:
+      parameters_list={'platform' : platform_params,
+                       'benchmark' : benchmark_params}
+
     return  parameters_list
 
   def set_parameter(self,dict_options):
@@ -487,3 +497,25 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
       return dir_pattern.findall(jube_last_cmd.stdout.read())[0]
     else:
       return os.path.join(self.benchmark_path,output_dir,str(benchmark_id).zfill(6))
+
+  def parse_jube_parameter(self,list_jube_parameters,init_const={}):
+
+    jube_const = init_const
+    parsed_data = {}
+    for name,value in list_jube_parameters:
+      parsed_value=re.match('^\[.*\]\[\$(\w+)\]',value)
+      if parsed_value:
+        for name_c,value_c in jube_const.items():
+          if name_c in value:
+            try:
+              parsed_data[name] = eval(re.sub('\$'+name_c,value_c,value))
+            except:
+              print("Error!! consistency problem in JUBE platform file near variable {}".format(name))
+      else:
+        parsed_data[name]=value
+        jube_const[name]=value
+    new_list = []
+    for name,value in list_jube_parameters:
+      new_list.append((name,parsed_data[name]))
+
+    return new_list
