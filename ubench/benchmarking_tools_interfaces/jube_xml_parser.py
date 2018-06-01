@@ -426,6 +426,15 @@ class JubeXMLParser():
           analyse_files.append(subnode.text.strip())
     return analyse_files
 
+  def get_result_cvsfile(self):
+    config_xml_file = self.config_xml
+    cvs_file_name = None
+    for node in config_xml_file.getiterator('table'):
+      if (node.get('style')=="csv"):
+        cvs_file_name=node.get("name")
+        return cvs_file_name
+
+
   def get_dirs(self,dir_path):
     return [d for d in os.listdir(dir_path) if os.path.isdir(os.path.join(dir_path, d))]
 

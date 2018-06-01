@@ -340,13 +340,22 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
           flag_file.write("OK")
           flag_file.close()
 
+        configuration_file_path=os.path.join(benchmark_runpath,'configuration.xml')
+        try :
+            self.jube_xml_files.load_config_xml(configuration_file_path)
+        except :
+            raise IOError('Cannot find: '+configuration_file_path+' file.')
 
-        input_str='jube result ./'+output_dir+' --id '+benchmark_id
+        # Get job errlog and outlog filenames from configuration.xml file
+        cvsfile = self.jube_xml_files.get_result_cvsfile()
+
+        input_str='jube result ./'+output_dir+' --id '+benchmark_id+' -o '+cvsfile
         result_from_jube = Popen(input_str,cwd=os.getcwd(),shell=True, stdout=PIPE)
         ret_code = result_from_jube.wait()
         result_array=[]
         # Get data from result array
         empty=True
+
         with open(os.path.join(benchmark_rundir,'result/ubench_results.dat'),'w') as result_file:
           for line in result_from_jube.stdout:
             result_file.write(line)
@@ -371,6 +380,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         if (empty):
             raise IOError
+
 
         # Restore working directory
         os.chdir(old_path)
