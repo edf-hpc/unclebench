@@ -14,7 +14,7 @@
   <parameterset name="system_parameters" init_with="platform.xml">
     <!-- <use> param_set </use> -->
     <parameter name="nodes" type="int">1</parameter>
-    <parameter name="executable">python tf_cnn_benchmarks.py --num_gpus=1 --model $model --batch_size $batch_size</parameter>
+    <parameter name="executable">python tf_cnn_benchmarks.py --num_gpus=$gpu_per_node --model $model --batch_size $batch_size</parameter>
     <parameter name="modules">$module_cuda $module_cudnn</parameter>
     <parameter name="timelimit">1:00:00</parameter>
     <!-- Arbitrary choice of one task per NUMA region -->
