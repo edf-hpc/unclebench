@@ -55,6 +55,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     self.benchmark_path = os.path.join(self.uconf.run_dir,platform_name,benchmark_name)
     self.jube_xml_files = jube_xml_parser.JubeXMLParser(benchmark_dir,benchmark_files,self.benchmark_path,self.uconf.platform_dir)
     self.jube_xml_files.load_platform_xml(platform_name)
+    self.jube_const_params = {}
 
   def analyse_benchmark(self,benchmark_id):
     """ Analyze benchmark results
@@ -487,8 +488,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     benchmark_params =self.jube_xml_files.get_params_bench()
     if default_values:
       eval_platform_params = self.parse_jube_parameter(platform_params)
-      platform_const = dict((y, x) for x, y in eval_platform_params) # we convert platform values into dictionary
-      eval_benchmark_params = self.parse_jube_parameter(benchmark_params,platform_const)
+      # platform_const = dict((y, x) for x, y in eval_platform_params) # we convert platform values into dictionary
+      eval_benchmark_params = self.parse_jube_parameter(benchmark_params)
       parameters_list={'platform' : eval_platform_params,
                        'benchmark' : eval_benchmark_params}
     else:
@@ -521,24 +522,54 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     else:
       return os.path.join(self.benchmark_path,output_dir,str(benchmark_id).zfill(6))
 
-  def parse_jube_parameter(self,list_jube_parameters,init_const={}):
+  def parse_jube_parameter(self,list_jube_parameters):
 
-    jube_const = init_const
-    parsed_data = {}
-    for name,value in list_jube_parameters:
-      parsed_value=re.match('^\[.*\]\[\$(\w+)\]',value)
-      if parsed_value:
-        for name_c,value_c in jube_const.items():
-          if name_c in value:
-            try:
-              parsed_data[name] = eval(re.sub('\$'+name_c,value_c,value))
-            except:
-              print("Error!! consistency problem in JUBE platform file near variable {}".format(name))
-      else:
-        parsed_data[name]=value
-        jube_const[name]=value
-    new_list = []
-    for name,value in list_jube_parameters:
-      new_list.append((name,parsed_data[name]))
+    # get constants
+    const_hash={}
+    variable_hash={}
+    parameter_regex_sub='(?<!\\$)(?:\\$\\$)*\\$(?!\\$)(\\{)?(.+?)(?(1)\\}|(?:\\w+|$))'
+    parameter_regex_find='(?<!\\$)(?:\\$\\$)*\\$(?!\\$)(\\{)?(.+?)(?(1)\\}|(?:\\W|$))'
+    external_variables = []
+    for k,v in list_jube_parameters:
+      variables = [m2 for m1,m2 in re.findall(parameter_regex_find,v)]
+      #import pdb;pdb.set_trace()
+      if variables:
+        # import pdb;pdb.set_trace()
+        if len(set(variables) & set([var for var,value in list_jube_parameters])) != len(set(variables)):
+          external_variables.append(k)
+        elif set(variables) & set(external_variables):
+          external_variables.append(k)
 
-    return new_list
+    [const_hash.update({k:v}) for k,v in list_jube_parameters if not re.findall(parameter_regex_find,v)]
+    [variable_hash.update({k:v}) for k,v in list_jube_parameters if re.findall(parameter_regex_find,v)]
+
+    # we get rid of variables that cannot not be resolved, mostly Jube
+    for var in external_variables:
+      variable_hash.pop(var)
+
+    self.jube_const_params.update(const_hash)
+    parsed_data = []
+    while variable_hash:
+      temp_hash = {}
+      for k,v in variable_hash.iteritems():
+        python_exp = re.sub(parameter_regex_sub,self.val_repl,v)
+        if not re.findall(parameter_regex_find,python_exp):
+          try:
+            python_eval = eval(python_exp)
+            self.jube_const_params[k] = python_eval
+            parsed_data.append((k,str(python_eval)))
+          except (NameError, SyntaxError,TypeError,KeyError):
+            self.jube_const_params[k] = python_exp
+            parsed_data.append((k,str(python_exp)))
+        else:
+          temp_hash.update({k:python_exp})
+      variable_hash = temp_hash
+    return parsed_data
+
+  def val_repl(self,matchobj):
+    match_variable_name = re.match('^\.*\$(\w+)\.*|^\.*\$\{(\w+)\\}\.*',matchobj.group(0)).group(1,2)
+    name = [x for x in match_variable_name if x is not None ][0]
+    if self.jube_const_params.has_key(name):
+      return str(self.jube_const_params[name])
+    else:
+      return matchobj.group(0)
