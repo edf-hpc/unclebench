@@ -60,7 +60,7 @@
       <do work_dir="io500-local">
 	  chmod +x io500.sh
 	  cp ../${submit_script} .
-	  ${submit} ${submit_script}
+	  $submit_singleton $submit_script
       </do>
 	  
   </step>
