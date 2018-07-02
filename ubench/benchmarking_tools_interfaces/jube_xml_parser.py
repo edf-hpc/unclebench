@@ -322,21 +322,23 @@ class JubeXMLParser():
                                                 'separator':'??'})
           custom_nodes_id.text=str(custom_nodes_ids)+'[$custom_id]'
 
-          custom_submit=ET.SubElement(custom_element,'parameter',\
-                                    attrib={'name':'custom_submit',\
-                                            'separator':'??',\
-                                            'mode':'python',\
-                                            'type':'string',\
-                                            'separator':'??'})
 
-        if custom_nodes_ids:
-          custom_submit.text='['
-          for el in custom_nodes_ids:
-            if el!=None:
-              custom_submit.text+="'$submit -w $custom_nodes_id ',"
-            else:
-              custom_submit.text+="'$submit ',"
-          custom_submit.text=custom_submit.text[:-1]+'][$custom_id]'
+          custom_sub={}
+          custom_sub_keys=["submit","submit_singleton"]
+          for ck in custom_sub_keys:
+            custom_sub[ck]=ET.SubElement(custom_element,'parameter',\
+                                         attrib={'name':'custom_'+ck,\
+                                                 'separator':'??',\
+                                                 'mode':'python',\
+                                                 'type':'string',\
+                                                 'separator':'??'})
+            custom_sub[ck].text='['
+            for el in custom_nodes_ids:
+              if el!=None:
+                custom_sub[ck].text+="'$"+ck+" -w $custom_nodes_id ',"
+              else:
+                custom_sub[ck].text+="'$"+ck+" ',"
+            custom_sub[ck].text=custom_sub[ck].text[:-1]+'][$custom_id]'
 
         p.insert(0,custom_element)
 

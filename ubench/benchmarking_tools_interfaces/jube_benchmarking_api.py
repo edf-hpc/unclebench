@@ -471,7 +471,9 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     """
     self.jube_xml_files.substitute_element_text('parameter','nodes','.*','$custom_nodes')
     if nodes_id_list:
-      self.jube_xml_files.substitute_element_text('do',None,re.escape('$submit '),'$custom_submit ')
+      for subcmd in ["submit","{submit}","submit_singleton","{submit_singleton}"]:
+        self.jube_xml_files.substitute_element_text('do',None,re.escape('$'+subcmd+' '),
+                                                    '$custom_'+subcmd+' ')
 
     # Add an xml section describing custom nodes configurations
     self.jube_xml_files.add_custom_nodes_stub(nnodes_list,nodes_id_list)
