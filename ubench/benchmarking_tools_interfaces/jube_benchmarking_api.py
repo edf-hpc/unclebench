@@ -291,8 +291,10 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                 job_id = re_result[0]
                 value['job_id_ubench'] = job_id
                 if scheduler_interface:
-                  value.update(scheduler_interface.get_job_info(job_id)[-1])
-                  results[key].update(value)
+                  job_info = scheduler_interface.get_job_info(job_id)
+                  if job_info:
+                    value.update(job_info[-1])
+                    results[key].update(value)
                 break
 
         # Add metadata present on ubench.log
