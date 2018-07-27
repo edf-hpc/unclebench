@@ -29,7 +29,7 @@ Fetch a benchmark:
 
 Run a benchmark:
 
-    $ubench run -b nas -p cluster  2 4 8 16
+    $ubench run -b nas -p cluster  -w 2 4 8 16
 
 Print benchmark result:
 
@@ -65,18 +65,22 @@ For a description of UncleBench architecture [see](https://github.com/edf-hpc/un
 
 # Setting up a development environment
 
-To execute tests, the following commands are necessary:
-
+We use virtualenv to setup a virtual environment for test:
     sudo apt-get install python-virtualenv
     mkdir unclebench_env/
     virtualenv unclebench_env/
+
+To activate the virtual environment:
     cd unclebench_env
     source bin/activate
+
+We install then 'pytest'
     pip install pytest
+
+Finally, we load some UncleBench variables and execute the tests: 
+
     source dev_env.sh
     pytest
-
-
 
 Licence
 -------
