@@ -122,6 +122,7 @@
 	<column>tasks</column>
 	<column>Mflops</column>
 	<column>mpi_version</column>
+	<column>bench</column>
       </table>
     </result>
     
