@@ -66,15 +66,18 @@ For a description of UncleBench architecture [see](https://github.com/edf-hpc/un
 # Setting up a development environment
 
 We use virtualenv to setup a virtual environment for test:
+
     sudo apt-get install python-virtualenv
     mkdir unclebench_env/
     virtualenv unclebench_env/
 
 To activate the virtual environment:
+
     cd unclebench_env
     source bin/activate
 
 We install then 'pytest'
+
     pip install pytest
 
 Finally, we load some UncleBench variables and execute the tests: 
