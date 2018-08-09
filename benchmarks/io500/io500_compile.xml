@@ -25,6 +25,8 @@
 	  <!-- Remove setup which would remove ior sources -->
 	  sed -i "0,/setup/ s/setup//" utilities/prepare.sh
 	  
+	  export CC=${mpi_cc}
+	  
 	  <!-- Recompile on execution platform that may be different from the fetching platform -->
 	  ./utilities/prepare.sh
       </do>
