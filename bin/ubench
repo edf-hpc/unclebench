@@ -61,7 +61,7 @@ parser_fetch.add_argument('-b',help='Benchmarks to fetch. Benchmark definition f
                           choices=benchmark_list, required=True)
 
 # parser for run
-run_help ='Execute benchmarks.'
+run_help ='Execute benchmarks in /scratch/<user>/Ubench/benchmarks directory (can be customized with UBENCH_RUN_DIR_BENCH directory)'
 
 parser_run=subparsers.add_parser('run',help=run_help)
 
@@ -108,7 +108,7 @@ parser_listparams.add_argument('-b',help='Benchmark names list',required=True,na
 parser_listparams.add_argument('-d',help='Print default parameters values',default=False,action='store_true')
 
 # parser result
-parser_result = subparsers.add_parser('result',help='Print raw results array from a benchmark run.')
+parser_result = subparsers.add_parser('result',help='Print raw results array from a benchmark run. To be found benchmark runs must be located in /sratch/<user>/Ubench/benchmarks directory but this path can be customized with UBENCH_RUN_DIR_BENCH environment variable')
 
 parser_result.add_argument('-p',help='Name of the test platform', required=platform_required,\
                                    choices=platform_list,default=default_platform)
