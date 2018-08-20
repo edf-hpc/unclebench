@@ -9,7 +9,6 @@
   <multisource>
     <source protocol="git" name="stretch">
       <url>https://github.com/scibian/unclebench</url>
-      <!-- commit used in https://www.tensorflow.org/performance/benchmarks -->
     </source>
 
 
@@ -50,7 +49,7 @@
       <use>pattern</use>
 
       <analyse step="execute">
-        <file>stdout</file> <!-- file which should be scanned -->
+        <file>stdout</file> 
       </analyse>
     </analyser>
 
@@ -58,7 +57,7 @@
 
     <result>
       <use>analyse</use>
-      <table name="result" style="csv" sort="ubench_p">
+      <table name="result" style="csv">
 
 	<column>host_p</column>
 	<column>comp_version</column>
