@@ -2,17 +2,11 @@
 <jube>
 
   <include-path>
-    <path> $UBENCH_PLATFORM_DIR </path>
+    <path> $UBENCH_PLATFORM_DIR/Zbook15</path>
   </include-path>
 
 
-  <multisource>
-    <source protocol="git" name="stretch">
-      <url>https://github.com/scibian/unclebench</url>
-    </source>
 
-
-  </multisource>
 
 
   <benchmark name="simple" outpath="benchmark_runs">
@@ -22,7 +16,7 @@
 
     <parameterset name="sets">
 
-      <parameter name="host_p"  mode="shell">hostname</parameter>
+      <parameter name="host_p"  mode="python">$Hello_word</parameter>
     </parameterset>
 
     <patternset name="pattern">
@@ -57,7 +51,7 @@
 
     <result>
       <use>analyse</use>
-      <table name="result" style="csv">
+      <table name="result" style="pretty">
 
 	<column>host_p</column>
 	<column>comp_version</column>
