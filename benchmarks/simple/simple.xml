@@ -15,7 +15,7 @@
   </multisource>
 
 
-  <benchmark name="sample" outpath="benchmark_runs">
+  <benchmark name="simple" outpath="benchmark_runs">
 
 
 

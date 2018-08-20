@@ -27,8 +27,8 @@ class LocalBenchmarkManager(bm.BenchmarkManager):
     def __init__(self,benchmark_name,platform):
         """ Constructor """
         bm.BenchmarkManager.__init__(self,benchmark_name,platform)
-        self.title='Sample Benchmark test'
-        self.description='Sample case of benchmark to understand how it works'
+        self.title='Simple Benchmark test'
+        self.description='Simple case of benchmark to understand how it works'
         self.print_array=False
         self.print_transposed_array=True
         self.print_plot=False
