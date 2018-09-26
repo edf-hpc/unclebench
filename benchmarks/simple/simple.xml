@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+  <include-path>
+    <path> $UBENCH_PLATFORM_DIR/</path>
+  </include-path>
+
+
+  <multisource>
+    <source protocol="git" name="stretch">
+      <url>https://github.com/scibian/unclebench</url>
+    </source>
+</multisource>	
+
+  <benchmark name="simple" outpath="benchmark_runs">
+
+
+
+
+    <parameterset name="sets">
+
+      <parameter name="host_p"  mode="python">"\"Hostname_id\"" </parameter>
+    </parameterset>
+
+    <patternset name="pattern">
+
+      <pattern name="p_pat" type="int" >$jube_pat_int</pattern>
+    </patternset>
+
+
+
+
+    <step name="execute">
+      <use>sets</use>
+      <use from="platform.xml"> mpi_set </use>
+      <use from="platform.xml"> compiler_set </use>
+
+
+      <do>echo "3 5 16 30 50 86 99"</do>
+    </step>
+
+
+
+
+    <analyser name="analyse">
+      <use>pattern</use>
+
+      <analyse step="execute">
+        <file>stdout</file> 
+      </analyse>
+    </analyser>
+
+
+
+    <result>
+      <use>analyse</use>
+      <table name="result" style="csv">
+
+	<column>host_p</column>
+	<column>comp_version</column>
+	<column>mpi_version</column>
+	<column>p_pat_min</column>
+	<column>p_pat_avg</column>
+	<column>p_pat_max</column>
+
+
+
+      </table>
+    </result>
+
+  </benchmark>
+</jube>
