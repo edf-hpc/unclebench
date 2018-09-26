@@ -27,9 +27,9 @@ os.environ['JUBE_EXEC_SHELL']='/bin/bash'
 
 import ubench.core.ubench_commands as ubench_commands
 import ubench.core.ubench_config as uconfig
+from ubench import __version__
 
-
-# Set all default path
+# Set all default paths
 uconf=uconfig.UbenchConfig()
 
 platform_list=uconf.get_platform_list()
@@ -46,6 +46,8 @@ for platform_name in platform_list :
 # Build an argparse with a subparse for each main ubench option
 parser = argparse.ArgumentParser(description='Unclebench benchmarking and reporting tool.',\
                                  formatter_class=argparse.RawTextHelpFormatter)
+
+parser.add_argument('-v','--version', action='version', version='%(prog)s {version}'.format(version=__version__))
 
 subparsers = parser.add_subparsers(dest='subparser_name')
 
@@ -160,7 +162,6 @@ if vars(args).has_key('p'):
     platform_arg = args.p
 if vars(args).has_key('b'):
     benchmark_arg = args.b
-
 
 commands = ubench_commands.Ubench_cmd(platform=platform_arg,benchmark_list=benchmark_arg)
 
