@@ -80,18 +80,18 @@ We install unclebench dependencies:
 
     pip install pytest pytest_mock mock pyyaml
 
-To execute examples using platform Zbook15 we should install JUBE version 2.1.0 before [download](http://www.fz-juelich.de/ias/jsc/EN/Expertise/Support/Software/JUBE/JUBE2/jube-download_node.html;jsessionid=7444E10288FBD0EE8091B9AD8FE60F73):
+To execute examples using platform Zbook15 we should install JUBE version 2.1.0 before, [download JUBE](http://www.fz-juelich.de/ias/jsc/EN/Expertise/Support/Software/JUBE/JUBE2/jube-download_node.html;jsessionid=7444E10288FBD0EE8091B9AD8FE60F73):
 
-   tar -xf JUBE-2.1.0.tar.gz
-   cd JUBE-2.1.0/
-   python setup.py install
+    tar -xf JUBE-2.1.0.tar.gz
+    cd JUBE-2.1.0/
+    python setup.py install
 
 To run benchmarks locally:
 
-   export UBENCH_DIR_CREATE=true
-   source dev_env.sh
+    export UBENCH_DIR_CREATE=true
+    source dev_env.sh
 
-The variables UBENCH_RUN_DIR_BENCH and UBENCH_RESOURCE_DIR will be created automatically and they will point to directories in /tmp/.
+The variables 'UBENCH_RUN_DIR_BENCH' and 'UBENCH_RESOURCE_DIR' will be created automatically and they will point to directories in '/tmp/'.
 To execute unitary tests:
     
     pytest
