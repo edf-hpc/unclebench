@@ -19,8 +19,11 @@ from subprocess import Popen
 def init_env():
   config = {}
   config['main_path'] = "/tmp/ubench_pytest/"
+  repository_root= os.path.join(pytest.config.rootdir.dirname,pytest.config.rootdir.basename)
   os.environ["UBENCH_BENCHMARK_DIR"] = os.path.join(config['main_path'],'benchmarks')
-  test_env = tempbench.Tempbench(config);
+  os.environ["UBENCH_PLATFORM_DIR"] = os.path.join(repository_root,'platform')
+  os.environ["UBENCH_PLUGIN_DIR"] = os.path.join(repository_root,'ubench/plugins')
+  test_env = tempbench.Tempbench(config,repository_root)
   test_env.copy_files()
   os.environ["UBENCH_RUN_DIR_BENCH"] = test_env.config['run_path']
   os.environ["UBENCH_RESOURCE_DIR"] = test_env.config['resources_path']
@@ -43,11 +46,11 @@ def test_bench_m():
   bench = bm.BenchmarkManager("simple","")
 
 def test_benchmark_no_exist(init_env):
-
   with pytest.raises(OSError):
     benchmarking_api=jba.JubeBenchmarkingAPI("bench_name","")
 
-def test_benchmark_empty():
+def test_benchmark_empty(init_env):
+  init_env.create_empty_bench()
   with pytest.raises(ET.ParseError):
     benchmarking_api=jba.JubeBenchmarkingAPI("test_bench","")
 
@@ -97,25 +100,25 @@ def test_custom_nodes_not_in_result(init_env):
   for column in table.findall('column'):
     assert column.text != 'custom_nodes_id'
 
-def test_get_bench_multisource_svn():
-  benchmarking_api=jba.JubeBenchmarkingAPI("simple","")
-  multisource = benchmarking_api.jube_xml_files.get_bench_multisource()
-  gen_config = benchmarking_api.jube_xml_files.gen_bench_config()
-  assert len(multisource) > 0
-  for source in multisource:
-    assert source['protocol'] == 'svn'
-  for source in multisource:
-    assert gen_config['svn'].has_key(source['name'])
+# def test_get_bench_multisource_svn():
+#   benchmarking_api=jba.JubeBenchmarkingAPI("simple","")
+#   multisource = benchmarking_api.jube_xml_files.get_bench_multisource()
+#   gen_config = benchmarking_api.jube_xml_files.gen_bench_config()
+#   assert len(multisource) > 0
+#   for source in multisource:
+#     assert source['protocol'] == 'svn'
+#   for source in multisource:
+#     assert gen_config['svn'].has_key(source['name'])
 
-def test_get_bench_multisource_git():
-  benchmarking_api=jba.JubeBenchmarkingAPI("simple_git","")
-  multisource = benchmarking_api.jube_xml_files.get_bench_multisource()
-  gen_config = benchmarking_api.jube_xml_files.gen_bench_config()
-  assert len(multisource) > 0
-  for source in multisource:
-    assert source['protocol'] == 'git'
-  for source in multisource:
-    assert gen_config['git'].has_key(source['name'])
+# def test_get_bench_multisource_git():
+#   benchmarking_api=jba.JubeBenchmarkingAPI("simple_git","")
+#   multisource = benchmarking_api.jube_xml_files.get_bench_multisource()
+#   gen_config = benchmarking_api.jube_xml_files.gen_bench_config()
+#   assert len(multisource) > 0
+#   for source in multisource:
+#     assert source['protocol'] == 'git'
+#   for source in multisource:
+#     assert gen_config['git'].has_key(source['name'])
 
 
 
@@ -129,10 +132,10 @@ def test_add_bench_input():
   benchmark = bench_xml.find('benchmark')
   assert len(benchmark.findall("parameterset[@name='ubench_config']")) > 0
   bench_config = benchmark.find("parameterset[@name='ubench_config']")
-  assert len(bench_config.findall("parameter[@name='simple_code']")) > 0
-  assert len(bench_config.findall("parameter[@name='simple_code_id']")) > 0
-  assert len(bench_config.findall("parameter[@name='input']")) > 0
-  assert len(bench_config.findall("parameter[@name='input_id']")) > 0
+  assert len(bench_config.findall("parameter[@name='stretch']")) > 0
+  assert len(bench_config.findall("parameter[@name='stretch_id']")) > 0
+  # assert len(bench_config.findall("parameter[@name='input']")) > 0
+  # assert len(bench_config.findall("parameter[@name='input_id']")) > 0
   simple_code_count = 0
   input_count = 0
   for param in bench_config.findall("parameter"):
@@ -212,7 +215,7 @@ def test_run_customp(monkeypatch,init_env):
       raise NameError('param error')
     return True
 
-  def mock_bm_run_bench(self,platform,wklist):
+  def mock_bm_run_bench(self,platform,wklist,raw_cli):
     return True
 
   monkeypatch.setattr("ubench.core.auto_benchmarker.AutoBenchmarker.init_run_dir", mock_auto_bm_init)
