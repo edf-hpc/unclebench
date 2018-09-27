@@ -2,7 +2,7 @@ language: python
 python:
   - "2.7"
 install:
-  - pip install pytest pytest_mock mock
+  - pip install pytest pytest_mock mock pyyaml
 script:
   - source dev_env.sh
   - pytest -vv

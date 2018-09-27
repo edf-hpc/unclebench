@@ -25,3 +25,13 @@ pathadd ${UBENCH_PATH}/bin
 if [ -e /usr/share/modules/init/bash ]; then
     source /usr/share/modules/init/bash
 fi
+
+# creating temporal directories
+
+if [[ ! -z "$UBENCH_DIR_CREATE" ]]; then
+
+    mkdir -p /tmp/ubench_run_dir
+    mkdir -p /tmp/ubench_resource_dir
+    export UBENCH_RUN_DIR_BENCH=/tmp/ubench_run_dir
+    export UBENCH_RESOURCE_DIR=/tmp/ubench_resource_dir
+fi
