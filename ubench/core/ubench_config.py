@@ -95,8 +95,39 @@ class UbenchConfig:
 
         return sorted(platform_list, key=str.lower)
 
+    def find_all_rec(node,node_name,node_name_attr,root):
+        for step in node.findall(node_name):
+            if(step.get('name')==node_name_attr):
+                result.append()
+
+        return res
+
+    def find_rec(self,node, element,name):
+        for item in node.findall(element):
+            if(item.get('name')=='execute'):
+                yield item
+            for child in find_rec(item, element,name):
+                yield child
+
+
     def get_benchmark_list(self):
         """ Get list of available benchmarks """
-        bench_list=[f for f in os.listdir(self.plugin_dir) \
-                if os.path.isdir(os.path.join(self.plugin_dir,f))]
-        return [bench.lower() for bench in bench_list]
+
+        bench_list=[f for f in os.listdir(self.benchmark_dir) \
+                if os.path.isdir(os.path.join(self.benchmark_dir,f))]
+        filtered_bench_list=[]
+
+        # Only benchmarks that define an execute step are considered
+        for bench_dir in bench_list:
+            execute_step=False
+            for filename in os.listdir(os.path.join(self.benchmark_dir,bench_dir)):
+              if not filename.endswith('.xml'): continue
+              tree = ET.parse(os.path.join(self.benchmark_dir,bench_dir,filename))
+              root = tree.getroot()
+              if self.find_rec(root,'step','execute'):
+                  execute_step=True
+                  break
+            if(execute_step):
+                filtered_bench_list.append(bench_dir.lower())
+
+        return filtered_bench_list
