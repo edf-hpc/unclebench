@@ -57,7 +57,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     self.jube_xml_files.load_platform_xml(platform_name)
     self.jube_const_params = {}
 
-  def analyse_benchmark(self,benchmark_id):
+  def analyse(self,benchmark_id):
     """ Analyze benchmark results
     :param benchmark_id: id of the benchmark to be analyzed
     :type benchmark_id: int
@@ -88,13 +88,13 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     return benchmark_results_path
 
 
-  def analyse_last_benchmark(self):
+  def analyse_last(self):
         """ Get last result from a jube benchmark.
         :returns: result directory absolute path, None if analysis failed.
         :rtype: str
         """
         try:
-            return self.analyse_benchmark('last')
+            return self.analyse('last')
         except Exception:
             raise
 
@@ -318,7 +318,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
 
 
-  def extract_result_from_benchmark(self,benchmark_id):
+  def extract_results(self,benchmark_id):
         """ Get result from a jube benchmark with its id and build a python result array
         :param benchmark_id: id of the benchmark
         :type benchmark_id:int
@@ -390,7 +390,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         return result_array
 
 
-  def extract_result_from_last_benchmark(self):
+  def extract_results_last(self):
         """ Get result from the last execution of a benchmark
         :param benchmark_id: id of the benchmark
         :type benchmark_id:int
@@ -398,12 +398,12 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         :rtype:str
         """
         try:
-            return self.extract_result_from_benchmark('last')
+            return self.extract_result('last')
         except IOError:
             raise
 
 
-  def run_benchmark(self,platform):
+  def run(self,platform):
         """ Run benchmark on a given platform and return the benchmark run directory path
         and a benchmark ID.
         :param platform: name of the platform used to configure the benchmark options relative
@@ -422,7 +422,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         self.jube_xml_files.write_platform_xml()
         platform_dir = self.jube_xml_files.get_platform_dir()
 
-        old_run_dir=self.analyse_last_benchmark()
+        old_run_dir=self.analyse_last()
 
         input_str='jube run --hide-animation '+self.benchmark_name+'.xml --tag '+platform+' > /dev/null &'
         my_env = os.environ
@@ -430,13 +430,13 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         p=Popen(input_str,cwd=os.getcwd(),shell=True,env=my_env)
 
         # Get the run directory without waiting for jube run command to finish
-        run_dir = self.analyse_last_benchmark()
+        run_dir = self.analyse_last()
         timeout_counter=0
         time.sleep(2) # waiting for the directory to be created
         while (run_dir == old_run_dir) :
             time.sleep(1) # wait to avoid spamming
             timeout_counter+=1
-            run_dir=self.analyse_last_benchmark()
+            run_dir=self.analyse_last()
             if (timeout_counter>10):
               raise RuntimeError('Jube parsing might have gone wrong, please check '+
                                  self.benchmark_path+'/jube-parse.log file')

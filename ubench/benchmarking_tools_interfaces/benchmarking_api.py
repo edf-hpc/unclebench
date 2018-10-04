@@ -31,7 +31,7 @@ class BenchmarkingAPI:
         """
         pass
 
-    def analyse_benchmark(self,benchmark_id):
+    def analyse(self,benchmark_id):
         """ Analyze benchmark results
         :param benchmark_id: id of the benchmark to be analyzed
         :type benchmark_id: int
@@ -41,7 +41,7 @@ class BenchmarkingAPI:
         """
         pass
 
-    def analyse_last_benchmark(self):
+    def analyse_last(self):
         """ Get last result from a jube benchmark.
         :returns: result directory absolute path, None if analysis failed.
         :rtype: str
@@ -65,7 +65,7 @@ class BenchmarkingAPI:
         pass
 
 
-    def extract_result_from_benchmark(self,benchmark_id):
+    def extract_result(self,benchmark_id):
         """ Get result from a jube benchmark with its id and build a python result array
         :param benchmark_id: id of the benchmark
         :type benchmark_id:int
@@ -74,7 +74,7 @@ class BenchmarkingAPI:
         """
         pass
 
-    def extract_result_from_last_benchmark(self):
+    def extract_result_last(self):
         """ Get result from the last execution of a benchmark
         :param benchmark_id: id of the benchmark
         :type benchmark_id:int
@@ -83,7 +83,7 @@ class BenchmarkingAPI:
         """
         pass
 
-    def run_benchmark(self,platform):
+    def run(self,platform):
         """ Run benchmark on a given platform and return the benchmark run directory path
         and a benchmark ID.
         :param platform: name of the platform used to configure the benchmark options relative
