@@ -38,6 +38,5 @@ setup(name='ubench',
                 'ubench.benchmark_managers',
                 'ubench.benchmarking_tools_interfaces',
                 'ubench.data_store',
-                'ubench.plugins',
                 'ubench.scheduler_interfaces'],
       zip_safe=False)
