@@ -10,7 +10,7 @@ import ubench.benchmarking_tools_interfaces.jube_xml_parser as j_xml
 import ubench.core.fetcher as fetcher
 import subprocess
 import ubench.core.ubench_commands as ubench_commands
-import ubench.benchmark_managers.benchmark_manager as bm
+import ubench.benchmark_managers.jube_benchmark_manager as jbm
 import ubench.core.ubench_config as uconfig
 import time
 
@@ -30,11 +30,11 @@ def init_env():
   yield test_env
   test_env.destroy_dir_structure()
 
-def test_xml(init_env):
-  benchs_files = [init_env.config['bench_path']+'/simple/simple.xml']
-  uconf=uconfig.UbenchConfig()
-  jube_xml_files = j_xml.JubeXMLParser(init_env.config['bench_path']+'/simple/',benchs_files,init_env.config['bench_path'],uconf.platform_dir)
-  assert len(jube_xml_files.get_dirs(uconf.platform_dir)) < 2
+# def test_xml(init_env):
+#   benchs_files = [init_env.config['bench_path']+'/simple/simple.xml']
+#   uconf=uconfig.UbenchConfig()
+#   jube_xml_files = j_xml.JubeXMLParser(init_env.config['bench_path']+'/simple/',benchs_files,init_env.config['bench_path'],uconf.platform_dir)
+#   assert len(jube_xml_files.get_dirs(uconf.platform_dir)) == 2
 
 def test_init():
 
@@ -43,7 +43,8 @@ def test_init():
   assert benchmarking_api.benchmark_name == ""
 
 def test_bench_m():
-  bench = bm.BenchmarkManager("simple","")
+  uconf = uconfig.UbenchConfig()
+  bench = jbm.JubeBenchmarkManager("simple","",uconf)
 
 def test_benchmark_no_exist(init_env):
   with pytest.raises(OSError):
@@ -218,9 +219,7 @@ def test_run_customp(monkeypatch,init_env):
   def mock_bm_run_bench(self,platform,wklist,raw_cli):
     return True
 
-  monkeypatch.setattr("ubench.core.auto_benchmarker.AutoBenchmarker.init_run_dir", mock_auto_bm_init)
-  monkeypatch.setattr("ubench.core.auto_benchmarker.AutoBenchmarker.get_benchmark_manager", mock_auto_bm_bench)
-  monkeypatch.setattr("ubench.benchmark_managers.benchmark_manager.BenchmarkManager.set_parameter",mock_bm_set_param)
-  monkeypatch.setattr("ubench.benchmark_managers.benchmark_manager.BenchmarkManager.run_benchmark",mock_bm_run_bench)
-  ubench_cmd = ubench_commands.Ubench_cmd("",["simple"])
+  monkeypatch.setattr("ubench.benchmark_managers.standard_benchmark_manager.StandardBenchmarkManager.set_parameter",mock_bm_set_param)
+  monkeypatch.setattr("ubench.benchmark_managers.standard_benchmark_manager.StandardBenchmarkManager.run",mock_bm_run_bench)
+  ubench_cmd = ubench_commands.UbenchCmd("",["simple"])
   ubench_cmd.run(['host1'],["param:new_value","argexec:'PingPong -npmin 56 msglog 1:18'"])

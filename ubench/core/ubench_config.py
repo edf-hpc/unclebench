@@ -122,7 +122,11 @@ class UbenchConfig:
             execute_step=False
             for filename in os.listdir(os.path.join(self.benchmark_dir,bench_dir)):
               if not filename.endswith('.xml'): continue
-              tree = ET.parse(os.path.join(self.benchmark_dir,bench_dir,filename))
+              try:
+                  tree = ET.parse(os.path.join(self.benchmark_dir,bench_dir,filename))
+              except ET.ParseError:
+                  continue
+                  
               root = tree.getroot()
               if self.find_rec(root,'step','execute'):
                   execute_step=True

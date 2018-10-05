@@ -55,8 +55,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         self.resource_dir = os.path.join(uconf.resource_dir, benchmark_name)
         self.benchmark_path = os.path.join(uconf.run_dir, platform, benchmark_name)
         self.benchmark_src_path = os.path.join(uconf.benchmark_dir, benchmark_name)
-        self.benchmarking_api = self.get_benchmarking_api()
-
+        self.benchmarking_api=None
+        
         # Default report parameters
         self.title = benchmark_name
         self.description = ''
@@ -73,6 +73,37 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
 #===============  Benchmarking part  ===============#
 
+    def init_run_dir(self,platform):
+        """ Create and initialize run directory
+        :param platform: name of the platform used to retrieve parameters needed
+        to run the benchmark.
+        :type platform: str
+        """
+        parent_run_dir=os.path.abspath(os.path.join(self.benchmark_path, os.pardir))
+        if not os.path.exists(parent_run_dir):
+            try:
+                os.makedirs(parent_run_dir)
+            except Exception as e:
+                print 'Error while making directory {0} : {1}'.format(parent_run_dir, str(e))
+
+        src_dir = self.benchmark_src_path
+        dest_dir = self.benchmark_path
+        
+        try:
+            copytree(src_dir, dest_dir, symlinks=True)
+        except OSError as oserror:
+            print '---- '+self.benchmark_name+\
+                ' description files are already present in run directory and will be overwritten.'
+        print '---- Copying '+self.benchmark_src_path+' to '+self.benchmark_path
+
+        for f in os.listdir(src_dir):
+            copy(os.path.join(src_dir, f), dest_dir)
+            
+        if not self.benchmarking_api:
+            self.benchmarking_api = self.get_benchmarking_api()
+
+
+
     def run(self, platform, w_list=None, raw_cli=None):
         """ Run benchmark on a given platform and write a ubench.log file in
         the benchmark run directory.
@@ -83,32 +114,9 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         :type w_list: list of tuples [(number of nodes, nodes id list), ....]
         :param raw_cli: raw command line used to call ubench run
         """
-        # Create and initialize run directory
-        if not os.path.exists(self.benchmark_path):
-            try:
-                os.makedirs(self.benchmark_path)
-            except Exception as e:
-                print 'Error while making directory {0} : {1}'.format(self.benchmark_path, str(e))
-
-        src_dir = self.benchmark_src_path
-        dest_dir = self.benchmark_path
-        try:
-            copytree(src_dir, dest_dir, symlinks=True)
-        except OSError:
-            print '---- '+self.benchmark_name+\
-                ' description files are already present in run directory and will be overwritten.'
-        else:
-            print '---- Copying '+self.benchmark_src_path+' to '+self.benchmark_path
-
-        for f in os.listdir(src_dir):
-            copy(os.path.join(src_dir, f), dest_dir)
-
-        # Check resource directory availability
-        if not os.path.isdir(self.resource_dir):
-            print '---- {0} will not be run as neither test case nor sources were found in {1}'\
-                .format(self.benchmark_name, self.resource_dir)
-            return
-
+        
+        self.init_run_dir(platform)
+        
         # Set custom node configuration
         if w_list:
             try:
@@ -126,6 +134,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                 print 'Custom node configuration is not valid.'
                 return
 
+        print '---- Launching benchmark in background'
         try:
             run_dir, ID = self.benchmarking_api.run(platform)
         except RuntimeError as rerror:
@@ -168,6 +177,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         :type default_values: boolean
         """
         print os.path.join(self.bench_dir, benchmark_name)
+        if not self.benchmarking_api:
+            self.benchmarking_api = self.get_benchmarking_api()
         all_parameters = self.benchmarking_api.list_parameters(default_values)
         for type_param in all_parameters:
             print "\n"
@@ -184,6 +195,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         : param dic_options: dictionnary with old value as key and new value as value.
         : type dic_options: dictionary
         """
+        if not self.benchmarking_api:
+            self.benchmarking_api = self.get_benchmarking_api()
         modified_params = self.benchmarking_api.set_parameter(dict_options)
         for elem in modified_params:
             print '---- {0} parameter was modified from {1} to {2} for this run'.format(*elem)
@@ -196,6 +209,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         :type idb:int
         """
         try:
+            if not self.benchmarking_api:
+                self.benchmarking_api = self.get_benchmarking_api()
             print self.benchmarking_api.get_log(idb)
         except IOError as io_error:
             print '---- Error: cannot find benchmark logs :'
@@ -211,6 +226,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         # Retrieve informations from ubench.log files found in the benchmark directory.
         # Informations are organized in a dictionnary.
         logfile_paths = []
+        if not self.benchmarking_api:
+            self.benchmarking_api = self.get_benchmarking_api()
         result_root_dir = self.benchmarking_api.get_results_root_directory()
         for fd in os.listdir(result_root_dir):
             for filename in os.listdir(os.path.join(result_root_dir, fd)):
@@ -275,12 +292,16 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         """ Analyse benchmark results
         :param benchmark_id: id of the benchmark to analyze
         :type benchmark_id: int"""
+        if not self.benchmarking_api:
+            self.benchmarking_api = self.get_benchmarking_api()
         self.benchmark_results_path = self.benchmarking_api.analyse(benchmark_id)
 
     def extract_results(self, benchmark_id):
         """ Get result from a jube benchmark with its id and build a python result array
         :param benchmark_id: id of the benchmark to analyze
         :type benchmark_id: int"""
+        if not self.benchmarking_api:
+            self.benchmarking_api = self.get_benchmarking_api()
         self.result_array = self.benchmarking_api.extract_results(benchmark_id)
         self.benchmarking_api.write_bench_data(benchmark_id)
         self.transposed_result_array = [list(x) for x in zip(*self.result_array)]

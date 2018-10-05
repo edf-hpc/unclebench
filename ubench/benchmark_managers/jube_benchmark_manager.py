@@ -35,6 +35,6 @@ class JubeBenchmarkManager(stdbm.StandardBenchmarkManager):
 
     def get_benchmarking_api(self):
         """
-        Factory method to set benchmarking api to JubeBenchmarkingAPI
+        Factory method to get a new JubeBenchmarkingAPI
         """
         return jba.JubeBenchmarkingAPI(self.benchmark_name, self.platform)
