@@ -133,19 +133,19 @@ class UbenchCmd:
                 if not source.has_key('do_cmds'):
                     source['do_cmds'] = None
 
-                    if source['protocol'] == 'https':
-                        fetch_bench.https(source['url'], source['files'])
-                    elif source['protocol'] == 'svn' or source['protocol'] == 'git':
-                        if not source.has_key('revision'):
-                            source['revision'] = None
-                        if not source.has_key('branch'):
-                            source['branch'] = None
+                if source['protocol'] == 'https':
+                    fetch_bench.https(source['url'], source['files'])
+                elif source['protocol'] == 'svn' or source['protocol'] == 'git':
+                    if not source.has_key('revision'):
+                        source['revision'] = None
+                    if not source.has_key('branch'):
+                        source['branch'] = None
 
-                        fetch_bench.scm_fetch(source['url'], source['files'], \
-                                              source['protocol'], source['revision'], \
-                                              source['branch'], source['do_cmds'])
-                    elif source['protocol'] == 'local':
-                        fetch_bench.local(source['files'], source['do_cmds'])
+                    fetch_bench.scm_fetch(source['url'], source['files'], \
+                                          source['protocol'], source['revision'], \
+                                          source['branch'], source['do_cmds'])
+                elif source['protocol'] == 'local':
+                    fetch_bench.local(source['files'], source['do_cmds'])
 
 
     def compare(self, result_directories, context_list=None,\
@@ -169,7 +169,7 @@ class UbenchCmd:
         try:
             scheduler_interface = slurmi.SlurmInterface()
         except:
-            print "Warning!! Unable to load slurmi module"
+            print "Warning!! Unable to load slurm module"
             scheduler_interface = None
             return
 
