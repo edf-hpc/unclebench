@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+    <!-- Default L470 Sets -->
+
+    <parameterset name="system_parameters" init_with="bash.xml"/>
+    <substituteset name="execute_sub" init_with="bash.xml"/>
+    <parameterset name="execute_set" init_with="bash.xml"/>
+    <parameterset name="chainsub" init_with="bash.xml"/>
+    <fileset name="jobfiles" init_with="bash.xml"/>
+    <fileset name="chainfiles" init_with="bash.xml"/>
+
+    <parameterset name="compiler_set">
+	<parameter name="comp_v">0</parameter>
+	<parameter name="comp_version" mode="python">
+	    ["gnu","intel"][$comp_v]
+	</parameter>
+
+	<parameter name="cc" mode="python">
+	    ["gcc","icc"][$comp_v]
+	</parameter>	
+	<parameter name="fc" mode="python">
+	    ["gfortran","ifort"][$comp_v]
+	</parameter>
+	
+        <parameter name="cflags">-O2</parameter>
+	<parameter name="fflags">-O2</parameter>
+	<parameter name="cflags_opt" mode="python">
+	    ["-O3 -march=native","-O3 -xHost"][$comp_v]
+	</parameter>
+	<parameter name="fflags_opt" mode="python">
+	    ["-O3 -march=native","-O3 -xHost"][$comp_v]
+	</parameter>
+
+	<parameter name="module_compile" mode="python">
+	    ["",""][$comp_v]
+	</parameter>
+
+	<parameter name="module_blas">
+	  
+	</parameter>
+	<parameter name="blas_root">
+	    <!-- Need a local blas installation path -->
+	</parameter>	
+    </parameterset>
+    
+
+    <parameterset name="mpi_set">
+	<parameter name="mpi_v">0</parameter>
+	<parameter name="mpi_version" mode="python">
+	    ["OpenMPI-2.0.2"][$mpi_v]
+	</parameter>
+	<parameter name="mpi_root" mode="python">
+	    ["/usr/lib/openmpi/"][$mpi_v]
+	</parameter>
+	<parameter name="mpi_cc" mode="python">
+	    ["mpicc"][$mpi_v]
+	</parameter>
+	<parameter name="mpi_cxx" mode="python">
+	    ["mpic++"][$mpi_v]
+	</parameter>
+	<parameter name="mpi_f90" mode="python">
+	    ["mpif90"][$mpi_v]
+	</parameter>
+	<parameter name="mpi_f77">mpif77</parameter>
+	<parameter name="module_mpi" mode="python">
+	    [""][$mpi_v]
+	</parameter>
+	
+	<parameter name="binding_full_node" separator="??">
+	  -n $tasks --bind-to core
+	</parameter>
+	
+	<parameter name="binding_hybrid" mode="python" separator="??">
+	  ["--bind-to core --map-by ppr:1:socket:PE=2 -n $tasks"][$mpi_v]
+	</parameter>
+    
+	<parameter name="binding_half_node" mode="python" separator="??">
+	  ["--bind-to core --map-by ppr:1:socket:PE=2 -n $tasks"][$mpi_v]
+	</parameter>
+    
+	<parameter name="binding_stream" mode="python" separator="??">
+	  ["--bind-to core --map-by ppr:1:socket:PE=2 -n $tasks"][$mpi_v]
+	</parameter>
+
+    </parameterset>
+
+    <parameterset name="cuda_set">
+      <parameter name="cuda_tlk_v">0</parameter>
+      <parameter name="cudnn_v">0</parameter>
+      	<parameter name="module_cuda" mode="python">
+	  ["Cuda-8.0.44"][$cuda_tlk_v]
+	</parameter>
+      	<parameter name="module_cudnn" mode="python">
+	  ["CuDNN-5.1"][$cudnn_v]
+	</parameter>
+    </parameterset>
+
+
+
+    <parameterset name="cluster_specs">
+	<parameter name="platform_name" type="string">L470</parameter>
+        <parameter name="GB_per_node" type="int">16</parameter>
+	<parameter name="MB_LLC_size" type="float">3</parameter>
+	<parameter name="LLC_cache_line_size" type="int">64</parameter>
+	<parameter name="NUMA_regions" type="int">1</parameter>
+	<parameter name="cores_per_NUMA_region" type="int">2</parameter>
+    </parameterset>
+
+</jube>
