@@ -22,25 +22,28 @@ import data_store
 import yaml
 
 class DataStoreYAML(data_store.DataStore):
+    """
+    """
+    def __init__(self):
+        data_store.DataStore.__init__(self)
 
-  def __init__(self,metadata=None,runs_info=None):
-    data_store.DataStore.__init__(self,metadata,runs_info)
+    def write(self, metadata, runs_info, output_file):
+        with open(output_file, 'w') as outfile:
+          benchdata = metadata
+          benchdata['runs'] = runs_info
+          yaml.dump(benchdata, outfile, default_flow_style=False)
 
-  def write(self, output_file):
-    with open(output_file, 'w') as outfile:
-      benchdata = self.metadata
-      benchdata['runs'] = self.runs_info
-      yaml.dump(benchdata, outfile, default_flow_style=False)
-
-  def load(self,input_file):
-    with open(input_file, 'r') as inputfile:
-      try:
-        data = yaml.load(inputfile)
-        self.runs_info = data['runs']
-        data.pop('runs',None)
-        self.metadata = data
-      except Exception as e:
-        data = None
-        self.runs_info = None
-        self.metadata = None
-                                  
+    def load(self, input_file):
+        metadata=None
+        runs_info=None
+        with open(input_file, 'r') as inputfile:
+            try:
+                data = yaml.load(inputfile)
+                runs_info = data['runs']
+                data.pop('runs',None)
+                metadata = data
+            except Exception as e:
+                data = None
+                runs_info = None
+                metadata = None
+        return(metadata,runs_info)

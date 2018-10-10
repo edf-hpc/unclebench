@@ -27,7 +27,7 @@ import benchmarking_api as bapi
 import time
 import csv
 import ubench.core.ubench_config as uconfig
-import ubench.data_store.data_store_yaml as data_store
+import ubench.data_management.data_store_yaml as data_store_yaml
 import jube_xml_parser
 import tempfile
 
@@ -313,8 +313,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
           metadata[field[0].strip()] = field[1].strip()
 
 
-        bench_data = data_store.DataStoreYAML(metadata,results)
-        bench_data.write(os.path.join(benchmark_rundir,'bench_results.yaml'))
+        bench_data = data_store_yaml.DataStoreYAML()
+        bench_data.write(metadata,results,os.path.join(benchmark_rundir,'bench_results.yaml'))
 
 
 

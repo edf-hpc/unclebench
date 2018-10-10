@@ -33,7 +33,10 @@ except ImportError:
 
 import ubench.benchmarking_tools_interfaces.jube_xml_parser as jube_xml_parser
 import ubench.core.fetcher as fetcher
-import ubench.core.ubench_comparator as uc
+import ubench.data_management.comparison_writer as comparison_writer
+import ubench.data_management.report_writer as report_writer
+import pandas as pd
+
 
 class UbenchCmd:
     """
@@ -41,7 +44,7 @@ class UbenchCmd:
     """
     def __init__(self, platform, benchmark_list=None):
         """
-        TODO
+        TOCOMMENT
         """
         self.uconf = uconfig.UbenchConfig()
         self.run_dir = os.path.join(self.uconf.run_dir, platform)
@@ -53,18 +56,20 @@ class UbenchCmd:
 
 
     def log(self, id_list=None):
-        """ TODO"""
+        """ TOCOMMENT"""
         if not id_list:
             id_list = [-1]
         for idb in id_list:
             self.bm_set.print_log(int(idb))
 
+
     def list_parameters(self, default_values=False):
-        """ TODO"""
+        """ TOCOMMENT"""
         self.bm_set.list_parameters(default_values)
 
+
     def result(self, id_list):
-        """ TODO """
+        """ TOCOMMENT """
         if not id_list:
             id_list = ['last']
 
@@ -80,7 +85,7 @@ class UbenchCmd:
         self.bm_set.list_runs()
 
     def run(self, w_list=None, customp_list=None, raw_cli=None):
-        """ TODO """
+        """ TOCOMMENT """
         if w_list:
             try:
                 w_list = self.translate_wlist_to_scheduler_wlist(w_list)
@@ -109,12 +114,9 @@ class UbenchCmd:
         # Run each benchmarks
         self.bm_set.run(self.platform, w_list, raw_cli)
 
-    def report(self):
-        """ TODO """
-        return
 
     def fetch(self):
-        """ TODO """
+        """ TOCOMMENT """
         for benchmark_name in self.benchmark_list:
             benchmark_dir = os.path.join(self.uconf.benchmark_dir, benchmark_name)
             benchmark_files = [file_b for  file_b in os.listdir(benchmark_dir) \
@@ -148,18 +150,25 @@ class UbenchCmd:
                     fetch_bench.local(source['files'], source['do_cmds'])
 
 
-    def compare(self, result_directories, context_list=None,\
-                additional_fields=None, threshold=None):
+    def compare(self, input_directories, benchmark_name , context=(None,None), \
+                threshold=None):
         """
         Compare bencharks results from different directories.
         """
-        ucomparator = uc.UbenchComparator(context_list, additional_fields, threshold)
+        cwriter = comparison_writer.ComparisonWriter(threshold)
         print "    comparing :"
-        for rdir in result_directories:
+        for rdir in input_directories:
             print "    - "+rdir
         print ""
-        ucomparator.print_comparison(result_directories)
+        cwriter.print_comparison(input_directories,benchmark_name,context)
 
+
+    def report(self, metadata_file, result_directory, output_file):
+        """
+        Build a performance report.
+        """
+        rwriter=report_writer.ReportWriter(metadata_file, result_directory)
+        rwriter.write_report(output_file)
 
     def translate_wlist_to_scheduler_wlist(self, w_list_arg):
         """
