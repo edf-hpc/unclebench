@@ -130,8 +130,9 @@ class ComparisonWriter:
         pandas_list = []
         context = (None,None)
         sub_bench = None
+        metadata = {}
         for input_dir in input_directories:
-            current_panda, current_context, current_sub_bench\
+            metadata, current_panda, current_context, current_sub_bench\
                 = self.dstore._dir_to_pandas(input_dir, benchmark_name, context=context_in)
             if current_panda.empty:
                 continue

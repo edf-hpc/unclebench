@@ -20,9 +20,11 @@
 
 import data_store
 import yaml
+from collections import OrderedDict
 
 class DataStoreYAML(data_store.DataStore):
     """
+    Load Yaml to dictionnary / write Yaml files from dictionnary.
     """
     def __init__(self):
         data_store.DataStore.__init__(self)

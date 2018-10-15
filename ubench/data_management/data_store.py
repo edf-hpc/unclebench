@@ -19,6 +19,7 @@
 ##############################################################################
 
 import abc
+import datetime
 import pandas
 import os
 
@@ -36,10 +37,20 @@ class DataStore():
         pass
 
     @abc.abstractmethod
-    def load(self,input_file):
+    def load(self, input_file):
         pass
 
-    def _extract_data_from_file(self,filename,benchmark_name,date_interval=None):
+    @staticmethod
+    def _read_date(date_str):
+        """
+        Read date from string.
+        Tue May 15 17:15:08 2018
+        """
+        date_time = datetime.datetime.strptime(date_str, '%a %b %d %H:%M:%S %Y')
+
+        return date_time
+
+    def _extract_data_from_file(self, filename, benchmark_name, date_interval=None):
         """
         Extract performance data from a file.
         """
@@ -47,17 +58,20 @@ class DataStore():
         if not (data):
             return (None,None)
 
-        # Check if dates correspond
-        if(date_interval):
-            pass
-
         # Check if benchmark_name corresponds
         if benchmark_name!=metadata["Benchmark_name"]:
             return(None,None)
 
+        # Check if dates correspond
+        if(date_interval):
+            run_date=DataStore._read_date(metadata['Date'])
+            if(run_date<date_interval[0]) or (run_date>date_interval[1]):
+                print date_interval[0],run_date,date_interval[1]
+                return(None,None)
+
         return(metadata, data)
 
-    def _file_to_panda(self,filename,benchmark_name,date_interval=None,context=(None,None)):
+    def _file_to_panda(self, filename, benchmark_name, date_interval=None, context=(None,None)):
         """
         Return a panda from a file if it is an unclebench performance data file
         with date and benchmark name correponding to those given as argument.
@@ -71,7 +85,7 @@ class DataStore():
 
         # File is not corresponding
         if not metadata:
-            return (pandas.DataFrame(), (None,None), None)
+            return ({}, pandas.DataFrame(), (None,None), None)
 
         # Find context in data if not provided
         if not context[0]:
@@ -109,7 +123,7 @@ class DataStore():
             for ctx in context[0]:
                 if ctx in [context[1]]:
                     print("Error : {} is in both column and row contexts".format(ctx))
-                    return(pandas.DataFrame(), (None,None), None)
+                    return({}, pandas.DataFrame(), (None,None), None)
 
         # Fill report_info
         for id_exec in sorted(data.keys()): # this guarantees the order of nodes
@@ -127,7 +141,7 @@ class DataStore():
                     report_info[result_name_column].append(key)
 
         # Return a tuple
-        return(pandas.DataFrame(report_info), context, result_name_column)
+        return (metadata, pandas.DataFrame(report_info), context, result_name_column)
 
 
     def _dir_to_pandas(self, data_dir, benchmark_name, \
@@ -139,6 +153,7 @@ class DataStore():
         concatenated_panda = pandas.DataFrame()
         result_context = None
         sub_bench = None
+        concatenated_metadata={}
 
         if not os.path.isdir(data_dir):
             print("Cannot find "+data_dir+" directory")
@@ -146,15 +161,21 @@ class DataStore():
 
         for (dirpath, dirnames, filenames) in os.walk(data_dir):
             for fname in filenames:
-                current_panda, current_context, current_sub_bench \
-                    = self._file_to_panda(os.path.join(dirpath, fname),\
+                metadata, current_panda, current_context, current_sub_bench \
+                    = self._file_to_panda(os.path.join(dirpath, fname), \
                                           benchmark_name, date_interval, context)
+
                 if current_panda.empty:
                     continue
                 if concatenated_panda.empty:
                     concatenated_panda = current_panda
                 else:
                     concatenated_panda = pandas.concat([concatenated_panda, current_panda])
+
+                for field, value in metadata.items():
+                    if not field in concatenated_metadata:
+                        concatenated_metadata[field]=[]
+                    concatenated_metadata[field].append(value)
 
                 if (result_context)and(result_context!=current_context):
                     print "Different result files structure for benchmark {}.".\
@@ -176,4 +197,4 @@ class DataStore():
             result_context=(None,None)
 
 
-        return concatenated_panda, result_context, sub_bench
+        return concatenated_metadata, concatenated_panda, result_context, sub_bench
