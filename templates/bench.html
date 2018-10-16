@@ -1,0 +1,27 @@
+* tester: {{tester}}
+* date start: {{date_start}}
+* date end: {{date_end}}
+* platform: {{platform}}
+* result: {{result}}
+* comment: {{comment}}
+* command(s) used:
+
+{% for cmd in cmdline -%}
+** {{cmd}}
+{% endfor %}
+
+
+{# Print performance arrays #}
+
+{% for perf_array, sub_bench in perf_array_list -%}
+
+.{{sub_bench}} results
+[cols={{ncols}}, options="header"]
+|===
+  {% for row in perf_array -%}
+    {% for elem in row -%}
+|  {{elem}}
+    {%- endfor %}
+  {% endfor %}
+|===
+{% endfor %}

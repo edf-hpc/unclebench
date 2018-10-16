@@ -1,0 +1,19 @@
+= {{report_title}}
+
+
+:toc: macro
+:toc-placement: macro
+:numbered:
+
+toc::[]
+
+{% for benchmark in benchmarks %}
+== {{benchmark}}
+{% for session in sessions %}
+=== {{session}}
+
+include::{{report_files[session][benchmark]}}[]
+
+
+{% endfor %}
+{% endfor %}
