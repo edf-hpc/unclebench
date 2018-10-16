@@ -50,7 +50,7 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
                 self.benchmark_manager_list.append(
                     jbm.JubeBenchmarkManager(benchmark_name, platform_name, uconf))
 
-                
+
     def run(self, platform, w_list=None, raw_cli=None):
         """ Run benchmarks on a given platform and write a ubench.log file in
         each benchmark run directory.
@@ -149,13 +149,13 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
             bench_m.extract_results_last()
 
 
-    def print_result_array(self, output_file=None):
+    def print_result_array(self, debug_mode=False, output_file=None):
         """ Asciidoc printing result array
         :param output_file:  path of a file where to write the array,
         if not set the array is printed on stdout.
         :type output_file: string"""
         for bench_m in self.benchmark_manager_list:
-            bench_m.print_result_array(output_file)
+            bench_m.print_result_array(debug_mode, output_file)
 
     def print_transposed_result_array(self, output_file=None):
         """ Asciidoc printing of transposed result array

@@ -228,7 +228,22 @@ class JubeXMLParser():
         benchmark_name = benchmark.get('name').lower()
         link = ET.SubElement(files_element,'link',attrib={'name': benchmark_name,'rel_path_ref': 'external'})
         link.text = "$UBENCH_RESOURCE_DIR/{0}/".format(benchmark_name)
+	
 
+        debug_config=ET.Element('parameterset',attrib={'name':'pathd'})
+        debug_path = ET.SubElement(debug_config,'parameter',attrib={'name': 'work_path'})
+        benchmark.insert(3,debug_config)
+        debug_path.text="$jube_wp_abspath"
+
+        debug_result=ET.Element('result')
+        debug_result_use = ET.SubElement(debug_result,'use')
+        debug_result_use.text="analyse"
+        debug_result_path = ET.SubElement(debug_result,'table',attrib={'name': 'paths' , 'style': 'csv'})
+        debug_result_text = ET.SubElement(debug_result_path,'column')
+        debug_result_text.text="work_path"
+
+        benchmark.insert(2,debug_result)
+	
         for protocol in bench_config.keys():
           # add another level
 
@@ -286,6 +301,21 @@ class JubeXMLParser():
           use = ET.Element('use')
           use.text = name
           if name not in present_params:
+            step[0].insert(0,use)
+
+      if benchmark is None:
+        step = b_xml.findall("step[@name='execute']")
+      else:
+        step = benchmark.findall("step[@name='execute']")
+
+      if step: # not empty
+        present_params = []
+        for use in step[0].findall("use"):
+          present_params.append(use.text)
+        name = "pathd"
+        use = ET.Element('use')
+        use.text = name
+        if name not in present_params:
             step[0].insert(0,use)
 
 

@@ -68,7 +68,7 @@ class UbenchCmd:
         self.bm_set.list_parameters(default_values)
 
 
-    def result(self, id_list):
+    def result(self, id_list,debug_mode):
         """ TOCOMMENT """
         if not id_list:
             id_list = ['last']
@@ -78,7 +78,7 @@ class UbenchCmd:
                 idb = 'last'
             self.bm_set.analyse(idb)
             self.bm_set.extract_results(idb)
-            self.bm_set.print_result_array()
+            self.bm_set.print_result_array(debug_mode)
 
     def listb(self):
         """ Lists runs information"""

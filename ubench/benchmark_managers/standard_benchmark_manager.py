@@ -56,7 +56,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         self.benchmark_path = os.path.join(uconf.run_dir, platform, benchmark_name)
         self.benchmark_src_path = os.path.join(uconf.benchmark_dir, benchmark_name)
         self.benchmarking_api=None
-        
+
         # Default report parameters
         self.title = benchmark_name
         self.description = ''
@@ -88,7 +88,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
         src_dir = self.benchmark_src_path
         dest_dir = self.benchmark_path
-        
+
         try:
             copytree(src_dir, dest_dir, symlinks=True)
         except OSError as oserror:
@@ -98,7 +98,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
         for f in os.listdir(src_dir):
             copy(os.path.join(src_dir, f), dest_dir)
-            
+
         if not self.benchmarking_api:
             self.benchmarking_api = self.get_benchmarking_api()
 
@@ -114,9 +114,9 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         :type w_list: list of tuples [(number of nodes, nodes id list), ....]
         :param raw_cli: raw command line used to call ubench run
         """
-        
+
         self.init_run_dir(platform)
-        
+
         # Set custom node configuration
         if w_list:
             try:
@@ -317,11 +317,19 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
 #===============    Reporting part   ===============#
 
-    def print_result_array(self, output_file=None):
+    def print_result_array(self, debug_mode=False,output_file=None):
         """ Asciidoc printing of Jube result array
         :param output_file:  path of a file where to write the array,
         if not set the array is printed on stdout.
         :type output_file: string"""
+        result_array=self.result_array
+        for i in range(0,len(result_array)/2):
+            result_array[len(result_array)/2+i].append(result_array[i][0])
+        result_array=result_array[len(result_array)/2:]
+        if not debug_mode:
+            for i in range(0,len(result_array)):
+                result_array[i]=result_array[i][:len(result_array[i])-1]
+        self.result_array=result_array
         if output_file:
             output_file.write('[options="header"]\n')
             output_file.write('|=== \n')

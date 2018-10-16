@@ -352,7 +352,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         # Get job errlog and outlog filenames from configuration.xml file
         cvsfile = self.jube_xml_files.get_result_cvsfile()
 
-        input_str='jube result ./'+output_dir+' --id '+benchmark_id+' -o '+cvsfile
+        input_str='jube result ./'+output_dir+' --id '+benchmark_id #+' -o '+cvsfile
         result_from_jube = Popen(input_str,cwd=os.getcwd(),shell=True, stdout=PIPE)
         ret_code = result_from_jube.wait()
         result_array=[]

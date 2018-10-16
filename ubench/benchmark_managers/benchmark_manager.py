@@ -89,7 +89,7 @@ class BenchmarkManager():
         """ Get last result from a  benchmark """
 
     @abc.abstractmethod
-    def print_result_array(self, output_file=None):
+    def print_result_array(self, debug_mode=False, output_file=None):
         """ Asciidoc printing result array
         :param output_file:  path of a file where to write the array,
         if not set the array is printed on stdout.
