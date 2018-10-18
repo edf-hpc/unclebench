@@ -70,6 +70,25 @@ class ReportWriter:
 
         return date_time
 
+    @staticmethod
+    def _dic_to_tuple(one_el_dictionnary):
+        """
+        Translate a single element dictionnary to a two element tuple key, value
+        """
+        return one_el_dictionnary.items()[0]
+
+    @staticmethod
+    def _get_default_dic(main_dic):
+        """
+        Get sub dictionnary corresponding to 'default' key
+        """
+        for dic_el in main_dic:
+            key, sub_dic = ReportWriter._dic_to_tuple(dic_el)
+            if key == 'default':
+                return sub_dic
+        return {}
+
+
     def write_report(self, output_dir):
         """
         Write a report in output file according to report_writer metadata.
@@ -77,24 +96,18 @@ class ReportWriter:
         required_fields = set(['tester','platform','date_start','date_end','comment', \
                                'result'])
         context_fields = set(['context','context_res'])
-        dic_contexts_default = {}
-        dic_sessions_default = {}
         report_files = {}
 
         # Get default parameters dictionnaries
-        if 'default' in self.metadata['sessions']:
-            dic_sessions_default = self.metadata['sessions']['default']
-        if 'default' in self.metadata['contexts']:
-            dic_contexts_default = self.metadata['contexts']['default']
-        if 'default' in self.metadata['benchmarks']:
-            dic_benchmarks_default = self.metadata['benchmarks']['default']
+        dic_sessions_default = ReportWriter._get_default_dic(self.metadata['sessions'])
+        dic_contexts_default = ReportWriter._get_default_dic(self.metadata['contexts'])
+        dic_benchmarks_default = ReportWriter._get_default_dic(self.metadata['benchmarks'])
 
         # Dictionnary to store main report data
         dic_report_main = {}
         dic_report_main['report_title'] = "Performance Report"
         dic_report_main['sessions'] = []
         dic_report_main["benchmarks"] = []
-
 
         report_name = "ubench_performance_report"
         if not os.path.exists(output_dir):
@@ -108,8 +121,10 @@ class ReportWriter:
         print("    Writing report {} in {} directory".format(report_name+".html", output_dir))
 
         # Parse benchmarks
-        for bench_name, bench_dic in sorted(self.metadata['benchmarks'].items(),
-                                            key=lambda x: x[1]):
+        for bench_item in self.metadata['benchmarks']:
+
+            bench_name, bench_dic = ReportWriter._dic_to_tuple(bench_item)
+
             if bench_name == 'default':
                 continue
             dic_report_main['benchmarks'].append(bench_name)
@@ -119,8 +134,12 @@ class ReportWriter:
             fields_to_find = required_fields.union(context_fields)
 
             dic_contexts = {}
-            if bench_name in self.metadata['contexts']:
-                dic_contexts = self.metadata['contexts'][bench_name]
+            for ctx_el in self.metadata['contexts']:
+                ctx_bench_name, ctx_dic = ReportWriter._dic_to_tuple(ctx_el)
+                print(ctx_bench_name)
+                print(ctx_dic)
+                if ctx_bench_name == bench_name:
+                    dic_contexts = ctx_dic
 
             # Check context parameters ( same for all sessions)
             for r_field in context_fields.intersection(fields_to_find):
@@ -139,8 +158,10 @@ class ReportWriter:
             context_out = None
             date_interval_list = []
             # Parse sessions
-            for session, dic_session in sorted(self.metadata['sessions'].items(),
-                                               key=lambda x: x[1]):
+            for session_item in self.metadata['sessions']:
+
+                session, dic_session = ReportWriter._dic_to_tuple(session_item)
+
                 if session == 'default':
                     continue
                 if not session in dic_report_main['sessions']:
