@@ -24,7 +24,7 @@ from collections import OrderedDict
 
 class DataStoreYAML(data_store.DataStore):
     """
-    Load Yaml to dictionnary / write Yaml files from dictionnary.
+    Load Yaml to dictionnary / write dictionnary to Yaml files.
     """
     def __init__(self):
         data_store.DataStore.__init__(self)

@@ -160,17 +160,18 @@ class UbenchCmd:
         for rdir in input_directories:
             print "    - "+rdir
         print ""
-        cwriter.print_comparison(input_directories,benchmark_name,context)
+        cwriter.print_comparison(benchmark_name, input_directories, context)
 
 
     def report(self, metadata_file, result_directory, output_dir):
         """
         Build a performance report.
         """
-        bench_template = os.path.join(self.uconf.templates_path,"bench.html")
-        report_template =  os.path.join(self.uconf.templates_path,"report.html")
+        bench_template = os.path.join(self.uconf.templates_path, "bench.html")
+        compare_template =  os.path.join(self.uconf.templates_path, "compare.html")
+        report_template =  os.path.join(self.uconf.templates_path, "report.html")
         rwriter = report_writer.ReportWriter(metadata_file, result_directory,
-                                             bench_template, report_template)
+                                             bench_template, compare_template, report_template)
         rwriter.write_report(output_dir)
 
     def translate_wlist_to_scheduler_wlist(self, w_list_arg):

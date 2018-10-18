@@ -29,19 +29,19 @@ class ComparisonWriter:
         self.dstore = dsy.DataStoreYAML()
         self.threshold = threshold
 
-    def print_comparison(self, input_directories, benchmark_name, context=(None,None)):
+    def print_comparison(self, benchmark_name, input_directories, context=(None,None)):
         """
         Print arrays comparating results found in different input directories
         """
-        df_to_print = self.compare(input_directories,benchmark_name,context)
+        df_to_print = self.compare(benchmark_name, input_directories, context)
 
         for dframe in df_to_print:
             print("")
             with pandas.option_context('display.max_rows', None, 'display.max_columns', \
-                                       None,'expand_frame_repr', False):
-                print(dframe)
+                                      None,'expand_frame_repr', False):
+                print(dframe.to_string(index=False))
 
-    def _compare_pandas(self,pandas_list,context=(None,None)):
+    def compare_pandas(self, pandas_list, context):
         """
         Return a panda dataframe comparing multiple pandas with there result relative
         differences computed and added as a column.
@@ -119,23 +119,43 @@ class ComparisonWriter:
             pd_compare.drop('max_diff', 1,inplace=True)
 
         pandas.options.mode.chained_assignment = 'warn' #reactivate warning
-        return(pd_compare.sort_values(by=ctxt_columns_list).to_string(index=False))
+        return(pd_compare.sort_values(by=ctxt_columns_list))
 
 
-    def compare(self, input_directories, benchmark_name, context_in=(None,None)):
+    def compare(self, benchmark_name, input_directories, date_interval_list=None, \
+                context_in=(None,None)):
         """
-        compare results of each input directory, first directory is considered to contain
-        reference results
+        Compare results of each input directory/date_interval combination,
+        results from first combination are considered as the reference.
+        :param input_directories: list of directories.
+        :type input_directories: list of str
+        :param benchmark_name: name of the benchmark
+        :type input_directories: list of str
+        :param date_interval_list: list of date intervals.
+        :type data_interval_list: list of datetimes tuples.
+        :type context: list of tuples of the following form ([ctx0_0,ctx0_1,..],ctx1)
+        with ctx of str type.
         """
         pandas_list = []
         context = (None,None)
         sub_bench = None
         metadata = {}
-        for input_dir in input_directories:
+        config_list = []
+        for rdir in input_directories:
+            if not date_interval_list:
+                config_list.append((rdir,(None,None)))
+            else:
+                for d_interval in date_interval_list:
+                    config_list.append((rdir,d_interval))
+
+        for input_dir, date_interval in config_list:
+
             metadata, current_panda, current_context, current_sub_bench\
-                = self.dstore._dir_to_pandas(input_dir, benchmark_name, context=context_in)
+                = self.dstore._dir_to_pandas(input_dir, benchmark_name, \
+                                             date_interval, context=context_in)
             if current_panda.empty:
                 continue
+
             pandas_list.append(current_panda)
 
             # Get intesection of all context fields found in data files
@@ -174,6 +194,6 @@ class ComparisonWriter:
             else:
                 pandas_list_sub = pandas_list
 
-            pandas_result_list.append(self._compare_pandas(pandas_list_sub,context))
+            pandas_result_list.append(self.compare_pandas(pandas_list_sub,context))
 
         return pandas_result_list

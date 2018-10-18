@@ -66,7 +66,6 @@ class DataStore():
         if(date_interval):
             run_date=DataStore._read_date(metadata['Date'])
             if(run_date<date_interval[0]) or (run_date>date_interval[1]):
-                print date_interval[0],run_date,date_interval[1]
                 return(None,None)
 
         return(metadata, data)
@@ -153,7 +152,7 @@ class DataStore():
         concatenated_panda = pandas.DataFrame()
         result_context = None
         sub_bench = None
-        concatenated_metadata={}
+        concatenated_metadata = {}
 
         if not os.path.isdir(data_dir):
             print("Cannot find "+data_dir+" directory")
@@ -194,7 +193,7 @@ class DataStore():
                     sub_bench=current_sub_bench
 
         if (not result_context):
-            result_context=(None,None)
+            result_context = (None,None)
 
 
         return concatenated_metadata, concatenated_panda, result_context, sub_bench

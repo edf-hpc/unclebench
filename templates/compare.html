@@ -1,0 +1,19 @@
+
+{% for dataframe, sub_bench in dataframe_list%}
+.{{sub_bench}}
+[cols={{ncols}}, options="header"]
+|===
+
+    {% for col in dataframe.columns.values %}
+|  {{col}}
+    {% endfor %}
+
+    {% for key, row in dataframe.iterrows() %}
+        {% for elem in row %}
+
+|  {{elem}}
+
+        {% endfor %}
+    {% endfor %}
+|===
+{% endfor %}

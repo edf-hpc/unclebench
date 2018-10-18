@@ -25,19 +25,22 @@ import pandas
 import time
 import yaml
 import ubench.data_management.data_store_yaml as dsy
+import ubench.data_management.comparison_writer as comparison_writer
 
 class ReportWriter:
     """
     Class providing performance reporting methods
     """
-    def __init__(self, metadata_file, result_directory, bench_template,report_template):
+    def __init__(self, metadata_file, result_directory, bench_template, \
+                 compare_template, report_template):
         """
         """
         self.result_directory = result_directory
         self.metadata = {}
         self.read_metadata(metadata_file)
-        self.bench_template=bench_template
-        self.report_template=report_template
+        self.bench_template = bench_template
+        self.compare_template = compare_template
+        self.report_template = report_template
 
 
         return
@@ -104,27 +107,48 @@ class ReportWriter:
         os.chdir(output_dir)
         print("    Writing report {} in {} directory".format(report_name+".html", output_dir))
 
-
-        # Parse sessions
-        for session, dic_session in sorted(self.metadata['sessions'].items(),
-                                           key=lambda x: x[1]):
-            if session == 'default':
+        # Parse benchmarks
+        for bench_name, bench_dic in sorted(self.metadata['benchmarks'].items(),
+                                            key=lambda x: x[1]):
+            if bench_name == 'default':
                 continue
-            dic_report_main['sessions'].append(session)
-            # Parse benchmarks
-            for bench_name, bench_dic in sorted(self.metadata['benchmarks'].items(),
-                                                key=lambda x: x[1]):
-                if bench_name == 'default':
+            dic_report_main['benchmarks'].append(bench_name)
+
+            common_dic_report_bench = {}
+            common_dic_report_bench["benchmark_name"] = bench_name
+            fields_to_find = required_fields.union(context_fields)
+
+            dic_contexts = {}
+            if bench_name in self.metadata['contexts']:
+                dic_contexts = self.metadata['contexts'][bench_name]
+
+            # Check context parameters ( same for all sessions)
+            for r_field in context_fields.intersection(fields_to_find):
+                if r_field in dic_contexts:
+                    common_dic_report_bench[r_field] = dic_contexts[r_field]
+                elif r_field in dic_contexts_default:
+                    common_dic_report_bench[r_field] = dic_contexts_default[r_field]
+                else:
+                    print("Please precise {} for benchmark {}".format(r_field, bench_name))
+                    return
+
+            for r_field in context_fields:
+                fields_to_find.remove(r_field)
+
+            context_in = (common_dic_report_bench['context'], common_dic_report_bench['context_res'])
+            context_out = None
+            date_interval_list = []
+            # Parse sessions
+            for session, dic_session in sorted(self.metadata['sessions'].items(),
+                                               key=lambda x: x[1]):
+                if session == 'default':
                     continue
+                if not session in dic_report_main['sessions']:
+                    dic_report_main['sessions'].append(session)
 
-                if not bench_name in dic_report_main['benchmarks']:
-                    dic_report_main['benchmarks'].append(bench_name)
-
-                dic_report_bench = {}
-                dic_report_bench["benchmark_name"] = bench_name
-
-                fields_to_find = required_fields.union(context_fields)
                 fields_found = []
+                dic_report_bench = common_dic_report_bench.copy()
+
                 # Check benchmark parameters
                 for r_field in fields_to_find:
                     if r_field in bench_dic[session]:
@@ -135,23 +159,6 @@ class ReportWriter:
                         fields_found.append(r_field)
 
                 for r_field in fields_found:
-                    fields_to_find.remove(r_field)
-
-                dic_contexts = {}
-                if bench_name in self.metadata['contexts']:
-                    dic_contexts = self.metadata['contexts'][bench_name]
-
-                # Check context parameters
-                for r_field in context_fields.intersection(fields_to_find):
-                    if r_field in dic_contexts:
-                        dic_report_bench[r_field] = dic_contexts[r_field]
-                    elif r_field in dic_contexts_default:
-                        dic_report_bench[r_field] = dic_contexts_default[r_field]
-                    else:
-                        print("Please precise {} for benchmark {}".format(r_field, bench_name))
-                        return
-
-                for r_field in context_fields:
                     fields_to_find.remove(r_field)
 
                 # Check session parameters
@@ -166,20 +173,25 @@ class ReportWriter:
 
                 # Get performance array
                 dstore = dsy.DataStoreYAML()
-                context_in = (dic_report_bench['context'], dic_report_bench['context_res'])
-
-                dates_interval = (ReportWriter._read_date(dic_report_bench['date_start']),
+                date_interval = (ReportWriter._read_date(dic_report_bench['date_start']),
                                   ReportWriter._read_date(dic_report_bench['date_end']))
-                run_metadata, panda, context, sub_bench \
-                    = dstore._dir_to_pandas(self.result_directory, bench_name, \
-                                            dates_interval, context_in)
 
-                if panda.empty:
+                date_interval_list.append(date_interval)
+
+                run_metadata, bench_dataframe, context_out, sub_bench \
+                    = dstore._dir_to_pandas(self.result_directory, bench_name, \
+                                            date_interval, context_in)
+
+                if bench_dataframe.empty:
                     print("Error : no value found for session {} and benchmark {}".\
                           format(session,bench_name))
                     return
 
-                perf_array_list, sub_bench_list = self._get_perf_array(panda, context, sub_bench)
+                perf_array_list, sub_bench_list \
+                    = self._get_perf_array(bench_dataframe, context_out, sub_bench)
+
+                if sub_bench_list[0] == None:
+                    sub_bench_list[0] = bench_name
 
                 # Complete benchmark informations
                 dic_report_bench['cmdline'] = list(set(run_metadata['cmdline']))
@@ -193,11 +205,40 @@ class ReportWriter:
                     report_files[session] = {}
                 report_files[session][bench_name] = out_filename
 
-                self.jinja_templated_write(dic_report_bench, self.bench_template,out_filename)
+                self.jinja_templated_write(dic_report_bench, self.bench_template, out_filename)
+
+            # Write performance comparison across sessions
+            if not 'compare' in report_files:
+                report_files['compare'] = {}
+
+            report_files['compare'][bench_name]\
+                = self.write_comparison(bench_name, sub_bench, sub_bench_list, date_interval_list, context_out)
 
         # Write full report
         dic_report_main['report_files'] = report_files
         self.jinja_templated_write(dic_report_main, self.report_template, report_name+".asc")
+
+
+
+    def write_comparison(self, bench_name, sub_bench, sub_bench_list, date_interval_list, context):
+        """
+        Write performance comparison report section
+        """
+        dic_compare = {}
+        cwriter = comparison_writer.ComparisonWriter()
+        c_list = cwriter.compare(bench_name, [self.result_directory], \
+                                 date_interval_list, (context[0]+[context[1]], None))
+        if(sub_bench):
+            for df_comp in c_list:
+                df_comp.drop(sub_bench, 1, inplace=True)
+
+        dic_compare['dataframe_list'] = zip(c_list,sub_bench_list)
+        dic_compare['ncols'] = len(c_list[-1].columns)
+        out_filename = bench_name+"_comparison.asc"
+
+        self.jinja_templated_write(dic_compare, self.compare_template, out_filename)
+        return out_filename
+
 
     def jinja_templated_write(self, report_dic, template_file, out_filename):
 
@@ -210,20 +251,23 @@ class ReportWriter:
             report_file.write(outputText)
         return
 
-    def _set_array_content(self, dataframe, context_list, array_line, perf_array):
+    def _set_array_content(self, dataframe, columns, context_list, array_line, perf_array):
         """
         Recursive results array printing
         """
         if len(context_list)==1:
-            for val_ctx in sorted(dataframe[context_list[-1]].unique()):
-                result=dataframe[dataframe[context_list[-1]]==val_ctx].result.tolist()
-                if len(result)==1:
-                    array_line.append(result[0])
+            for col in columns:
+                if col in sorted(dataframe[context_list[-1]].unique()):
+                    result = dataframe[dataframe[context_list[-1]]==col].result.tolist()
+                    if len(result)==1:
+                        array_line.append(result[0])
+                    else:
+                        res_list = []
+                        for res in result:
+                            res_list.append(res)
+                        array_line.append(res_list)
                 else:
-                    res_list=[]
-                    for res in result:
-                        res_list.append(res)
-                    array_line.append(res_list)
+                    array_line.append("N/A")
             perf_array.append(array_line)
             return
         try:
@@ -234,7 +278,8 @@ class ReportWriter:
         for ctx in sorted_ctx:
             sub_dataframe = dataframe[dataframe[context_list[0]]==str(ctx)]
             array_line_tmp = array_line+[str(ctx)]
-            self._set_array_content(sub_dataframe,context_list[1:], array_line_tmp, perf_array)
+            self._set_array_content(sub_dataframe, columns, context_list[1:], \
+                                    array_line_tmp, perf_array)
 
 
     def _get_perf_array(self, report_df, context, sub_bench_field=None):
@@ -263,16 +308,18 @@ class ReportWriter:
             nb_cols=len(sub_bench_df[context[1]].unique())+len(context[0])
 
             perf_array_list[-1].append([])
-
+            columns=[]
             for ctx_f in context[0]:
                 perf_array_list[-1][-1].append(ctx_f)
 
             for ctx_c_val in sorted(sub_bench_df[context[1]].unique()):
                 perf_array_list[-1][-1].append(ctx_c_val)
+                columns.append(ctx_c_val)
                 if units:
                     perf_array_list[-1][-1][-1] += " ()".format(units)
 
-            self._set_array_content(sub_bench_df, context[0]+[context[1]], [],perf_array_list[-1])
+            self._set_array_content(sub_bench_df, columns, context[0]+[context[1]], \
+                                    [],perf_array_list[-1])
 
 
         return perf_array_list, sub_bench_list
