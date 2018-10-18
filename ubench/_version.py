@@ -27,12 +27,14 @@ VERSION= "0.2.3"
 
 def get_git_revision_short_hash():
     #check if we are in a git repository
-    current_path = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(current_path)
-    if subprocess.call(["git", "branch"], stderr=open(os.devnull, 'w'), stdout=open(os.devnull, 'w')) != 0:
-      return None
-    else:
-      return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+    return None
+    # current_path = os.path.dirname(os.path.abspath(__file__))
+    # os.chdir(current_path)
+    # if subprocess.call(["git", "branch"], stderr=open(os.devnull, 'w'), stdout=open(os.devnull, 'w')) != 0:
+    #   return None
+    # else:
+    #   return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
+
 
 def get_version():
 

@@ -19,4 +19,5 @@
 
 from ._version import get_version
 
-__version__ = get_version()
+def __version__():
+    return get_version()
