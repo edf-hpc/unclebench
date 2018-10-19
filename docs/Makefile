@@ -10,5 +10,5 @@ clean:
 	pandoc -f markdown -s -t man $< -o man/$@
 
 %.html: source/%.asc
-	asciidoctor -a stylesheet=source/user_guide.css $< -o $@
+	asciidoctor -a stylesheet=user_guide.css $< -o $@
 
