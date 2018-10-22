@@ -324,8 +324,9 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         :type output_file: string"""
         result_array=self.result_array
         for i in range(0,len(result_array)/2):
-            result_array[len(result_array)/2+i].append(result_array[i][0])
-        result_array=result_array[len(result_array)/2:]
+            result_array[i].append(result_array[len(result_array)/2+i][0])
+        
+        result_array=result_array[:len(result_array)/2]
         if not debug_mode:
             for i in range(0,len(result_array)):
                 result_array[i]=result_array[i][:len(result_array[i])-1]

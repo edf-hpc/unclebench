@@ -253,6 +253,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
           # we add the part of results which corresponds to a given execute
           with open(result_file_path) as csvfile:
             reader = csv.DictReader(csvfile)
+          
             field_names= reader.fieldnames
             common_fields = list(set(value.keys()) & set(field_names))
             result_fields = list(set(field_names) - set(common_fields))
@@ -270,13 +271,14 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
               if add_to_results:
                 for field in result_fields:
                   temp_hash[field].append(row[field])
-
+                  
             # when there is just value we transform the array in one value
             for field in result_fields:
+              
               if len(temp_hash[field]) == 1:
                 temp_hash[field] = temp_hash[field][0]
-
-
+                
+                
             results[key]['results_bench'] = temp_hash
             results[key]['context_fields'] = common_fields
 
@@ -351,18 +353,19 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         # Get job errlog and outlog filenames from configuration.xml file
         cvsfile = self.jube_xml_files.get_result_cvsfile()
-
-        input_str='jube result ./'+output_dir+' --id '+benchmark_id #+' -o '+cvsfile
+        debugfile = "paths"
+       
+        input_str='jube result ./'+output_dir+' --id '+benchmark_id +' -o '+ cvsfile + ' ' + debugfile 
         result_from_jube = Popen(input_str,cwd=os.getcwd(),shell=True, stdout=PIPE)
         ret_code = result_from_jube.wait()
         result_array=[]
         # Get data from result array
         empty=True
-
         with open(os.path.join(benchmark_rundir,'result/ubench_results.dat'),'w') as result_file:
+          
           for line in result_from_jube.stdout:
             result_file.write(line)
-
+           
             empty=False
 
             splitted_line=[]
@@ -380,13 +383,11 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
             if len(line.strip()) > 0:
                 result_array.append(splitted_line)
-
         if (empty):
             raise IOError
-
-
         # Restore working directory
         os.chdir(old_path)
+        
         return result_array
 
 
