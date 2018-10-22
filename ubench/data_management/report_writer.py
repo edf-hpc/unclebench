@@ -34,6 +34,7 @@ class ReportWriter:
     def __init__(self, metadata_file, result_directory, bench_template, \
                  compare_template, report_template):
         """
+        ReportWriter constructor.
         """
         self.result_directory = result_directory
         self.metadata = {}
@@ -61,7 +62,6 @@ class ReportWriter:
         Read date from string.
         Tue May 15 17:15:08 2018
         """
-
         try:
             date_time = datetime.datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S')
         except ValueError as verr:
@@ -136,8 +136,6 @@ class ReportWriter:
             dic_contexts = {}
             for ctx_el in self.metadata['contexts']:
                 ctx_bench_name, ctx_dic = ReportWriter._dic_to_tuple(ctx_el)
-                print(ctx_bench_name)
-                print(ctx_dic)
                 if ctx_bench_name == bench_name:
                     dic_contexts = ctx_dic
 
@@ -309,7 +307,7 @@ class ReportWriter:
         sub_bench_field.
         """
         if report_df.empty:
-            return [],[]
+            return [], []
 
         context_col = context[1]
 
@@ -324,12 +322,13 @@ class ReportWriter:
             perf_array_list.append([])
             sub_bench_df=report_df
             if(sub_bench):
-                sub_bench_df=report_df[report_df[sub_bench_field]==sub_bench]
+                sub_bench_df = report_df[report_df[sub_bench_field]==sub_bench]
 
-            nb_cols=len(sub_bench_df[context[1]].unique())+len(context[0])
+            nb_cols = len(sub_bench_df[context[1]].unique())+len(context[0])
 
             perf_array_list[-1].append([])
             columns=[]
+
             for ctx_f in context[0]:
                 perf_array_list[-1][-1].append(ctx_f)
 

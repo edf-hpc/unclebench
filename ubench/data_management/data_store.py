@@ -127,17 +127,50 @@ class DataStore():
         # Fill report_info
         for id_exec in sorted(data.keys()): # this guarantees the order of nodes
             value = data[id_exec]
-            # Only one value for hpl, multiple for hpcc
-            for key, result in value['results_bench'].items():
-                for column in full_context:
-                    if column in value:
-                        if not column in report_info:
-                            report_info[column]=[]
-                        report_info[column].append(value[column])
 
-                report_info['result'].append(result)
-                if result_name_column:
-                    report_info[result_name_column].append(key)
+            context_key = []
+            for key, result in sorted(value['results_bench'].items()):
+                if key in full_context:
+                    context_key.append(key)
+
+            # Only one value for hpl, multiple for hpcc
+            for key, result in sorted(value['results_bench'].items()):
+
+                if key in full_context:
+                    continue
+
+                # Case where a result field should be consired as context (ex: IMB)
+                if context_key:
+                    for ctx_key in context_key:
+                        if not ctx_key in report_info:
+                            report_info[ctx_key] = []
+                        for index,res in enumerate(result):
+                            for column in set(full_context)-set(context_key):
+                                if not column in report_info:
+                                    report_info[column] = []
+                                report_info[column].append(value[column])
+                            try:
+                                report_info[ctx_key].append(int(value['results_bench'][ctx_key][index]))
+                            except:
+                                report_info[ctx_key].append(value['results_bench'][ctx_key][index])
+                            report_info['result'].append(res)
+                            if result_name_column:
+                                report_info[result_name_column].append(key)
+                else:
+                    for column in full_context:
+                        if column in value:
+                            if not column in report_info:
+                                report_info[column]=[]
+                            report_info[column].append(value[column])
+                        else:
+                            print("Error, context {} does not exist for benchmark {}"\
+                                  .format(column,benchmark_name))
+                            exit
+
+
+                    report_info['result'].append(result)
+                    if result_name_column:
+                        report_info[result_name_column].append(key)
 
         # Return a tuple
         return (metadata, pandas.DataFrame(report_info), context, result_name_column)
