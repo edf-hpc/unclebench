@@ -95,7 +95,7 @@ class ReportWriter:
         """
         required_fields = set(['tester','platform','date_start','date_end','comment', \
                                'result'])
-        context_fields = set(['context','context_res'])
+        context_fields = set(['compare','context','context_res'])
         report_files = {}
 
         # Get default parameters dictionnaries
@@ -155,6 +155,7 @@ class ReportWriter:
             context_in = (common_dic_report_bench['context'], common_dic_report_bench['context_res'])
             context_out = None
             date_interval_list = []
+
             # Parse sessions
             for session_item in self.metadata['sessions']:
 
@@ -223,15 +224,16 @@ class ReportWriter:
                 if not session in report_files:
                     report_files[session] = {}
                 report_files[session][bench_name] = out_filename
-
                 self.jinja_templated_write(dic_report_bench, self.bench_template, out_filename)
 
             # Write performance comparison across sessions
-            if not 'compare' in report_files:
-                report_files['compare'] = {}
+            if bool(dic_report_bench['compare']):
+                if not 'compare' in report_files:
+                    report_files['compare'] = {}
 
-            report_files['compare'][bench_name]\
-                = self.write_comparison(bench_name, sub_bench, sub_bench_list, date_interval_list, context_out)
+                report_files['compare'][bench_name]\
+                    = self.write_comparison(bench_name, sub_bench, \
+                                            sub_bench_list, date_interval_list, context_out)
 
         # Write full report
         dic_report_main['report_files'] = report_files

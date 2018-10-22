@@ -17,8 +17,12 @@ include::{{report_files[session][benchmark]}}[]
 {% endfor %}
 
 {% if 'compare' in report_files %}
+{% if benchmark in report_files['compare'] %}
 === Comparison
+
 include::{{report_files['compare'][benchmark]}}[]
+{% endif %}
+
 {% endif %}
 
 {% endfor %}
