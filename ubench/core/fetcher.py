@@ -85,6 +85,7 @@ class Fetcher():
 
       if not os.path.exists(benchresource_dir):
         os.makedirs(benchresource_dir)
+      fetched = False
 
       for file_bench in files:
         urlparsed = urlparse(url)
@@ -99,22 +100,37 @@ class Fetcher():
           fetch_command = self.svn_fetch(url_file,base_name,self.login,self.password,rev)
 
         elif scm_name=="git":
-          fetch_command = self.git_fetch(url,base_name,benchresource_dir,rev,branch)
 
-        fetch_process = Popen(fetch_command,cwd=benchresource_dir,shell=True)
-        fetch_process.wait()
+          # Get the name of the global repository
+          benchs_name=os.path.join(url.split('/')[-1].split('.')[0])
+
+          fetch_command = self.git_fetch(url,benchs_name,benchresource_dir,rev,branch)
+
+
+        if not fetched:
+          # Execute the fetch command just one time
+
+          fetch_process = Popen(fetch_command,cwd=benchresource_dir,shell=True)
+          fetch_process.wait()
+          fetched = True
+
         fetch_dir=os.path.join(self.resource_dir,self.benchmark_name,scm_name)
+
+        # Create symbolic link to the file bench with its full path 
         if rev > 0:
           dest_symlink = os.path.join(fetch_dir,rev+"_"+base_name)
           if not os.path.exists(dest_symlink):
-            os.symlink(os.path.join(fetch_dir,rev,base_name),dest_symlink)
+            os.symlink(os.path.join(benchresource_dir+file_bench),dest_symlink)
+
+        # Check if the files exist in the directory
+        if not os.path.isdir(os.path.join(benchresource_dir+file_bench)):
+            print "WARNING :", os.path.join(benchresource_dir+file_bench)," does not exist"
 
         # Execute actions from do tags
         if do_cmds:
           for do_cmd in do_cmds :
             do_process=Popen(do_cmd,cwd=os.path.join(benchresource_dir,file_bench[1:]),shell=True)
             do_process.wait()
-
 
     print 'Benchmark {0} fetched'.format(self.benchmark_name)
 
