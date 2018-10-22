@@ -1,8 +1,9 @@
 #!/bin/bash
 
 
-#ENV#
+exec 2> #STDERRLOGFILE# 1> #STDOUTLOGFILE#
 
+#ENV#
 
 #PREPROCESS#
 

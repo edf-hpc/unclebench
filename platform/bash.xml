@@ -34,8 +34,8 @@
         <parameter name="mail"></parameter>
         <parameter name="env">$jube_wp_envstr</parameter>
         <parameter name="notification"></parameter>
-        <parameter name="outlogfile"></parameter>
-        <parameter name="errlogfile"></parameter>
+        <parameter name="outlogfile">job.out</parameter>
+        <parameter name="errlogfile">job.err</parameter>
         <parameter name="timelimit"></parameter>
 
 	<parameter name="wckey"></parameter>
