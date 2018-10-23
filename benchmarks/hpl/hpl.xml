@@ -141,7 +141,7 @@
       <!-- =====================  Analyze  ===================== -->
 
       <patternset name="pattern">
-	  <pattern name="HPL_Gflops" type="float">
+	  <pattern name="HPL" type="float" unit="Gflop/s">
 	      ^W.*(\d+[\.]\d+e[+-]\d+)
 	  </pattern>
       </patternset>
@@ -158,7 +158,7 @@
 	  <use>analyse</use>
 	  <table name="result" style="csv" sort="nodes">
 	      <column>nodes</column>
-	      <column>HPL_Gflops</column>
+	      <column>HPL</column>
 	      <column>modules</column>
 	  </table>
       </result>
