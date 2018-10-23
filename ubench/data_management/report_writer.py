@@ -89,7 +89,7 @@ class ReportWriter:
         return {}
 
 
-    def write_report(self, output_dir):
+    def write_report(self, output_dir, report_name):
         """
         Write a report in output file according to report_writer metadata.
         """
@@ -103,13 +103,20 @@ class ReportWriter:
         dic_contexts_default = ReportWriter._get_default_dic(self.metadata['contexts'])
         dic_benchmarks_default = ReportWriter._get_default_dic(self.metadata['benchmarks'])
 
+
         # Dictionnary to store main report data
         dic_report_main = {}
-        dic_report_main['report_title'] = "Performance Report"
+        # Required global parameters
+        global_parameters = set(['author','title','version','introduction'])
+        for gp_key in global_parameters:
+            if not gp_key:
+                print("Warning: {} field is missing",gp_key)
+                dic_report_main[gp_key] = ''
+            else:
+                dic_report_main[gp_key] = self.metadata[gp_key]
         dic_report_main['sessions'] = []
         dic_report_main["benchmarks"] = []
 
-        report_name = "ubench_performance_report"
         if not os.path.exists(output_dir):
             try:
                 os.makedirs(output_dir)
@@ -118,7 +125,6 @@ class ReportWriter:
                 return
 
         os.chdir(output_dir)
-        print("    Writing report {} in {} directory".format(report_name+".html", output_dir))
 
         # Parse benchmarks
         for bench_item in self.metadata['benchmarks']:
@@ -214,7 +220,8 @@ class ReportWriter:
                     sub_bench_list[0] = bench_name
 
                 # Complete benchmark informations
-                dic_report_bench['cmdline'] = list(set(run_metadata['cmdline']))
+                if "cmdline" in run_metadata:
+                    dic_report_bench['cmdline'] = list(set(run_metadata['cmdline']))
                 dic_report_bench['perf_array_list'] = zip(perf_array_list, sub_bench_list)
                 dic_report_bench['sub_bench_list'] = sub_bench_list
                 dic_report_bench['ncols'] = len(perf_array_list[-1][-1])
@@ -238,7 +245,6 @@ class ReportWriter:
         # Write full report
         dic_report_main['report_files'] = report_files
         self.jinja_templated_write(dic_report_main, self.report_template, report_name+".asc")
-
 
 
     def write_comparison(self, bench_name, sub_bench, sub_bench_list, date_interval_list, context):

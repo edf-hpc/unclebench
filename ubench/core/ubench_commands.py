@@ -23,6 +23,7 @@ Define UbenchCmd class
 """
 import os
 import re
+from subprocess import Popen
 import ubench.core.ubench_config as uconfig
 import ubench.benchmark_managers.benchmark_manager_set as bms
 
@@ -172,7 +173,19 @@ class UbenchCmd:
         report_template =  os.path.join(self.uconf.templates_path, "report.html")
         rwriter = report_writer.ReportWriter(metadata_file, result_directory,
                                              bench_template, compare_template, report_template)
-        rwriter.write_report(output_dir)
+        report_name = "ubench_performance_report"
+
+        print("    Writing report {} in {} directory".format(report_name+".html", output_dir))
+        rwriter.write_report(output_dir, report_name)
+
+        asciidoctor_cmd\
+            = 'asciidoctor -a stylesheet=' + self.uconf.stylesheet_path + " "\
+            + os.path.join(os.getcwd(), report_name+".asc")
+
+        print(asciidoctor_cmd)
+
+        Popen(asciidoctor_cmd, cwd=os.getcwd(), shell=True)
+
 
     def translate_wlist_to_scheduler_wlist(self, w_list_arg):
         """
