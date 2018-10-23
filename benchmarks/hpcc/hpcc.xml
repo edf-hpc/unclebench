@@ -168,31 +168,31 @@
 	<!-- =====================  Analyze  ===================== -->
 	
 	<patternset name="pattern">
-	    <pattern name="MPIRandAcc_GUPs" type="float">
+	    <pattern name="MPIRandAcc" type="float" unit="GUP/s">
 	      ^MPIRandomAccess_GUPs=$jube_pat_fp
 	    </pattern>
 	    
-	    <pattern name="MPIFFT_Gflops" type="float">
+	    <pattern name="MPIFFT" type="float" unit="Gflop/s">
 	      ^MPIFFT_Gflops=$jube_pat_fp
 	    </pattern>
 	    
-	    <pattern name="PTRANS_GBs" type="float">
+	    <pattern name="PTRANS" type="float" unit="GB/s">
 	      ^PTRANS_GBs=$jube_pat_fp
 	    </pattern>
 	    
-	    <pattern name="StarDGEMM_Gflops" type="float">
+	    <pattern name="StarDGEMM" type="float" unit="Gflop/s">
 	      ^StarDGEMM_Gflops=*$jube_pat_fp
 	    </pattern>
 
-	    <pattern name="RORingBandwidth_GBytes" type="float">
+	    <pattern name="RORingBandwidth" type="GByte/s">
 	      ^RandomlyOrderedRingBandwidth_GBytes=$jube_pat_fp
 	    </pattern>
 
-	    <pattern name="RORingLatency_usec" type="float">
+	    <pattern name="RORingLatency" type="float" unit="usec">
 	      ^RandomlyOrderedRingLatency_usec=$jube_pat_fp
 	    </pattern>
 
-	    <pattern name="StarSTREAM_Triad" type="float">
+	    <pattern name="StarSTREAM_Triad" type="float" unit="MB/s">
 	      ^StarSTREAM_Triad=$jube_pat_fp
 	    </pattern>
 
@@ -210,12 +210,12 @@
 	    <use>analyse</use>
 	    <table name="result" style="csv" sort="nodes">
 		<column>nodes</column>
-		<column>MPIRandAcc_GUPs</column>
-		<column>MPIFFT_Gflops</column>
-		<column>PTRANS_GBs</column>
-		<column>StarDGEMM_Gflops</column>
-		<column>RORingBandwidth_GBytes</column>
-		<column>RORingLatency_usec</column>
+		<column>MPIRandAcc</column>
+		<column>MPIFFT</column>
+		<column>PTRANS</column>
+		<column>StarDGEMM</column>
+		<column>RORingBandwidth</column>
+		<column>RORingLatency</column>
 		<column>StarSTREAM_Triad</column>
 		<column>modules</column>
 	    </table>
