@@ -59,12 +59,12 @@ class DataStore():
             return (None,None)
 
         # Check if benchmark_name corresponds
-        if benchmark_name!=metadata["Benchmark_name"]:
+        if benchmark_name != metadata["Benchmark_name"]:
             return(None,None)
 
         # Check if dates correspond
         if(date_interval):
-            run_date=DataStore._read_date(metadata['Date'])
+            run_date = DataStore._read_date(metadata['Date'])
             if(run_date<date_interval[0]) or (run_date>date_interval[1]):
                 return(None,None)
 
@@ -78,9 +78,9 @@ class DataStore():
         metadata, data = self._extract_data_from_file(filename, benchmark_name, date_interval)
 
         if not context[0]:
-            context=([],context[1])
+            context = ([], context[1])
         if not context[1]:
-            context=(context[0],None)
+            context = (context[0], None)
 
         # File is not corresponding
         if not metadata:
@@ -94,18 +94,18 @@ class DataStore():
                 else:
                     context = (context[0].intersection(set(data[id_exec]['context_fields'])), \
                                context[1])
-            context = list(context[0]),context[1]
+            context = list(context[0]), context[1]
         else:
         # Check that context exists
             pass
 
         if context[1]:
-            full_context=context[0]+[context[1]]
+            full_context = context[0]+[context[1]]
         else:
-            full_context=context[0]
+            full_context = context[0]
 
         # Check if tbere are sub_bench
-        result_name_column=None
+        result_name_column = None
         for id_exec in sorted(data.keys()): # this guarantees the order of nodes
             if (len(data[id_exec]['results_bench'].items())>1):
                 result_name_column = metadata['Benchmark_name']+'_bench'
@@ -160,7 +160,7 @@ class DataStore():
                     for column in full_context:
                         if column in value:
                             if not column in report_info:
-                                report_info[column]=[]
+                                report_info[column] = []
                             report_info[column].append(value[column])
                         else:
                             print("Error, context {} does not exist for benchmark {}"\
@@ -206,7 +206,7 @@ class DataStore():
 
                 for field, value in metadata.items():
                     if not field in concatenated_metadata:
-                        concatenated_metadata[field]=[]
+                        concatenated_metadata[field] = []
                     concatenated_metadata[field].append(value)
 
                 if (result_context)and(result_context!=current_context):

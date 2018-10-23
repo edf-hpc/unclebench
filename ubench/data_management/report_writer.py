@@ -282,11 +282,11 @@ class ReportWriter:
         """
         Recursive results array printing
         """
-        if len(context_list)==1:
+        if len(context_list) == 1:
             for col in columns:
                 if col in sorted(dataframe[context_list[-1]].unique()):
                     result = dataframe[dataframe[context_list[-1]]==col].result.tolist()
-                    if len(result)==1:
+                    if len(result) == 1:
                         array_line.append(result[0])
                     else:
                         res_list = []
@@ -303,7 +303,7 @@ class ReportWriter:
             sorted_ctx = sorted(dataframe[context_list[0]].unique().tolist())
 
         for ctx in sorted_ctx:
-            sub_dataframe = dataframe[dataframe[context_list[0]]==str(ctx)]
+            sub_dataframe = dataframe[dataframe[context_list[0]] == str(ctx)]
             array_line_tmp = array_line+[str(ctx)]
             self._set_array_content(sub_dataframe, columns, context_list[1:], \
                                     array_line_tmp, perf_array)
@@ -325,17 +325,17 @@ class ReportWriter:
             sub_bench_list = report_df[sub_bench_field].unique().tolist()
 
         units = None #TODO
-        perf_array_list=[]
+        perf_array_list = []
         for sub_bench in sub_bench_list:
             perf_array_list.append([])
-            sub_bench_df=report_df
+            sub_bench_df = report_df
             if(sub_bench):
-                sub_bench_df = report_df[report_df[sub_bench_field]==sub_bench]
+                sub_bench_df = report_df[report_df[sub_bench_field] == sub_bench]
 
             nb_cols = len(sub_bench_df[context[1]].unique())+len(context[0])
 
             perf_array_list[-1].append([])
-            columns=[]
+            columns = []
 
             for ctx_f in context[0]:
                 perf_array_list[-1][-1].append(ctx_f)
