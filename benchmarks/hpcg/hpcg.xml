@@ -89,7 +89,7 @@
 	<!-- =====================  Analyze  ===================== -->
 
 	<patternset name="pattern">
-	    <pattern name="hpcg_GFLOPs" type="float" unit="GFLOP/s">
+	    <pattern name="hpcg" type="float" unit="Gflop/s">
 		^.*rating of:\s+$jube_pat_fp
 	    </pattern>
 	</patternset>
@@ -107,7 +107,7 @@
 	    <use>analyze</use>
 	    <table name="result" style="csv" sort="nodes">
 		<column>nodes</column>
-		<column format=".3f">hpcg_GFLOPs</column>
+		<column format=".3f">hpcg</column>
 	    </table>
 	</result>
 
