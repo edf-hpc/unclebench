@@ -164,6 +164,8 @@ class ReportWriter:
             # Parse sessions
             for session_item in self.metadata['sessions']:
 
+                local_fields_to_find = fields_to_find.copy()
+
                 session, dic_session = ReportWriter._dic_to_tuple(session_item)
 
                 if session == 'default':
@@ -175,7 +177,7 @@ class ReportWriter:
                 dic_report_bench = common_dic_report_bench.copy()
 
                 # Check benchmark parameters
-                for r_field in fields_to_find:
+                for r_field in local_fields_to_find:
                     if r_field in bench_dic[session]:
                         dic_report_bench[r_field] = bench_dic[session][r_field]
                         fields_found.append(r_field)
@@ -184,10 +186,10 @@ class ReportWriter:
                         fields_found.append(r_field)
 
                 for r_field in fields_found:
-                    fields_to_find.remove(r_field)
+                    local_fields_to_find.remove(r_field)
 
                 # Check session parameters
-                for r_field in fields_to_find:
+                for r_field in local_fields_to_find:
                     if r_field in dic_session:
                         dic_report_bench[r_field] = dic_session[r_field]
                     elif r_field in dic_sessions_default:
