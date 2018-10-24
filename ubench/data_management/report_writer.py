@@ -94,7 +94,7 @@ class ReportWriter:
         """
         required_fields = set(['tester','platform','date_start','date_end','dir','comment', \
                                'result'])
-        context_fields = set(['compare','context','context_res'])
+        context_fields = set(['compare','compare_threshold','context','context_res'])
         report_files = {}
 
         # Get default parameters dictionnaries
@@ -241,21 +241,22 @@ class ReportWriter:
                     report_files['compare'] = {}
 
                 report_files['compare'][bench_name]\
-                    = self.write_comparison(bench_name, sub_bench, \
-                                            sub_bench_list, date_interval_list, \
-                                            dir_list, context_out)
+                    = self.write_comparison(bench_name, sub_bench, sub_bench_list, \
+                                            date_interval_list, dir_list,\
+                                            context_out,dic_report_bench['compare_threshold'])
 
         # Write full report
         dic_report_main['report_files'] = report_files
         self.jinja_templated_write(dic_report_main, self.report_template, report_name+".asc")
 
 
-    def write_comparison(self, bench_name, sub_bench, sub_bench_list, date_interval_list, dir_list, context):
+    def write_comparison(self, bench_name, sub_bench, sub_bench_list, \
+                         date_interval_list, dir_list, context, threshold):
         """
         Write performance comparison report section
         """
         dic_compare = {}
-        cwriter = comparison_writer.ComparisonWriter()
+        cwriter = comparison_writer.ComparisonWriter(threshold)
         c_list = cwriter.compare(bench_name, dir_list, \
                                  date_interval_list, (context[0]+[context[1]], None))
         if(sub_bench):
