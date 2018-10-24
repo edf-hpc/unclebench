@@ -31,12 +31,11 @@ class ReportWriter:
     """
     Class providing performance reporting methods
     """
-    def __init__(self, metadata_file, result_directory, bench_template, \
+    def __init__(self, metadata_file, bench_template, \
                  compare_template, report_template):
         """
         ReportWriter constructor.
         """
-        self.result_directory = result_directory
         self.metadata = {}
         self.read_metadata(metadata_file)
         self.bench_template = bench_template
@@ -93,7 +92,7 @@ class ReportWriter:
         """
         Write a report in output file according to report_writer metadata.
         """
-        required_fields = set(['tester','platform','date_start','date_end','comment', \
+        required_fields = set(['tester','platform','date_start','date_end','dir','comment', \
                                'result'])
         context_fields = set(['compare','context','context_res'])
         report_files = {}
@@ -161,7 +160,7 @@ class ReportWriter:
             context_in = (common_dic_report_bench['context'], common_dic_report_bench['context_res'])
             context_out = None
             date_interval_list = []
-
+            dir_list = []
             # Parse sessions
             for session_item in self.metadata['sessions']:
 
@@ -203,9 +202,10 @@ class ReportWriter:
                                   ReportWriter._read_date(dic_report_bench['date_end']))
 
                 date_interval_list.append(date_interval)
+                dir_list.append(dic_report_bench['dir'])
 
                 run_metadata, bench_dataframe, context_out, sub_bench \
-                    = dstore._dir_to_pandas(self.result_directory, bench_name, \
+                    = dstore._dir_to_pandas(dic_report_bench['dir'], bench_name, \
                                             date_interval, context_in)
 
                 if bench_dataframe.empty:
@@ -240,20 +240,21 @@ class ReportWriter:
 
                 report_files['compare'][bench_name]\
                     = self.write_comparison(bench_name, sub_bench, \
-                                            sub_bench_list, date_interval_list, context_out)
+                                            sub_bench_list, date_interval_list, \
+                                            dir_list, context_out)
 
         # Write full report
         dic_report_main['report_files'] = report_files
         self.jinja_templated_write(dic_report_main, self.report_template, report_name+".asc")
 
 
-    def write_comparison(self, bench_name, sub_bench, sub_bench_list, date_interval_list, context):
+    def write_comparison(self, bench_name, sub_bench, sub_bench_list, date_interval_list, dir_list, context):
         """
         Write performance comparison report section
         """
         dic_compare = {}
         cwriter = comparison_writer.ComparisonWriter()
-        c_list = cwriter.compare(bench_name, [self.result_directory], \
+        c_list = cwriter.compare(bench_name, dir_list, \
                                  date_interval_list, (context[0]+[context[1]], None))
         if(sub_bench):
             for df_comp in c_list:

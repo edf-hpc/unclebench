@@ -164,15 +164,15 @@ class UbenchCmd:
         cwriter.print_comparison(benchmark_name, input_directories, context)
 
 
-    def report(self, metadata_file, result_directory, output_dir):
+    def report(self, metadata_file, output_dir):
         """
         Build a performance report.
         """
         bench_template = os.path.join(self.uconf.templates_path, "bench.html")
         compare_template =  os.path.join(self.uconf.templates_path, "compare.html")
         report_template =  os.path.join(self.uconf.templates_path, "report.html")
-        rwriter = report_writer.ReportWriter(metadata_file, result_directory,
-                                             bench_template, compare_template, report_template)
+        rwriter = report_writer.ReportWriter(metadata_file, bench_template,
+                                             compare_template, report_template)
         report_name = "ubench_performance_report"
 
         print("    Writing report {} in {} directory".format(report_name+".html", output_dir))

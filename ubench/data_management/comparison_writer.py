@@ -19,6 +19,7 @@
 #                                                                            #
 ##############################################################################
 import os
+import numpy as np
 import pandas
 import ubench.data_management.data_store_yaml as dsy
 
@@ -101,11 +102,15 @@ class ComparisonWriter:
         for rcolumn in result_columns_pre_merge:
             pre_column = rcolumn+'_pre'
             for i in range(0,len(pandas_list[1:])):
-                post_column=rcolumn+'_post_'+str(i)
+                post_column = rcolumn+'_post_'+str(i)
                 try:
-                    diff_column_name=rcolumn+'_diff_'+str(i)+'(%)'
-                    pd_compare[diff_column_name]=((pd_compare[post_column].apply(lambda x: float(x))-pd_compare[pre_column].apply(lambda x: float(x)))*100)/pd_compare[pre_column].apply(lambda x: float(x))
-                except:
+                    diff_column_name = rcolumn+'_diff_'+str(i)+'(%)'
+
+                    ref_col = pd_compare[pre_column].apply(ComparisonWriter._try_convert(np.nan,float))
+                    post_col = pd_compare[post_column].apply(ComparisonWriter._try_convert(np.nan,float))
+                    pd_compare[diff_column_name] = (post_col - ref_col)*100 / ref_col
+
+                except Exception as Exc:
                     continue
                 else:
                     diff_columns.append(diff_column_name)
@@ -120,6 +125,17 @@ class ComparisonWriter:
 
         pandas.options.mode.chained_assignment = 'warn' #reactivate warning
         return(pd_compare.sort_values(by=ctxt_columns_list))
+
+    @staticmethod
+    def _try_convert(default,*types):
+        def convert(value):
+            for t in types:
+                try:
+                    return t(value)
+                except ValueError, TypeError:
+                    continue
+            return default
+        return convert
 
 
     def compare(self, benchmark_name, input_directories, date_interval_list=None, \
@@ -141,12 +157,13 @@ class ComparisonWriter:
         sub_bench = None
         metadata = {}
         config_list = []
-        for rdir in input_directories:
-            if not date_interval_list:
-                config_list.append((rdir,(None,None)))
-            else:
-                for d_interval in date_interval_list:
-                    config_list.append((rdir,d_interval))
+
+        if date_interval_list:
+            for rdir, d_interval in zip(input_directories, date_interval_list):
+                config_list.append((rdir, d_interval))
+        else:
+            for rdir in input_directories:
+                config_list.append((rdir, (None,None)))
 
         for input_dir, date_interval in config_list:
 

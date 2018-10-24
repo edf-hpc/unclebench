@@ -152,10 +152,6 @@ parser_report = subparsers.add_parser('report', help=report_help)
 parser_report.add_argument('-m','--metadata-file',help='Metadata file containing evrything needed'+\
                            'to build the report', required=True)
 
-parser_report.add_argument('-r','--results-directory',help='Directory containing unclebench '+\
-                           'results that are used to build the report.', \
-                           required=True)
-
 parser_report.add_argument('-o','--output-dir',help='Write report files in OUTPUT_DIR', \
                            required=True)
 
@@ -208,7 +204,7 @@ elif args.subparser_name == 'list':
 elif args.subparser_name == 'listparams':
     commands.list_parameters(default_values=args.d)
 elif args.subparser_name == 'report':
-    commands.report(args.metadata_file, args.results_directory, args.output_dir)
+    commands.report(args.metadata_file, args.output_dir)
 elif args.subparser_name == 'compare':
     commands.compare(args.input_dirs, args.benchmark_name, \
                      (args.context,args.compared_context), args.threshold)
