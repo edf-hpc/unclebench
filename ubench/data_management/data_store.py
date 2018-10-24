@@ -104,11 +104,10 @@ class DataStore():
         else:
             full_context = context[0]
 
-        # Check if tbere are sub_bench
+        # Check if there are sub_bench
         result_name_column = None
         for id_exec in sorted(data.keys()): # this guarantees the order of nodes
-            if (len(data[id_exec]['results_bench'].items())>1):
-                result_name_column = metadata['Benchmark_name']+'_bench'
+            result_name_column = metadata['Benchmark_name']+'_bench'
 
         # Build report_info dictionnary
         report_info = {}
@@ -128,6 +127,7 @@ class DataStore():
         for id_exec in sorted(data.keys()): # this guarantees the order of nodes
             value = data[id_exec]
 
+            # result categories can be considered as context
             context_key = []
             for key, result in sorted(value['results_bench'].items()):
                 if key in full_context:
