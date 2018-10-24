@@ -7,7 +7,7 @@ ubench-report - Build a performance report
 
 # SYNOPSIS
 
-    ubench report -m <metadata_file> -r <results_directory> -o <output_dir>
+    ubench report -m <metadata_file> -o <output_dir>
 
     ubench report -h
 
@@ -15,8 +15,6 @@ ubench-report - Build a performance report
 
 
 *ubench report*   Build a performance report from information set in metadata_file.
-		  Performances data are retrieved from files in results_directory according
-		  to what is specified in the metadata file.
 		  Report files are written un output_dir.
 
 # OPTIONS
@@ -32,10 +30,12 @@ sessions:
         platform: '<platform_name>'
     - '<session1_name>':
         tester: '<session1_tester_name>'
+       	dir:<session1_result_directory>
         date_start: <start_date_session1>
         date_end: <end_date_session1>
     - '<session2_name>':
         tester: '<session2_tester_name>'
+        dir:<session2_result_directory>
         date_start: <start_date_session2>
         date_end: <end_date_session2>
     - ...
