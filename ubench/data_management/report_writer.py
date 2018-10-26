@@ -22,6 +22,7 @@ import datetime
 import jinja2
 import os
 import pandas
+import sys
 import time
 import yaml
 import ubench.data_management.data_store_yaml as dsy
@@ -41,8 +42,6 @@ class ReportWriter:
         self.bench_template = bench_template
         self.compare_template = compare_template
         self.report_template = report_template
-
-
         return
 
     def read_metadata(self, metadata_file):
@@ -122,8 +121,6 @@ class ReportWriter:
             except OSError:
                 print("Error: cannot mkdir {}".format(output_dir))
                 return
-
-        os.chdir(output_dir)
 
         # Parse benchmarks
         for bench_item in self.metadata['benchmarks']:
@@ -230,10 +227,12 @@ class ReportWriter:
 
                 # Write current benchmark report using a template
                 out_filename = bench_name+"_"+session+".asc"
+
                 if not session in report_files:
                     report_files[session] = {}
                 report_files[session][bench_name] = out_filename
-                self.jinja_templated_write(dic_report_bench, self.bench_template, out_filename)
+                self.jinja_templated_write(dic_report_bench, self.bench_template,\
+                                           os.path.join(output_dir,out_filename))
 
             # Write performance comparison across sessions
             if bool(dic_report_bench['compare']):
@@ -241,16 +240,17 @@ class ReportWriter:
                     report_files['compare'] = {}
 
                 report_files['compare'][bench_name]\
-                    = self.write_comparison(bench_name, sub_bench, sub_bench_list, \
+                    = self.write_comparison(output_dir,bench_name, sub_bench, sub_bench_list, \
                                             date_interval_list, dir_list,\
                                             context_out,dic_report_bench['compare_threshold'])
 
         # Write full report
         dic_report_main['report_files'] = report_files
-        self.jinja_templated_write(dic_report_main, self.report_template, report_name+".asc")
+        self.jinja_templated_write(dic_report_main, self.report_template, \
+                                   os.path.join(output_dir,report_name+".asc"))
 
 
-    def write_comparison(self, bench_name, sub_bench, sub_bench_list, \
+    def write_comparison(self, output_dir, bench_name, sub_bench, sub_bench_list, \
                          date_interval_list, dir_list, context, threshold):
         """
         Write performance comparison report section
@@ -267,7 +267,9 @@ class ReportWriter:
         dic_compare['ncols'] = len(c_list[-1].columns)
         out_filename = bench_name+"_comparison.asc"
 
-        self.jinja_templated_write(dic_compare, self.compare_template, out_filename)
+        self.jinja_templated_write(dic_compare, self.compare_template, \
+                                   os.path.join(output_dir, out_filename))
+
         return out_filename
 
 
@@ -277,9 +279,8 @@ class ReportWriter:
         templateEnv = jinja2.Environment(loader=templateLoader)
         template = templateEnv.get_template(os.path.basename(template_file))
         outputText = template.render(report_dic)
-
         with open(out_filename, "wb") as report_file:
-            report_file.write(outputText)
+            report_file.write(outputText.encode('utf-8'))
         return
 
     def _set_array_content(self, dataframe, columns, context_list, array_line, perf_array):

@@ -180,7 +180,7 @@ class UbenchCmd:
 
         asciidoctor_cmd\
             = 'asciidoctor -a stylesheet=' + self.uconf.stylesheet_path + " "\
-            + os.path.join(os.getcwd(), report_name+".asc")
+            + os.path.join(os.getcwd(),output_dir,report_name+".asc")
 
         print(asciidoctor_cmd)
 
