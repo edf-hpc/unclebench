@@ -176,7 +176,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         :param default_values: If true, tries to interpret parameters.
         :type default_values: boolean
         """
-        print os.path.join(self.bench_dir, benchmark_name)
+        print self.benchmark_src_path
         if not self.benchmarking_api:
             self.benchmarking_api = self.get_benchmarking_api()
         all_parameters = self.benchmarking_api.list_parameters(default_values)
@@ -325,7 +325,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         result_array=self.result_array
         for i in range(0,len(result_array)/2):
             result_array[i].append(result_array[len(result_array)/2+i][0])
-        
+
         result_array=result_array[:len(result_array)/2]
         if not debug_mode:
             for i in range(0,len(result_array)):
