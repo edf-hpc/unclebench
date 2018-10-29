@@ -29,7 +29,7 @@ import argparse
 import socket
 import ubench.core.ubench_commands as ubench_commands
 import ubench.core.ubench_config as uconfig
-from ubench import __version__
+from ubench import _version
 
 os.environ['JUBE_EXEC_SHELL'] = '/bin/bash'
 
@@ -51,7 +51,7 @@ for platform_name in platform_list:
 parser = argparse.ArgumentParser(description='Unclebench benchmarking and reporting tool.', \
                                  formatter_class=argparse.RawTextHelpFormatter)
 
-parser.add_argument('-v','--version', action='version', version='%(prog)s {version}'.format(version=__version__))
+parser.add_argument('-v','--version', action='version', version='%(prog)s {version}'.format(version=_version.get_version()))
 
 subparsers = parser.add_subparsers(dest='subparser_name')
 
