@@ -42,7 +42,7 @@ class ComparisonWriter:
                                       None,'expand_frame_repr', False):
                 print(dframe.to_string(index=False))
 
-    def compare_pandas(self, pandas_list, context):
+    def compare_pandas(self, pandas_list, context, session_list=None):
         """
         Return a panda dataframe comparing multiple pandas with there result relative
         differences computed and added as a column.
@@ -66,6 +66,7 @@ class ComparisonWriter:
             pd_compare = pandas.merge(pd_compare, pdr, on=context[0], \
                                       suffixes=['', '_post_'+str(idx)])
             idx += 1
+
 
         # At last merge add a _pre suffix to reference result
         if len(pandas_list)>1:
@@ -101,15 +102,24 @@ class ComparisonWriter:
 
         for rcolumn in result_columns_pre_merge:
             pre_column = rcolumn+'_pre'
+            if session_list:
+                pd_compare.rename(columns = {pre_column:session_list[0]}, inplace = True)
+                pre_column = session_list[0]
             for i in range(0,len(pandas_list[1:])):
                 post_column = rcolumn+'_post_'+str(i)
+                if session_list:
+                    pd_compare.rename(columns = {post_column:session_list[i+1]}, inplace = True)
+                    post_column = session_list[i+1]
                 try:
-                    diff_column_name = rcolumn+'_diff_'+str(i)+'(%)'
+                    if session_list:
+                        diff_column_name = session_list[i+1]+' vs '+session_list[0] + '(%)'
+                    else:
+                        diff_column_name = rcolumn+'_diff_'+str(i)+'(%)'
 
                     ref_col = pd_compare[pre_column].apply(ComparisonWriter._try_convert(np.nan,float))
                     post_col = pd_compare[post_column].apply(ComparisonWriter._try_convert(np.nan,float))
                     pd_compare[diff_column_name] = (post_col - ref_col)*100 / ref_col
-
+                    pd_compare[diff_column_name] = pd_compare[diff_column_name].round(2)
                 except Exception as Exc:
                     continue
                 else:
@@ -122,6 +132,7 @@ class ComparisonWriter:
             # Use it as a filter :
             pd_compare = pd_compare[ pd_compare.max_diff > float(self.threshold)]
             pd_compare.drop('max_diff', 1,inplace=True)
+
 
         pandas.options.mode.chained_assignment = 'warn' #reactivate warning
         return(pd_compare.sort_values(by=ctxt_columns_list))
@@ -139,7 +150,7 @@ class ComparisonWriter:
 
 
     def compare(self, benchmark_name, input_directories, date_interval_list=None, \
-                context_in=(None,None)):
+                context_in=(None,None), session_list = None):
         """
         Compare results of each input directory/date_interval combination,
         results from first combination are considered as the reference.
@@ -211,6 +222,6 @@ class ComparisonWriter:
             else:
                 pandas_list_sub = pandas_list
 
-            pandas_result_list.append(self.compare_pandas(pandas_list_sub,context))
+            pandas_result_list.append(self.compare_pandas(pandas_list_sub,context,session_list))
 
         return pandas_result_list

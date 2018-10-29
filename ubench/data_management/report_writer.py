@@ -93,8 +93,9 @@ class ReportWriter:
         """
         required_fields = set(['tester','platform','date_start','date_end','dir','comment', \
                                'result'])
-        context_fields = set(['compare','compare_threshold','context','context_res'])
+        context_fields = set(['compare','compare_threshold','compare_comment','context','context_res'])
         report_files = {}
+        session_list = []
 
         # Get default parameters dictionnaries
         dic_sessions_default = ReportWriter._get_default_dic(self.metadata['sessions'])
@@ -169,12 +170,15 @@ class ReportWriter:
                     continue
                 if not session in dic_report_main['sessions']:
                     dic_report_main['sessions'].append(session)
+                    session_list.append(session)
 
                 fields_found = []
                 dic_report_bench = common_dic_report_bench.copy()
 
                 # Check benchmark parameters
                 for r_field in local_fields_to_find:
+                    if not bench_dic[session]:
+                        bench_dic[session]={}
                     if r_field in bench_dic[session]:
                         dic_report_bench[r_field] = bench_dic[session][r_field]
                         fields_found.append(r_field)
@@ -221,6 +225,8 @@ class ReportWriter:
                 # Complete benchmark informations
                 if "cmdline" in run_metadata:
                     dic_report_bench['cmdline'] = list(set(run_metadata['cmdline']))
+                else:
+                    dic_report_bench['cmdline'] = ["N/A"]
                 dic_report_bench['perf_array_list'] = zip(perf_array_list, sub_bench_list)
                 dic_report_bench['sub_bench_list'] = sub_bench_list
                 dic_report_bench['ncols'] = len(perf_array_list[-1][-1])
@@ -240,9 +246,10 @@ class ReportWriter:
                     report_files['compare'] = {}
 
                 report_files['compare'][bench_name]\
-                    = self.write_comparison(output_dir,bench_name, sub_bench, sub_bench_list, \
-                                            date_interval_list, dir_list,\
-                                            context_out,dic_report_bench['compare_threshold'])
+                    = self.write_comparison(output_dir,bench_name, sub_bench, sub_bench_list,
+                                            date_interval_list, dir_list,
+                                            context_out,dic_report_bench['compare_threshold'],
+                                            session_list)
 
         # Write full report
         dic_report_main['report_files'] = report_files
@@ -251,14 +258,15 @@ class ReportWriter:
 
 
     def write_comparison(self, output_dir, bench_name, sub_bench, sub_bench_list, \
-                         date_interval_list, dir_list, context, threshold):
+                         date_interval_list, dir_list, context, threshold, session_list):
         """
         Write performance comparison report section
         """
         dic_compare = {}
         cwriter = comparison_writer.ComparisonWriter(threshold)
         c_list = cwriter.compare(bench_name, dir_list, \
-                                 date_interval_list, (context[0]+[context[1]], None))
+                                 date_interval_list, (context[0]+[context[1]], None),
+                                 session_list)
         if(sub_bench):
             for df_comp in c_list:
                 df_comp.drop(sub_bench, 1, inplace=True)
