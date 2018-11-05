@@ -216,10 +216,10 @@ def test_run_customp(monkeypatch,init_env):
       raise NameError('param error')
     return True
 
-  def mock_bm_run_bench(self,platform,wklist,raw_cli):
+  def mock_bm_run_bench(self,platform,opt_dict):
     return True
 
   monkeypatch.setattr("ubench.benchmark_managers.standard_benchmark_manager.StandardBenchmarkManager.set_parameter",mock_bm_set_param)
   monkeypatch.setattr("ubench.benchmark_managers.standard_benchmark_manager.StandardBenchmarkManager.run",mock_bm_run_bench)
   ubench_cmd = ubench_commands.UbenchCmd("",["simple"])
-  ubench_cmd.run(['host1'],["param:new_value","argexec:'PingPong -npmin 56 msglog 1:18'"])
+  ubench_cmd.run({'customp_list': ["param:new_value","argexec:'PingPong -npmin 56 msglog 1:18'"],'w_list' : "host1"})

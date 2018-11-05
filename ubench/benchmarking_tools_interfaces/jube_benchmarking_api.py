@@ -464,6 +464,10 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
   #               print task['id'] + "\t"+ task['started']+"\t"+task['done']+"\t"+task['workdir']
 
 
+  def set_execution_only_mode(self):
+    # Transform the benchmark file to utilise only the execution part of the benchmark
+    self.jube_xml_files.set_bench_execution()
+
   def set_custom_nodes(self,nnodes_list,nodes_id_list):
     """
     Modify benchmark xml file to set custom nodes configurations.

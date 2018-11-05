@@ -98,6 +98,10 @@ parser_run.add_argument('-c', '--custom-params', \
                         'Use ubench listparams to know which parameters are customizable', \
                         nargs='+', default=[])
 
+parser_run.add_argument('-e', '--execute', \
+                        help='Peforms only the execution step of a benchmark', \
+                        default=False, action='store_true')
+
 
 # parser list
 list_help = 'List existing runs information for a given benchmark.'
@@ -192,7 +196,10 @@ if vars(args).has_key('b'):
 commands = ubench_commands.UbenchCmd(platform=platform_arg, benchmark_list=benchmark_arg)
 
 if args.subparser_name == 'run':
-    commands.run(w_list=args.w, customp_list=args.custom_params, raw_cli=sys.argv)
+    # options_dictionary = vars(args)
+    options_dictionary['raw_cli'] = sys.argv
+    commands.run(options_dictionary)
+    # commands.run(w_list=args.w, customp_list=args.custom_params, execute=args.execute,raw_cli=sys.argv)
 elif args.subparser_name == 'fetch':
     commands.fetch()
 elif args.subparser_name == 'result':

@@ -23,7 +23,7 @@ class BenchmarkManager():
         """
 
     @abc.abstractmethod
-    def run(self, platform, w_list=None, raw_cli=None):
+    def run(self, platform, opt_dict={}):
         """ Run benchmark on a given platform and write a ubench.log file in
         the benchmark run directory.
         :param platform: name of the platform used to retrieve parameters needed to run

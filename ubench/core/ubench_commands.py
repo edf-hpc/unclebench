@@ -85,11 +85,12 @@ class UbenchCmd:
         """ Lists runs information"""
         self.bm_set.list_runs()
 
-    def run(self, w_list=None, customp_list=None, raw_cli=None):
+    # def run(self, w_list=None, customp_list=None, execute=False,raw_cli=None):
+    def run(self, opt_dict ={}):
         """ TOCOMMENT """
-        if w_list:
+        if opt_dict.has_key('w_list'):
             try:
-                w_list = self.translate_wlist_to_scheduler_wlist(w_list)
+                w_list = self.translate_wlist_to_scheduler_wlist(opt_dict(w_list))
             except Exception as exc:
                 print '---- Custom node configuration is not valid : {0}'.format(str(exc))
                 return
@@ -103,17 +104,18 @@ class UbenchCmd:
 
         # Set custom parameters
         dict_options = {}
-        for elem in customp_list:
+        if opt_dict.has_key('customp_list'):
+          for elem in opt_dict['customp_list']:
             try:
-                splitted_param = re.split(':', elem, 1)
-                dict_options[splitted_param[0]] = splitted_param[1]
+              splitted_param = re.split(':', elem, 1)
+              dict_options[splitted_param[0]] = splitted_param[1]
             except Exception as exc:
-                print '---- {0} is not formated correctly'.format(elem)+\
-                    ', please consider using : -c param:new_value'
-        self.bm_set.set_parameter(dict_options)
+              print '---- {0} is not formated correctly'.format(elem)+\
+                ', please consider using : -c param:new_value'
+              self.bm_set.set_parameter(dict_options)
 
         # Run each benchmarks
-        self.bm_set.run(self.platform, w_list, raw_cli)
+        self.bm_set.run(self.platform, opt_dict)
 
 
     def fetch(self):

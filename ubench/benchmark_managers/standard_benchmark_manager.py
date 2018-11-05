@@ -104,7 +104,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
 
 
-    def run(self, platform, w_list=None, raw_cli=None):
+    def run(self, platform, opt_dict={}):
         """ Run benchmark on a given platform and write a ubench.log file in
         the benchmark run directory.
         :param platform: name of the platform used to retrieve parameters needed
@@ -118,45 +118,50 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         self.init_run_dir(platform)
 
         # Set custom node configuration
-        if w_list:
-            try:
-                nnodes_list = [list(t) for t in zip(*w_list)][0]
-                nodes_id_list = [list(t) for t in zip(*w_list)][1]
-                # unique values in list
-                if len(list(set(nodes_id_list))) == 1 and not nodes_id_list[0]:
-                    nodes_id_list = None
+        if opt_dict.has_key('w_list'):
+          try:
+            nnodes_list = [list(t) for t in zip(*w_list)][0]
+            nodes_id_list = [list(t) for t in zip(*w_list)][1]
+            # unique values in list
+            if len(list(set(nodes_id_list))) == 1 and not nodes_id_list[0]:
+              nodes_id_list = None
 
-                self.benchmarking_api.set_custom_nodes(nnodes_list, nodes_id_list)
-            except ValueError:
-                print 'Custom node configuration is not valid.'
-                return
-            except IndexError:
-                print 'Custom node configuration is not valid.'
-                return
+              self.benchmarking_api.set_custom_nodes(nnodes_list, nodes_id_list)
+          except ValueError:
+            print 'Custom node configuration is not valid.'
+            return
+          except IndexError:
+            print 'Custom node configuration is not valid.'
+            return
+
+        if opt_dict.has_key('execute'):
+          self.benchmarking_api.set_execution_only_mode()
+
 
         print '---- Launching benchmark in background'
+
         try:
-            run_dir, ID = self.benchmarking_api.run(platform)
+          run_dir, ID = self.benchmarking_api.run(platform)
         except RuntimeError as rerror:
-            print '---- Error launching benchmark :'
-            print str(rerror)
-            return
+          print '---- Error launching benchmark :'
+          print str(rerror)
+          return
         except OSError:
-            print
-            return
+          print
+          return
 
         print '---- benchmark run directory :', run_dir
         logfile_path = os.path.join(run_dir, 'ubench.log')
         date = time.strftime("%c")
         flattened_w_list = ''
-        if w_list:
-            for nnodes, nodes_id in w_list:
-                if nodes_id:
-                    flattened_w_list += str(nodes_id)+' '
-                else:
-                    flattened_w_list += str(nnodes)+' '
+        if opt_dict.has_key('w_list'):
+          for nnodes, nodes_id in w_list:
+            if nodes_id:
+              flattened_w_list += str(nodes_id)+' '
+            else:
+              flattened_w_list += str(nnodes)+' '
         else:
-            flattened_w_list = 'default'
+          flattened_w_list = 'default'
 
         with open(logfile_path, 'w') as logfile:
             logfile.write('Benchmark_name  : {0} \n'.format(self.benchmark_name))
@@ -165,7 +170,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             logfile.write('Date            : {0} \n'.format(date))
             logfile.write('Run_directory   : {0} \n'.format(run_dir))
             logfile.write('Nodes           : {0} \n'.format(flattened_w_list))
-            logfile.write('cmdline         : {0} \n'.format(' '.join(raw_cli)))
+            if opt_dict.has_key('raw_cli'):
+              logfile.write('cmdline         : {0} \n'.format(' '.join(opt_dict['raw_cli'])))
 
         print '---- Use the following command to follow benchmark progress :'\
             +'    " ubench log -p {0} -b {1} -i {2}"'.format(platform, self.benchmark_name, ID)

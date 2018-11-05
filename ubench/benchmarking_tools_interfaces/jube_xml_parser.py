@@ -102,6 +102,34 @@ class JubeXMLParser():
 
     return steps
 
+  def get_bench_parameterset(self):
+    parameterset=[]
+    for b_xml in self.bench_xml_root:
+     # either is on inside tag jube or tag benchmark
+      bench_root = b_xml.find('benchmark')
+
+      if bench_root is not None:
+        parameterset+=[parameterset.get('name') for parameterset in bench_root.findall('parameterset')]
+      else:
+        parameterset+=[parameterset.get('name') for parameterset in bench_root.findall('parameterset')]
+
+    return parameterset
+
+  def get_bench_substituteset(self):
+    substituteset=[]
+    for b_xml in self.bench_xml_root:
+      # either is on inside tag jube or tag benchmark
+      bench_root = b_xml.find('benchmark')
+
+      if bench_root is not None:
+        substituteset+=[substituteset.get('name') for substituteset in bench_root.findall('substituteset')]
+      else:
+        substituteset+=[substituteset.get('name') for substituteset in bench_root.findall('substituteset')]
+
+    return substituteset
+
+
+
   def get_bench_multisource(self):
     multisource_data = [] # [{'protocol': 'https'}, {'files' : ['file1','file2','file3']}, {'url': "http://ifjiaf"}, {'name' : "fa"}]
     for b_xml in self.bench_xml_root:
@@ -209,6 +237,38 @@ class JubeXMLParser():
 
     return parameters_list
 
+
+  def set_bench_execution(self):
+    # we perform the necessary modifications in the xml file to active only the execute step
+
+    # Get all steps
+    for b_xml in self.bench_xml_root:
+      # either is on inside tag jube or tag benchmark
+      bench_root = b_xml.find('benchmark')
+
+      if bench_root is not None:
+        for step in bench_root.findall('step'):
+            if step.get('name') != "execute":
+                step.set('tag','noexecute')
+            else:
+                step.set('tag','!noexecute')
+                step.attrib.pop('depend')
+                for use_tag in step.findall('use'):
+                  if use_tag.text in self.get_bench_substituteset():
+                    step.remove(use_tag)
+
+      else:
+        for step in b_xml.findall('step'):
+            if step.get('name') != "execute":
+                step.set('tag','noexecute')
+            else:
+                step.set('tag','!noexecute')
+                step.attrib.pop('depend')
+                for use_tag in step.findall('use'):
+                  if use_tag.text in self.get_bench_substituteset():
+                    step.remove(use_tag)
+
+
   def add_bench_input(self):
     # This method add automatically information concerning benchmark, input files obtained using the command fetch
     # bench_config is a dictionary {'svn' : {'bench_dir':["BENCH_F128_02","BENCH_F128_03"]},
@@ -246,7 +306,10 @@ class JubeXMLParser():
         debug_result_path = ET.SubElement(debug_result,'table',attrib={'name': 'paths' , 'style': 'csv'})
         debug_result_text = ET.SubElement(debug_result_path,'column')
         debug_result_text.text="work_path"
+
         benchmark.insert(len(benchmark.getchildren()),debug_result)
+        benchmark.insert(2,debug_result)
+
         for protocol in bench_config.keys():
           # add another level
 
