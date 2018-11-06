@@ -98,6 +98,10 @@ parser_run.add_argument('-c', '--custom-params', \
                         'Use ubench listparams to know which parameters are customizable', \
                         nargs='+', default=[])
 
+parser_run.add_argument('-f', '--file-params', \
+                        help='File to set custom parameters')
+
+'custom_params_file'
 parser_run.add_argument('-e', '--execute', \
                         help='Peforms only the execution step of a benchmark', \
                         default=False, action='store_true')

@@ -37,6 +37,7 @@ import ubench.core.fetcher as fetcher
 import ubench.data_management.comparison_writer as comparison_writer
 import ubench.data_management.report_writer as report_writer
 import pandas as pd
+import yaml
 
 
 class UbenchCmd:
@@ -104,6 +105,13 @@ class UbenchCmd:
 
         # Set custom parameters
         dict_options = {}
+        if opt_dict['file_params']:
+          with open(opt_dict['file_params'],'r') as params_file:
+            dict_options=yaml.load(params_file)
+
+          self.bm_set.set_parameter(dict_options)
+          # we read a file which contains a dictionary with the options
+
         if opt_dict.has_key('custom_params'):
           for elem in opt_dict['custom_params']:
             try:
