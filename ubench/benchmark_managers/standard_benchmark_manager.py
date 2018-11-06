@@ -116,7 +116,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         """
 
         self.init_run_dir(platform)
-
         # Set custom node configuration
         if opt_dict.has_key('w_list'):
           try:
@@ -134,7 +133,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             print 'Custom node configuration is not valid.'
             return
 
-        if opt_dict.has_key('execute'):
+        if opt_dict['execute']:
           self.benchmarking_api.set_execution_only_mode()
 
 

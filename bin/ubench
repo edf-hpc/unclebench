@@ -196,7 +196,7 @@ if vars(args).has_key('b'):
 commands = ubench_commands.UbenchCmd(platform=platform_arg, benchmark_list=benchmark_arg)
 
 if args.subparser_name == 'run':
-    # options_dictionary = vars(args)
+    options_dictionary = vars(args)
     options_dictionary['raw_cli'] = sys.argv
     commands.run(options_dictionary)
     # commands.run(w_list=args.w, customp_list=args.custom_params, execute=args.execute,raw_cli=sys.argv)

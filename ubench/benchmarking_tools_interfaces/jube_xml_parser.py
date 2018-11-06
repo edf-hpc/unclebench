@@ -128,6 +128,19 @@ class JubeXMLParser():
 
     return substituteset
 
+  def get_bench_fileset(self):
+    fileset=[]
+    for b_xml in self.bench_xml_root:
+      # either is on inside tag jube or tag benchmark
+      bench_root = b_xml.find('benchmark')
+
+      if bench_root is not None:
+        fileset+=[fileset.get('name') for fileset in bench_root.findall('fileset')]
+      else:
+        fileset+=[fileset.get('name') for fileset in bench_root.findall('fileset')]
+
+    return fileset
+
 
 
   def get_bench_multisource(self):
@@ -248,24 +261,26 @@ class JubeXMLParser():
 
       if bench_root is not None:
         for step in bench_root.findall('step'):
-            if step.get('name') != "execute":
+            if step.get('name') != "execute" and step.get('depend') !="execute":
                 step.set('tag','noexecute')
             else:
                 step.set('tag','!noexecute')
-                step.attrib.pop('depend')
+                if step.get('name') == "execute":
+                  step.attrib.pop('depend')
                 for use_tag in step.findall('use'):
-                  if use_tag.text in self.get_bench_substituteset():
+                  if use_tag.text in self.get_bench_substituteset() + self.get_bench_fileset():
                     step.remove(use_tag)
 
       else:
         for step in b_xml.findall('step'):
-            if step.get('name') != "execute":
+            if step.get('name') != "execute" and step.get('depend') !="execute":
                 step.set('tag','noexecute')
             else:
                 step.set('tag','!noexecute')
-                step.attrib.pop('depend')
+                if step.get('name') == "execute":
+                  step.attrib.pop('depend')
                 for use_tag in step.findall('use'):
-                  if use_tag.text in self.get_bench_substituteset():
+                  if use_tag.text in self.get_bench_substituteset() + self.get_bench_fileset():
                     step.remove(use_tag)
 
 
@@ -308,7 +323,6 @@ class JubeXMLParser():
         debug_result_text.text="work_path"
 
         benchmark.insert(len(benchmark.getchildren()),debug_result)
-        benchmark.insert(2,debug_result)
 
         for protocol in bench_config.keys():
           # add another level

@@ -104,15 +104,15 @@ class UbenchCmd:
 
         # Set custom parameters
         dict_options = {}
-        if opt_dict.has_key('customp_list'):
-          for elem in opt_dict['customp_list']:
+        if opt_dict.has_key('custom_params'):
+          for elem in opt_dict['custom_params']:
             try:
               splitted_param = re.split(':', elem, 1)
               dict_options[splitted_param[0]] = splitted_param[1]
             except Exception as exc:
               print '---- {0} is not formated correctly'.format(elem)+\
                 ', please consider using : -c param:new_value'
-              self.bm_set.set_parameter(dict_options)
+            self.bm_set.set_parameter(dict_options)
 
         # Run each benchmarks
         self.bm_set.run(self.platform, opt_dict)
