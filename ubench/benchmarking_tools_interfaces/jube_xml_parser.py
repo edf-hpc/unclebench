@@ -259,29 +259,67 @@ class JubeXMLParser():
       # either is on inside tag jube or tag benchmark
       bench_root = b_xml.find('benchmark')
 
-      if bench_root is not None:
-        for step in bench_root.findall('step'):
-            if step.get('name') != "execute" and step.get('depend') !="execute":
-                step.set('tag','noexecute')
-            else:
-                step.set('tag','!noexecute')
-                if step.get('name') == "execute":
-                  step.attrib.pop('depend')
-                for use_tag in step.findall('use'):
-                  if use_tag.text in self.get_bench_substituteset() + self.get_bench_fileset():
-                    step.remove(use_tag)
+      if bench_root is None:
+        bench_root = b_xml
 
+      for step in bench_root.findall('step'):
+        if step.get('name') != "execute" and step.get('depend') !="execute":
+          step.set('tag','noexecute')
+        else:
+          step.set('tag','!noexecute')
+          if step.get('name') == "execute":
+            step.attrib.pop('depend')
+          for use_tag in step.findall('use'):
+            if use_tag.text in self.get_bench_substituteset() + self.get_bench_fileset():
+              step.remove(use_tag)
+
+
+    # We look for a fileset benchfiles and we add to the step execute
+    # We generate a filseset for bench_files
+    file_bench_element = None
+    index_insert = -1
+    for idx,element in enumerate(b_xml):
+      if element.get('name') == 'bench_files':
+        # we insert a filset with the content of bench_fiels
+        file_bench_element=ET.Element('fileset',attrib={'name':'bench_files_links'})
+        for parameter in element.findall('parameter'):
+          link = ET.SubElement(file_bench_element,'link')
+          link.text = parameter.text
+
+        index_insert = idx
+        break
+
+
+    if index_insert>0:
+      b_xml.insert(index_insert,file_bench_element)
+
+    index_insert = -1
+    for idx,element in enumerate(bench_root):
+      if element.get('name') == 'bench_files':
+          # we insert a filset with the content of bench_files
+        file_bench_element=ET.Element('fileset',attrib={'name':'bench_files_links'})
+        for parameter in element.findall('parameter'):
+          link = ET.SubElement(file_bench_element,'link')
+          link.text = parameter.text
+        index_insert=idx
+
+        break
+
+    if index_insert>0:
+      bench_root.insert(index_insert,file_bench_element)
+
+
+    if 'bench_files' in self.get_bench_parameterset():
+      if bench_root is None:
+        step = b_xml.findall("step[@name='execute']")
       else:
-        for step in b_xml.findall('step'):
-            if step.get('name') != "execute" and step.get('depend') !="execute":
-                step.set('tag','noexecute')
-            else:
-                step.set('tag','!noexecute')
-                if step.get('name') == "execute":
-                  step.attrib.pop('depend')
-                for use_tag in step.findall('use'):
-                  if use_tag.text in self.get_bench_substituteset() + self.get_bench_fileset():
-                    step.remove(use_tag)
+        step = bench_root.findall("step[@name='execute']")
+
+      if step: # not empty
+        present_params = []
+        use = ET.Element('use')
+        use.text = "bench_files_links"
+        step[0].insert(0,use)
 
 
   def add_bench_input(self):
