@@ -95,7 +95,7 @@ class JubeXMLParser():
       # either is on inside tag jube or tag benchmark
       bench_root = b_xml.find('benchmark')
 
-      if bench_root is not None:
+      if bench_root:
         steps+=[step.get('name') for step in bench_root.findall('step')]
       else:
         steps+=[step.get('name') for step in b_xml.findall('step')]
@@ -108,10 +108,10 @@ class JubeXMLParser():
      # either is on inside tag jube or tag benchmark
       bench_root = b_xml.find('benchmark')
 
-      if bench_root is not None:
-        parameterset+=[parameterset.get('name') for parameterset in bench_root.findall('parameterset')]
-      else:
-        parameterset+=[parameterset.get('name') for parameterset in bench_root.findall('parameterset')]
+      if bench_root is None:
+        bench_root = b_xml
+
+      parameterset+=[parameterset.get('name') for parameterset in bench_root.findall('parameterset')]
 
     return parameterset
 
@@ -120,11 +120,13 @@ class JubeXMLParser():
     for b_xml in self.bench_xml_root:
       # either is on inside tag jube or tag benchmark
       bench_root = b_xml.find('benchmark')
+      if bench_root is None:
+        bench_root = b_xml
 
-      if bench_root is not None:
-        substituteset+=[substituteset.get('name') for substituteset in bench_root.findall('substituteset')]
-      else:
-        substituteset+=[substituteset.get('name') for substituteset in bench_root.findall('substituteset')]
+      for element in bench_root.findall('substituteset'):
+        # We add all substituteset except the one that contains the  init_with="platform.xml"
+        if element.get('init_with') != "platform.xml":
+          substituteset.append(element.get('name'))
 
     return substituteset
 
@@ -134,13 +136,12 @@ class JubeXMLParser():
       # either is on inside tag jube or tag benchmark
       bench_root = b_xml.find('benchmark')
 
-      if bench_root is not None:
-        fileset+=[fileset.get('name') for fileset in bench_root.findall('fileset')]
-      else:
-        fileset+=[fileset.get('name') for fileset in bench_root.findall('fileset')]
+      if bench_root is None:
+        bench_root = b_xml
+
+      fileset+=[fileset.get('name') for fileset in bench_root.findall('fileset')]
 
     return fileset
-
 
 
   def get_bench_multisource(self):
@@ -269,57 +270,50 @@ class JubeXMLParser():
           step.set('tag','!noexecute')
           if step.get('name') == "execute":
             step.attrib.pop('depend')
-          for use_tag in step.findall('use'):
-            if use_tag.text in self.get_bench_substituteset() + self.get_bench_fileset():
-              step.remove(use_tag)
+            for use_tag in step.findall('use'):
+              if use_tag.text.strip() in self.get_bench_substituteset() + self.get_bench_fileset():
+                step.remove(use_tag)
 
+      # We look for a fileset benchfiles and we add to the step execute
+      # We generate a filseset for bench_files
+      file_bench_element = None
 
-    # We look for a fileset benchfiles and we add to the step execute
-    # We generate a filseset for bench_files
-    file_bench_element = None
-    index_insert = -1
-    for idx,element in enumerate(b_xml):
-      if element.get('name') == 'bench_files':
-        # we insert a filset with the content of bench_fiels
-        file_bench_element=ET.Element('fileset',attrib={'name':'bench_files_links'})
-        for parameter in element.findall('parameter'):
-          link = ET.SubElement(file_bench_element,'link')
-          link.text = parameter.text
-
-        index_insert = idx
-        break
-
-
-    if index_insert>0:
-      b_xml.insert(index_insert,file_bench_element)
-
-    index_insert = -1
-    for idx,element in enumerate(bench_root):
-      if element.get('name') == 'bench_files':
+      index_insert = -1
+      for idx,element in enumerate(bench_root):
+        if element.get('name') == 'bench_files':
           # we insert a filset with the content of bench_files
-        file_bench_element=ET.Element('fileset',attrib={'name':'bench_files_links'})
-        for parameter in element.findall('parameter'):
-          link = ET.SubElement(file_bench_element,'link')
-          link.text = parameter.text
-        index_insert=idx
+          file_bench_element=ET.Element('fileset',attrib={'name':'bench_files_links'})
+          for parameter in element.findall('parameter'):
+            link = ET.SubElement(file_bench_element,'link')
+            link.text = parameter.text
+          index_insert=idx
 
-        break
+          break
 
-    if index_insert>0:
-      bench_root.insert(index_insert,file_bench_element)
+      if index_insert>0:
+        bench_root.insert(index_insert,file_bench_element)
 
+      if 'bench_files' in self.get_bench_parameterset():
+        step_execute = bench_root.findall("step[@name='execute']")
 
-    if 'bench_files' in self.get_bench_parameterset():
-      if bench_root is None:
-        step = b_xml.findall("step[@name='execute']")
-      else:
-        step = bench_root.findall("step[@name='execute']")
+        if step_execute: # not empty
+          present_params = []
+          use = ET.Element('use')
+          use.text = "bench_files_links"
+          step_execute[0].insert(0,use)
+          # remove bench config
+          for element in step_execute[0].findall('use'):
+            if element.text =="bench_config":
+              step_execute.remove(element)
+              break
 
-      if step: # not empty
-        present_params = []
-        use = ET.Element('use')
-        use.text = "bench_files_links"
-        step[0].insert(0,use)
+      # We treat the case when we include other files
+      # we remove external dependences as its always compile step
+      include_tags = bench_root.findall('include')
+      if include_tags:
+        for element in include_tags:
+          if element.get('from') not in self.bench_xml_files:
+            bench_root.remove(element)
 
 
   def add_bench_input(self):
@@ -418,7 +412,7 @@ class JubeXMLParser():
         for name in ["ubench_config","ubench_files"]:
           use = ET.Element('use')
           use.text = name
-          if name not in present_params:
+          if name not in present_params and "bench_files_links" not in present_params:
             step[0].insert(0,use)
 
       if benchmark is None:
