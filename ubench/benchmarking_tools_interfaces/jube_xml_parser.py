@@ -37,7 +37,8 @@ class JubeXMLParser():
     self.bench_xml_path_out = bench_xml_path_out # string
     self.bench_xml_files = bench_xml_files
     # I have to do a tuple here
-    self.bench_xml = { xml_file : ET.parse(os.path.join(self.bench_xml_path_in,xml_file))  for xml_file in bench_xml_files}
+    parser = ET.XMLParser(remove_blank_text = True)
+    self.bench_xml = { xml_file : ET.parse(os.path.join(self.bench_xml_path_in,xml_file),parser)  for xml_file in bench_xml_files}
     self.bench_xml_root = [bench_xml.getroot() for bench_xml in self.bench_xml.values()]
     self.platforms_dir = platforms_dir
     self.platform_dir = tempfile.mkdtemp()
