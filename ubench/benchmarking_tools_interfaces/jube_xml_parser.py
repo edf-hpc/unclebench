@@ -107,14 +107,11 @@ class JubeXMLParser():
   def get_analyzer_names(self):
     analyzer_names = []
     for b_xml in self.bench_xml_root:
-      bench_root = b_xml.find('benchmark')
-      if bench_root is not None:
-        analyzer_names += [analyzer.get('name') for analyzer in bench_root.findall('analyzer')]
-
+      analyzer_names += [analyzer.get('name') for analyzer in b_xml.findall('analyzer')]
     if not analyzer_names:
       analyzer_names.append("")
 
-    return analyzer_names
+    return list(set(analyzer_names))
 
   def get_bench_parameterset(self):
     parameterset=[]
