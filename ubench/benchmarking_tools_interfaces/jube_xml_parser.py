@@ -97,12 +97,24 @@ class JubeXMLParser():
       # either is on inside tag jube or tag benchmark
       bench_root = b_xml.find('benchmark')
 
-      if bench_root:
+      if bench_root is not None:
         steps+=[step.get('name') for step in bench_root.findall('step')]
       else:
         steps+=[step.get('name') for step in b_xml.findall('step')]
 
     return steps
+
+  def get_analyzer_names(self):
+    analyzer_names = []
+    for b_xml in self.bench_xml_root:
+      bench_root = b_xml.find('benchmark')
+      if bench_root is not None:
+        analyzer_names += [analyzer.get('name') for analyzer in bench_root.findall('analyzer')]
+
+    if not analyzer_names:
+      analyzer_names.append("")
+
+    return analyzer_names
 
   def get_bench_parameterset(self):
     parameterset=[]
@@ -367,7 +379,8 @@ class JubeXMLParser():
         
         debug_result=ET.Element('result')
         debug_result_use = ET.SubElement(debug_result,'use')
-        debug_result_use.text="analyse"
+        # TODO: handle multiple analyzer
+        debug_result_use.text = self.get_analyzer_names()[0]
         debug_result_path = ET.SubElement(debug_result,'table',attrib={'name': 'paths' , 'style': 'csv'})
         debug_result_text = ET.SubElement(debug_result_path,'column')
         debug_result_text.text="work_path"
@@ -584,6 +597,7 @@ class JubeXMLParser():
         if not element_name or el.get('name')==element_name:
           if re.findall(pattern,el.text):
             el.text=re.sub(pattern,new_text,el.text)
+
 
   def get_job_logfiles(self):
     config_xml_file = self.config_xml
