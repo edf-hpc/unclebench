@@ -168,6 +168,12 @@ class JubeXMLParser():
             for revision_source in source.findall('revision'):
               source_dict['revision'].append(revision_source.text.strip())
 
+          if source.find('branch') is not None:
+            source_dict['branch'] = []
+            for revision_source in source.findall('branch'):
+              source_dict['branch'] = revision_source.text.strip()
+
+
           if source.find('url') is not None:
             source_dict['url'] = source.find('url').text
             if source_dict['protocol'] == 'git':
