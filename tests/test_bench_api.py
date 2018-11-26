@@ -4,7 +4,8 @@ import mock
 import pytest_mock
 import tempbench
 import os
-import xml.etree.ElementTree as ET
+import lxml.etree as ET
+
 import ubench.benchmarking_tools_interfaces.jube_benchmarking_api as jba
 import ubench.benchmarking_tools_interfaces.jube_xml_parser as j_xml
 import ubench.core.fetcher as fetcher
