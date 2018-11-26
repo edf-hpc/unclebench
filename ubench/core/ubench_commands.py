@@ -89,9 +89,9 @@ class UbenchCmd:
     # def run(self, w_list=None, customp_list=None, execute=False,raw_cli=None):
     def run(self, opt_dict ={}):
         """ TOCOMMENT """
-        if opt_dict.has_key('w_list'):
+        if opt_dict['w']:
             try:
-                w_list = self.translate_wlist_to_scheduler_wlist(opt_dict(w_list))
+                opt_dict['w'] = self.translate_wlist_to_scheduler_wlist(opt_dict['w'])
             except Exception as exc:
                 print '---- Custom node configuration is not valid : {0}'.format(str(exc))
                 return

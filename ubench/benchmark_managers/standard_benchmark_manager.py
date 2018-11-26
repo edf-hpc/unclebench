@@ -117,7 +117,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
         self.init_run_dir(platform)
         # Set custom node configuration
-        if opt_dict.has_key('w_list'):
+        if opt_dict['w']:
+          w_list = opt_dict['w']
           try:
             nnodes_list = [list(t) for t in zip(*w_list)][0]
             nodes_id_list = [list(t) for t in zip(*w_list)][1]
