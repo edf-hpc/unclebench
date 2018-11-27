@@ -301,9 +301,11 @@ class JubeXMLParser():
           # we insert a filset with the content of bench_files
           file_bench_element=ET.Element('fileset',attrib={'name':'bench_files_links'})
           for parameter in element.findall('parameter'):
-            link = ET.SubElement(file_bench_element,'link')
-            link.text = parameter.text
-          index_insert=idx
+            if os.path.isfile(parameter.text):
+        
+              link = ET.SubElement(file_bench_element,'link')
+              link.text = parameter.text
+              index_insert=idx
 
           break
 
