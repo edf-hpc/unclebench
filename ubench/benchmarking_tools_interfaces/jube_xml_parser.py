@@ -107,7 +107,13 @@ class JubeXMLParser():
   def get_analyzer_names(self):
     analyzer_names = []
     for b_xml in self.bench_xml_root:
-      analyzer_names += [analyzer.get('name') for analyzer in b_xml.findall('analyzer')]
+      bench_root = b_xml.find('benchmark')
+
+      if bench_root is not None:
+        analyzer_names+=[analyz.get('name') for analyz in bench_root.findall('analyzer')]
+      else:
+        analyzer_names+=[analyz.get('name') for analyz in b_xml.findall('analyzer')]
+
     if not analyzer_names:
       analyzer_names.append("")
 
@@ -302,7 +308,6 @@ class JubeXMLParser():
           file_bench_element=ET.Element('fileset',attrib={'name':'bench_files_links'})
           for parameter in element.findall('parameter'):
             if os.path.isfile(parameter.text):
-        
               link = ET.SubElement(file_bench_element,'link')
               link.text = parameter.text
               index_insert=idx
