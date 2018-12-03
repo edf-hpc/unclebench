@@ -181,10 +181,10 @@
 	    </pattern>
 	    
 	    <pattern name="StarDGEMM" type="float" unit="Gflop/s">
-	      ^StarDGEMM_Gflops=*$jube_pat_fp
+	      ^StarDGEMM_Gflops=$jube_pat_fp
 	    </pattern>
 
-	    <pattern name="RORingBandwidth" type="GByte/s">
+	    <pattern name="RORingBandwidth" type="float" unit="GByte/s">
 	      ^RandomlyOrderedRingBandwidth_GBytes=$jube_pat_fp
 	    </pattern>
 
@@ -192,7 +192,7 @@
 	      ^RandomlyOrderedRingLatency_usec=$jube_pat_fp
 	    </pattern>
 
-	    <pattern name="StarSTREAM_Triad" type="float" unit="MB/s">
+	    <pattern name="StarSTREAM_Triad" type="float" unit="GB/s">
 	      ^StarSTREAM_Triad=$jube_pat_fp
 	    </pattern>
 
