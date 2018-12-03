@@ -40,8 +40,14 @@ ubench-run -  Run benchmarks
   Modify a benchmark parameter on command line.\
   ex: -c <benchmark_paramater>:1 would launch a benchmark with <benchmark_parameter> parameter set to 1.
   
+# -f <FILE.yaml>
+  Modify a benchmark parameter by putting it in a yaml file.\
+  ex: -f bench.yaml would launch a benchmark with <benchmark_parameter> parameter set to 1\
+  which we can find it in bench.yaml
 
-# ENVIRONMENT
+# -e 
+  Perform only the step execute without compilation.\
+  Some parameters have to be set using -c or -f such as: executable, binary, input files.
 
 
 ## UBENCH_PLATFORM_DIR
