@@ -214,29 +214,30 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         jube_cmd ="jube info ./{0} --id {1} --step execute".format(output_dir,benchmark_id)
 
         cmd_output = tempfile.TemporaryFile()
-        result_from_jube = Popen(jube_cmd,cwd=os.getcwd(),shell=True, stdout=cmd_output)
+        result_from_jube = Popen(jube_cmd, cwd=os.getcwd(), shell=True, stdout=cmd_output)
         ret_code = result_from_jube.wait()
 
         cmd_output.flush()
         cmd_output.seek(0)
         results = {}
-        workpackages=re.findall(r"Workpackages(.*?)\n{2,}",cmd_output.read(),re.DOTALL)[0]
+        workpackages=re.findall(r"Workpackages(.*?)\n{2,}", cmd_output.read(), re.DOTALL)[0]
         workdirs = {}
         regex_workdir = r"^\s+(\d+).*("+re.escape(output_dir)+r".*work).*"
 
         for package in workpackages.split('\n'):
-          temp_match = re.match(regex_workdir,package)
+          temp_match = re.match(regex_workdir, package)
           if temp_match:
             id_workpackage = temp_match.group(1)
             path_workpackage = temp_match.group(2)
             workdirs[id_workpackage] = path_workpackage
 
         cmd_output.seek(0)
-        parameterization = re.findall(r"ID:(.*?)\n{2,}",cmd_output.read(),re.DOTALL)
+        parameterization = re.findall(r"ID:(.*?)(?=\n{3,}|\sID)", cmd_output.read()+'\n', re.DOTALL)
         for execution_step in parameterization:
           id_step = [x.strip() for x in execution_step.split("\n")][0]
           param_step = [x.strip() for x in execution_step.split("\n")][1:]
           results[id_step] = {}
+
           for parameter in param_step:
             temp_match=re.match('^\S+:',parameter)
             if temp_match:
@@ -253,7 +254,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
           # we add the part of results which corresponds to a given execute
           with open(result_file_path) as csvfile:
             reader = csv.DictReader(csvfile)
-          
+
             field_names= reader.fieldnames
             common_fields = list(set(value.keys()) & set(field_names))
             result_fields = list(set(field_names) - set(common_fields))
@@ -271,14 +272,14 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
               if add_to_results:
                 for field in result_fields:
                   temp_hash[field].append(row[field])
-                  
+
             # when there is just value we transform the array in one value
             for field in result_fields:
-              
+
               if len(temp_hash[field]) == 1:
                 temp_hash[field] = temp_hash[field][0]
-                
-                
+
+
             results[key]['results_bench'] = temp_hash
             results[key]['context_fields'] = common_fields
 
@@ -354,18 +355,18 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         # Get job errlog and outlog filenames from configuration.xml file
         cvsfile = self.jube_xml_files.get_result_cvsfile()
         debugfile = "paths"
-       
-        input_str='jube result ./'+output_dir+' --id '+benchmark_id +' -o '+ cvsfile + ' ' + debugfile 
+
+        input_str='jube result ./'+output_dir+' --id '+benchmark_id +' -o '+ cvsfile + ' ' + debugfile
         result_from_jube = Popen(input_str,cwd=os.getcwd(),shell=True, stdout=PIPE)
         ret_code = result_from_jube.wait()
         result_array=[]
         # Get data from result array
         empty=True
         with open(os.path.join(benchmark_rundir,'result/ubench_results.dat'),'w') as result_file:
-          
+
           for line in result_from_jube.stdout:
             result_file.write(line)
-           
+
             empty=False
 
             splitted_line=[]
@@ -387,7 +388,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             raise IOError
         # Restore working directory
         os.chdir(old_path)
-        
+
         return result_array
 
 
