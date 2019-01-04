@@ -106,7 +106,7 @@ class ReportWriter:
         # Dictionnary to store main report data
         dic_report_main = {}
         # Required global parameters
-        global_parameters = set(['author','title','version','introduction'])
+        global_parameters = set(['author','title','version','introduction','conclusion'])
         for gp_key in global_parameters:
             if not gp_key:
                 print("Warning: {} field is missing",gp_key)
