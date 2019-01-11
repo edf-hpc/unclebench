@@ -109,10 +109,13 @@ class JubeXMLParser():
     for b_xml in self.bench_xml_root:
       bench_root = b_xml.find('benchmark')
 
-      if bench_root is not None:
-        analyzer_names+=[analyz.get('name') for analyz in bench_root.findall('analyzer')]
-      else:
-        analyzer_names+=[analyz.get('name') for analyz in b_xml.findall('analyzer')]
+    if bench_root is not None:
+      analyzer_names+=[analyz.get('name') for analyz in (bench_root.findall('analyser')\
+                                                           +(bench_root.findall('analyzer')))]
+    else:
+      analyzer_names+=[analyz.get('name') for analyz in (b_xml.findall('analyser')\
+                                                           +b_xml.findall('analyzer'))]
+
 
     if not analyzer_names:
       analyzer_names.append("")
@@ -374,13 +377,10 @@ class JubeXMLParser():
         exec_config=ET.Element('parameterset',attrib={'name':'bench_files'})
         if dict_options:
           for opt in dict_options:
-          
             exec_val   = ET.SubElement(exec_config,'parameter',attrib={'name': opt})
             exec_val.text= dict_options[opt]
           benchmark.insert(4,exec_config)
-        
-        
-        
+
         debug_result=ET.Element('result')
         debug_result_use = ET.SubElement(debug_result,'use')
         # TODO: handle multiple analyzer
@@ -472,7 +472,7 @@ class JubeXMLParser():
           use.text = name
         if name not in present_params:
           step[0].insert(0,use)
-            
+
         for use in step[0].findall("use"):
           present_params.append(use.text)
           name = "mpi_set"
@@ -480,7 +480,7 @@ class JubeXMLParser():
           use.text = name
         if name not in present_params:
           step[0].insert(0,use)
-                                              
+
   def add_custom_nodes_stub(self,custom_nodes_numbers,custom_nodes_ids):
     """
     Comment TODO
