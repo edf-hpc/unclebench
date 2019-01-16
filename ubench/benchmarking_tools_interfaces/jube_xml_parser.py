@@ -105,17 +105,18 @@ class JubeXMLParser():
     return steps
 
   def get_analyzer_names(self):
+
     analyzer_names = []
     for b_xml in self.bench_xml_root:
       bench_root = b_xml.find('benchmark')
-
-    if bench_root is not None:
-      analyzer_names+=[analyz.get('name') for analyz in (bench_root.findall('analyser')\
+      if bench_root is not None:
+        analyzer_names += [step.get('name') for step in (bench_root.findall('analyser')\
+	                                                 +bench_root.findall('analyzer'))]
+    # Look for analyzer name outside of benchmark tag
+    if not analyzer_names:
+      for bench_root in self.bench_xml_root:
+        analyzer_names += [analyz.get('name') for analyz in (bench_root.findall('analyser')\
                                                            +(bench_root.findall('analyzer')))]
-    else:
-      analyzer_names+=[analyz.get('name') for analyz in (b_xml.findall('analyser')\
-                                                           +b_xml.findall('analyzer'))]
-
 
     if not analyzer_names:
       analyzer_names.append("")
