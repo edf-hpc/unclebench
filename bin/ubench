@@ -155,6 +155,7 @@ parser_result.add_argument('-d','--debug',help='Mode to debug Unclebench', actio
 
 # parser report
 report_help = 'Build a performance report from benchmark result directories.'
+
 parser_report = subparsers.add_parser('report', help=report_help)
 
 parser_report.add_argument('-m','--metadata-file',help='Metadata file containing evrything needed'+\
@@ -184,6 +185,10 @@ parser_compare.add_argument('-cc', '--compared-context', default=None, \
 
 parser_compare.add_argument('-t', '--threshold', default=None, \
                             help='Differences under given threshold will not be printed')
+
+# parser info
+parser_info = subparsers.add_parser('info', \
+                                    help='Displays path settings origin.')
 
 
 # Call script according to user command
@@ -219,3 +224,5 @@ elif args.subparser_name == 'report':
 elif args.subparser_name == 'compare':
     commands.compare(args.input_dirs, args.benchmark_name, \
                      (args.context,args.compared_context), args.threshold)
+elif args.subparser_name == 'info':
+    uconf.print_config()
