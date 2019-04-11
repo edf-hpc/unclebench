@@ -133,9 +133,9 @@ class UbenchConfig:
         self.settings_source['UBENCH_TEMPLATES_PATH'] = {'origin' : origin, 'val' : self.templates_path}
 
         # Working directories
-        self.run_dir='/scratch/'+getpass.getuser()+'/Ubench/benchmarks'
+        self.run_dir='/scratch/'+getpass.getuser()+'/ubench/benchmarks'
         self.settings_source['UBENCH_RUN_DIR'] = {'origin' : origin, 'val' : self.run_dir}
-        self.resource_dir='/scratch/'+getpass.getuser()+'/Ubench/resource'
+        self.resource_dir='/scratch/'+getpass.getuser()+'/ubench/resource'
         self.settings_source['UBENCH_RESOURCE_DIR'] = {'origin' : origin, 'val' : self.resource_dir}
         #os.environ['UBENCH_RESOURCE_DIR']=self.resource_dir
         
