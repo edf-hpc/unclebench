@@ -97,7 +97,7 @@ class UbenchConfig:
         """ Init path with LOCAL settings """
         
         config = configparser.ConfigParser()
-        f = config.read(u'/home/' + getpass.getuser() + '/unclebench/.ubench.conf')
+        f = config.read(u'/home/' + getpass.getuser() + '/.unclebench/ubench.conf')
         if len(f) > 0:
             self.load_config(config, origin)
 
@@ -106,7 +106,7 @@ class UbenchConfig:
         """ Init path with SYSTEM settings """
         
         config = configparser.ConfigParser()
-        f = config.read(u'/etc/unclebench/.ubench.conf')
+        f = config.read(u'/etc/unclebench/ubench.conf')
         if len(f) > 0:
             self.load_config(config, origin)
 
