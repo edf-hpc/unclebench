@@ -22,7 +22,7 @@ import subprocess
 import os
 
 
-VERSION= "0.3.0"
+VERSION= "0.3.6"
 
 
 def get_git_revision_short_hash():
