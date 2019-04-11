@@ -57,7 +57,9 @@ class UbenchConfig:
         self.init_config_sys('system config')
         self.init_config_local('local config')
         self.init_environ('environment')
+        self.set_environment_vars()
 
+        
     def init_environ(self, origin):
         """ Init path with ENVIRONMENT settings """
         
@@ -179,6 +181,22 @@ class UbenchConfig:
             self.report_dir = config_parser.get(section, 'UBENCH_REPORT_DIR')
             self.settings_source['UBENCH_REPORT_DIR'] = {'origin' : origin, 'val' : self.report_dir}
 
+    
+    def set_environment_vars(self):
+        """ Sets environment variables if         UBENCH_PLATFORM_DIR
+            they were not previously set:         UBENCH_BENCHMARK_DIR
+                                                  UBENCH_RESOURCE_DIR   
+        """
+        
+        if os.environ.get('UBENCH_PLATFORM_DIR') is None:
+            os.environ['UBENCH_PLATFORM_DIR'] = self.settings_source['UBENCH_PLATFORM_DIR']['val']
+        
+        if os.environ.get('UBENCH_BENCHMARK_DIR') is None:
+            os.environ['UBENCH_BENCHMARK_DIR'] = self.settings_source['UBENCH_BENCHMARK_DIR']['val']
+        
+        if os.environ.get('UBENCH_RESOURCE_DIR') is None:
+            os.environ['UBENCH_RESOURCE_DIR'] = self.settings_source['UBENCH_RESOURCE_DIR']['val']
+
 
     def print_config(self, pad = 30):
         """ Procedure used to display the origin of the settings loaded 
@@ -198,6 +216,7 @@ class UbenchConfig:
         print('─'*line_length)
         print('')
 
+        
     def get_platform_list(self):
         """ Get list of available platforms """
         platform_list=[]
