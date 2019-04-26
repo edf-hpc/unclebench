@@ -23,6 +23,7 @@ import getpass
 import os
 import xml.etree.ElementTree as ET
 import ubench.benchmarking_tools_interfaces.jube_xml_parser as jube_xml_parser
+import pwd
 
 # used to read ubench.conf ;
 # In Python 3, ConfigParser has been renamed
@@ -99,7 +100,7 @@ class UbenchConfig:
         """ Init path with LOCAL settings """
         
         config = configparser.ConfigParser()
-        f = config.read(u'/home/' + getpass.getuser() + '/.unclebench/ubench.conf')
+        f = config.read(u'' + pwd.getpwuid(os.getuid()).pw_dir + '/.unclebench/ubench.conf')
         if len(f) > 0:
             self.load_config(config, origin)
 
