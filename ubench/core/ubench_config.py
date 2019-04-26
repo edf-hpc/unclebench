@@ -128,7 +128,7 @@ class UbenchConfig:
         self.settings_source['UBENCH_BENCHMARK_DIR'] = {'origin' : origin, 'val' : self.benchmark_dir}
         #os.environ['UBENCH_BENCHMARK_DIR']=self.benchmark_dir
         
-        self.conf_dir='/etc/unclebench/' 
+        self.conf_dir='/etc/unclebench' 
         self.settings_source['UBENCH_CONF_DIR'] = {'origin' : origin, 'val' : self.conf_dir}
         self.stylesheet_path='/usr/share/unclebench/css/asciidoctor-bench-report.css'
         self.settings_source['UBENCH_CSS_PATH'] = {'origin' : origin, 'val' : self.stylesheet_path}
