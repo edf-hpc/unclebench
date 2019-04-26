@@ -136,9 +136,16 @@ class UbenchConfig:
         self.settings_source['UBENCH_TEMPLATES_PATH'] = {'origin' : origin, 'val' : self.templates_path}
 
         # Working directories
-        self.run_dir='/scratch/'+getpass.getuser()+'/ubench/benchmarks'
+        if os.environ.get('SCRATCHDIR') is None:
+            self.run_dir=pwd.getpwuid(os.getuid()).pw_dir + '/ubench/benchmarks'
+        else:
+            self.run_dir=os.environ.get('SCRATCHDIR') + '/ubench/benchmarks'
         self.settings_source['UBENCH_RUN_DIR'] = {'origin' : origin, 'val' : self.run_dir}
-        self.resource_dir='/scratch/'+getpass.getuser()+'/ubench/resource'
+
+        if os.environ.get('SCRATCHDIR') is None:
+            self.resource_dir=pwd.getpwuid(os.getuid()).pw_dir + '/ubench/resource'
+        else:
+            self.resource_dir=os.environ.get('SCRATCHDIR') + '/ubench/resource'
         self.settings_source['UBENCH_RESOURCE_DIR'] = {'origin' : origin, 'val' : self.resource_dir}
         #os.environ['UBENCH_RESOURCE_DIR']=self.resource_dir
         
