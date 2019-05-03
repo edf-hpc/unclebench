@@ -1,6 +1,6 @@
 ##############################################################################
 #  This file is part of the UncleBench benchmarking tool.                    #
-#        Copyright (C) 2017  EDF SA                                          #
+#        Copyright (C) 2019  EDF SA                                          #
 #                                                                            #
 #  UncleBench is free software: you can redistribute it and/or modify        #
 #  it under the terms of the GNU General Public License as published by      #
@@ -16,8 +16,3 @@
 #  along with UncleBench.  If not, see <http://www.gnu.org/licenses/>.       #
 #                                                                            #
 ##############################################################################
-
-from ._version import get_version
-
-def __version__():
-    return get_version()

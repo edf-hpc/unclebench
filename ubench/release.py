@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #  This file is part of the UncleBench benchmarking tool.                    #
-#        Copyright (C) 2017  EDF SA                                          #
+#        Copyright (C) 2019  EDF SA                                          #
 #                                                                            #
 #  UncleBench is free software: you can redistribute it and/or modify        #
 #  it under the terms of the GNU General Public License as published by      #
@@ -18,30 +18,6 @@
 #  along with UncleBench.  If not, see <http://www.gnu.org/licenses/>.       #
 #                                                                            #
 ##############################################################################
-import subprocess
-import os
 
-
-VERSION= "0.3.6"
-
-
-def get_git_revision_short_hash():
-    #check if we are in a git repository
-    return None
-    # current_path = os.path.dirname(os.path.abspath(__file__))
-    # os.chdir(current_path)
-    # if subprocess.call(["git", "branch"], stderr=open(os.devnull, 'w'), stdout=open(os.devnull, 'w')) != 0:
-    #   return None
-    # else:
-    #   return subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'])
-
-
-def get_version():
-
-  version = VERSION
-  git_revision = get_git_revision_short_hash()
-
-  if git_revision:
-    version+= "-{}".format(git_revision.rstrip())
-
-  return version
+__version__ = '0.3.6'
+__author__ = 'EDF CCN HPC'
