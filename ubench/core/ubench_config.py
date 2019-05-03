@@ -140,7 +140,7 @@ class UbenchConfig:
             self.run_dir=pwd.getpwuid(os.getuid()).pw_dir + '/ubench/benchmarks'
         else:
             self.run_dir=os.environ.get('SCRATCHDIR') + '/ubench/benchmarks'
-        self.settings_source['UBENCH_RUN_DIR'] = {'origin' : origin, 'val' : self.run_dir}
+        self.settings_source['UBENCH_RUN_DIR_BENCH'] = {'origin' : origin, 'val' : self.run_dir}
 
         if os.environ.get('SCRATCHDIR') is None:
             self.resource_dir=pwd.getpwuid(os.getuid()).pw_dir + '/ubench/resource'
