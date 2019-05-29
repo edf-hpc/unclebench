@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+    <include-path>
+	<path> $UBENCH_PLATFORM_DIR </path>
+    </include-path>
+    <include from="platforms.xml" path="include-path"/>
+
+    <multisource>
+
+	   <source protocol="local" >
+	       <file>/mnt/.tgvdv2/projets/projets.002/ccnhpc.066/MUMPS-Benchmarks/mumps-benchmark-full-src-0.0.1.tar.xz</file>
+	   </source>
+
+    </multisource>
+    
+    <benchmark name="MUMPS" outpath="benchmark_runs">
+		<comment>MUMPS benchmark</comment>
+		
+		<fileset name="source">
+		    <link> $UBENCH_RESOURCE_DIR/mumps/mumps-benchmark-full-src-0.0.1.tar.xz</link>
+		    <prepare>tar -xf mumps-benchmark-full-src-0.0.1.tar.xz </prepare>
+		</fileset>
+		
+		<parameterset name="variant_set">
+
+	 	    <parameter name="variant_NB">
+			192
+		    </parameter>
+
+		    <parameter name="exec_name">
+			dsimpletest
+		    </parameter>
+
+		    <parameter name="matrix_name">
+			aster_matrix_input
+		    </parameter>
+		    
+		    <parameter name="memory_proportion">
+			0.1
+		    </parameter>
+
+		    <!-- Choose N to avoid exceeding memory_proportion of available memory -->
+		    <parameter name="variant_Ntemp" mode="python" type="float" separator="??" >
+			(${memory_proportion}*${nodes}*(${GB_per_node})*1e9/8) ** 0.5		
+		    </parameter>
+		    
+	 	    <parameter name="variant_N" mode="python" type="int" separator="??" >
+			int( round( ${variant_Ntemp} / ${variant_NB} ) * ${variant_NB})
+		    </parameter>
+		    
+		</parameterset>
+
+		<parameterset name="compiler_opts">
+		  	
+		  	<parameter name="compiler" type="string">
+		    ${comp_version}
+		  	</parameter>
+		  	<parameter name="variant_v">0</parameter>
+        	<parameter name="scotch_index">0</parameter>
+	        <parameter name="metis_index">0</parameter>
+	        
+		    <parameter name="mode" mode="python">
+			["--par","",][$variant_v]
+		    </parameter>
+
+		    <parameter name="Version" mode="python">
+			["Version Parallel","Version Sequentiel",][$variant_v]
+		    </parameter>
+	        
+	        <parameter name="metis_type" mode="python">
+			["parmetis","metis"][$metis_index]
+		    </parameter>
+	        
+	        <parameter name="scotch_type" mode="python">
+			["ptscotch","scotch"][$scotch_index]
+		    </parameter>
+		
+		</parameterset>
+		
+		<!-- =====================  Compile  ===================== -->
+		<step name="compile" export="true">
+		    	    
+		    <!-- Choose compiler and MPI versions -->
+		    <use from="platform.xml"> compiler_set </use>
+		    <use from="platform.xml"> mpi_set </use>
+		    <use> compiler_opts </use>
+		    
+		    <!-- substitute compiler in makefile -->
+		    <use>source</use>
+		    
+		    <!-- Load environment -->
+		    <do> module purge </do>
+		    <do> module load $module_compile $module_mpi $module_blas </do>
+
+		    <do work_dir="mumps-benchmark-full-src-0.0.1">
+	            python setup.py --prefix=. --noprompt ${mode} --cfg=setup_${compiler}.cfg install ${metis_type} ${scotch_type} mumps mumps_benchmark
+		    </do>
+
+		</step>
+
+		<!-- ====================  Execute  ===================== -->
+		
+		<fileset name="binaries">
+		    <link rel_path_ref="internal" directory="compile/mumps-benchmark-full-src-0.0.1/public/mumps_benchmark-0.0.1">
+			${exec_name}
+		    </link>
+
+		    <link rel_path_ref="internal" directory="compile/mumps-benchmark-full-src-0.0.1/public/mumps_benchmark-0.0.1">
+			${matrix_name}
+		    </link>
+
+		    <link rel_path_ref="internal" directory="compile/mumps-benchmark-full-src-0.0.1/">
+			setup.log
+		    </link>
+		</fileset>
+
+		<parameterset name="system_parameters" init_with="platform.xml">
+		    <parameter name="nodes" type="int">1</parameter>
+		    <parameter name="taskspernode" mode="python" type="int">$NUMA_regions*$cores_per_NUMA_region</parameter>
+		    <parameter name="threadspertask" type="int">1</parameter>
+		    <parameter name="executable">./${exec_name}</parameter>
+		    <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
+		    <parameter name="timelimit">00:25:00</parameter>
+		</parameterset>
+
+		<parameterset name="execute_set" init_with="platform.xml">
+
+		    <parameter name="args_starter" separator="??">
+			${binding_full_node}
+		    </parameter>
+		    
+		</parameterset>
+		
+		<step name="execute" depend="compile">
+		  
+		  <use from="platform.xml">cluster_specs</use>
+		  <use>binaries</use>
+	<!-- 	  <use>sub_hpcc_parameters</use> -->
+
+		  <use>execute_set</use>
+		  <use>system_parameters</use>
+		  <use>variant_set</use>
+
+		 
+
+		  <use from="platform.xml">jobfiles</use>
+		  <use from="platform.xml">execute_sub</use>
+
+	      <!-- <do>echo "${matrix_size} ${block_size} $in_file $nodes $taskspernode" >> in.txt</do> -->
+		  <do done_file="$done_file">$submit $submit_script</do>
+	      <!-- <do>cat setup.log >> job.out</do> -->
+		 	  
+		</step>
+	
+	<!-- =====================  Analyze  ===================== -->
+
+		<patternset name="pattern">
+		<pattern name="elapsed_time" type="float" unit="s">
+		  .*time:\s+${jube_pat_fp}
+		</pattern>
+		<pattern name="MUMPS" type="float" unit="Gflop/s">
+		  .*Gflops/s:\s+${jube_pat_fp}
+		</pattern>
+		<pattern name="OMP" type="int">
+		 .*OMP = \s+$jube_pat_int
+		</pattern>
+		<!-- <pattern name="compile_time" type="float" unit="s">
+		  ^Elapsed time:\s+${jube_pat_fp}
+		</pattern> -->
+		</patternset>
+
+
+		<analyzer name="analyse">
+		<use>pattern</use>
+		<analyse step="execute"><file>job.out</file></analyse>
+		</analyzer>
+		<!-- =====================  Result  ===================== -->
+
+		<result>
+			<use>analyse</use>
+			<table name="result" style="csv" sort="nodes">
+			  <column>nodes</column>
+			  <column>OMP</column>
+			  <column>tasks</column>
+			  <column>MUMPS</column>
+			  <column format=".4f">elapsed_time</column>
+			  <column>Version</column>
+			  <column>modules</column>
+			</table>
+		</result>
+		
+    </benchmark>
+</jube>
