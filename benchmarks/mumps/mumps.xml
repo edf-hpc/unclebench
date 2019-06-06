@@ -9,7 +9,7 @@
     <multisource>
 
 	   <source protocol="local" >
-	       <file>/mnt/.tgvdv2/projets/projets.002/ccnhpc.066/MUMPS-Benchmarks/mumps-benchmark-full-src-0.0.1.tar.xz</file>
+	       <file>/mnt/.tgvdv2/projets/projets.002/ccnhpc.066/Benchmarks/mumps-benchmark-full-src-0.0.1.tar.xz</file>
 	   </source>
 
     </multisource>
@@ -38,6 +38,10 @@
 		    
 		    <parameter name="memory_proportion">
 			0.1
+		    </parameter>
+
+		    <parameter name="OMP">
+		    	1
 		    </parameter>
 
 		    <!-- Choose N to avoid exceeding memory_proportion of available memory -->
@@ -121,7 +125,8 @@
 		    <parameter name="threadspertask" type="int">1</parameter>
 		    <parameter name="executable">./${exec_name}</parameter>
 		    <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
-		    <parameter name="timelimit">00:25:00</parameter>
+		    <parameter name="OMP_NUM_THREADS" type="int">$OMP</parameter>
+		    <parameter name="timelimit">00:30:00</parameter>
 		</parameterset>
 
 		<parameterset name="execute_set" init_with="platform.xml">
