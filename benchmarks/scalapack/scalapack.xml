@@ -17,7 +17,7 @@
        <file>/mnt/.tgvdv2/projets/projets.002/ccnhpc.066/Benchmarks/master.zip</file>
    </source> -->
 
-    </multisource>
+   </multisource>
     
     <benchmark name="ScaLAPACK" outpath="benchmark_runs">
 	<comment>ScaLAPACK benchmarks</comment>
@@ -28,17 +28,13 @@
 	</fileset>
 	
 	<parameterset name="variant_set">
-	    <parameter name="variant_v">0</parameter>
         <parameter name="size_index">0</parameter>
         <parameter name="block_index">0</parameter>
         
-	    <parameter name="variant_name" mode="python">
-		["Full_MPI","Full_MPI","Full_MPI","Full_MPI"][$variant_v]
-	    </parameter>
-	    
-        <parameter name="exec_name" mode="python">
-		["dgemm","cholesky","qr","svd"][$variant_v]
-	    </parameter>
+        
+
+        
+
         
         <parameter name="block_size" mode="python">
 		["64","128","256","512","1024","2048","4096","8192"][$block_index]
@@ -47,10 +43,8 @@
         <parameter name="matrix_size" mode="python">
 		["10000","20000","50000","100000","150000"][$size_index]
 	    </parameter>
+
         
-        <parameter name="in_file" mode="python">
-	    	["","1 "+str($matrix_size),str($block_size),str($block_size)][$variant_v]
-	    </parameter>
 
  	    <parameter name="variant_NB">
 		192
@@ -72,9 +66,41 @@
 	</parameterset>
 
 	<parameterset name="compiler_opts">
-	  <parameter name="arch" type="string">
-	    ${comp_version}
-	  </parameter>
+	    <parameter name="variant_v">0</parameter>
+
+        <parameter name="exec_fort" mode="python">
+			["dgemm","cholesky","svd","qr","lu"][$variant_v]
+	    </parameter>
+
+        <parameter name="exec_cpp" mode="python">
+			["dgemm","cholesky","svd","inverse","linsolve"][$variant_v]
+	    </parameter>
+
+        <parameter name="in_file" mode="python">
+	    	["","$block_size 2.54", "52.54", "12.54", "-2.54"][$variant_v]
+	    </parameter>
+
+	  	<parameter name="arch" type="string">
+	    	${comp_version}
+	  	</parameter>
+        
+
+
+        <parameter name="lang_index">0</parameter>
+	    <parameter name="lang" mode="python">
+		["Fortran","C++"][$lang_index]
+	    </parameter>
+
+        <parameter name="exec_name" mode="python">
+		["$exec_fort","$exec_cpp"][$lang_index]
+	    </parameter>
+
+	    <parameter name="make_args" mode="python">
+
+	    ["","cpp EXE_NAME=$exec_name"][$lang_index]
+
+	    </parameter>
+
 	</parameterset>
 	
 	<!-- =====================  Compile  ===================== -->
@@ -83,6 +109,7 @@
 	    <!-- Choose compiler and MPI versions -->
 	    <use from="platform.xml"> compiler_set </use>
 	    <use from="platform.xml"> mpi_set </use>
+
 	    <use> compiler_opts </use>
 	    
 	    <!-- substitute compiler in makefile -->
@@ -94,8 +121,7 @@
 
 	    <do work_dir="scalapack-benchmarks-master">
             pwd;
-            mkdir bin;
-	        make TARGET=${arch} -j 4
+	        make TARGET=${arch} ${make_args}
 	    </do>
 
 	</step>
@@ -114,9 +140,9 @@
 	    <parameter name="nodes" type="int">1</parameter>
 	    <parameter name="taskspernode" mode="python" type="int">$NUMA_regions*$cores_per_NUMA_region</parameter>
 	    <parameter name="threadspertask" type="int">1</parameter>
-	    <parameter name="executable">./${exec_name}</parameter>
+	    <parameter name="executable">./${exec_name} ${matrix_size} ${matrix_size} ${matrix_size}</parameter>
 	    <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
-	    <parameter name="timelimit">00:30:00</parameter>
+	    <parameter name="timelimit">00:40:00</parameter>
 	</parameterset>
 
 	<parameterset name="execute_set" init_with="platform.xml">
@@ -131,7 +157,6 @@
 	  
 	  <use from="platform.xml">cluster_specs</use>
 	  <use>binaries</use>
-<!-- 	  <use>sub_hpcc_parameters</use> -->
 
 	  <use>execute_set</use>
 	  <use>system_parameters</use>
@@ -157,11 +182,17 @@
       <pattern name="scalapack" type="float" unit="Gflop/s">
 	      .*perf:\s+${jube_pat_fp}
 	  </pattern>
-      <pattern name="Num_rows" type="int">
+      <pattern name="N" type="int">
 	     .*Num\s+rows\s+$jube_pat_int
 	  </pattern>
       <pattern name="BlockSize" type="int">
 	      .*size\s+$jube_pat_int
+	  </pattern>
+	  <pattern name="Pr" type="int">
+	     .*processor\s+rows\s+$jube_pat_int
+	  </pattern>
+	  <pattern name="Pc" type="int">
+	     .*cols\s+$jube_pat_int
 	  </pattern>
       </patternset>
 
@@ -177,9 +208,12 @@
 	  <use>analyse</use>
 	  <table name="result" style="csv" sort="nodes">
           <column>exec_name</column>
+          <column>lang</column>
 	      <column>nodes</column>
           <column>tasks</column>
-          <column>Num_rows</column>
+          <column>N</column>
+          <column>Pr</column>
+          <column>Pc</column>
           <column>BlockSize</column>
 	      <column>scalapack</column>
           <column format=".4f">elapsed_time</column>

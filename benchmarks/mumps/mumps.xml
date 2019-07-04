@@ -40,8 +40,9 @@
 			0.1
 		    </parameter>
 
-		    <parameter name="OMP">
-		    	1
+		    <parameter name="OMP_index">0</parameter>
+		    <parameter name="OMP_array" mode="python">
+			[1,2,4,8][$OMP_index]
 		    </parameter>
 
 		    <!-- Choose N to avoid exceeding memory_proportion of available memory -->
@@ -122,10 +123,9 @@
 		<parameterset name="system_parameters" init_with="platform.xml">
 		    <parameter name="nodes" type="int">1</parameter>
 		    <parameter name="taskspernode" mode="python" type="int">$NUMA_regions*$cores_per_NUMA_region</parameter>
-		    <parameter name="threadspertask" type="int">1</parameter>
+		    <parameter name="threadspertask" type="int">$OMP_array</parameter>
 		    <parameter name="executable">./${exec_name}</parameter>
 		    <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
-		    <parameter name="OMP_NUM_THREADS" type="int">$OMP</parameter>
 		    <parameter name="timelimit">00:30:00</parameter>
 		</parameterset>
 
