@@ -80,11 +80,11 @@
 	  	</parameter>
 
 	  	<parameter name="mpicomp_C" mode="python" type="string">
-	  		"mpicc" if "$comp_version" == "gnu" else "mpiicc"
+	  		"" if "$comp_version" == "gnu" else "--with-cc=mpiicc"
 	  	</parameter>
 
 	  	<parameter name="mpicomp_CPP" mode="python" type="string">
-	  		"mpicxx" if "$comp_version" == "gnu" else "mpiicpc"
+	  		"" if "$comp_version" == "gnu" else "--with-cxx=mpiicpc"
 	  	</parameter>   
 
 	  	<!-- <parameter name="MKL" mode="shell" type="string">
@@ -96,8 +96,12 @@
 	  	</parameter> -->
 
 	  	<parameter name="mpicomp_F" mode="python" type="string">
-	  		"mpifort" if "$comp_version" == "gnu" else "mpiifort --with-blaslapack-dir=$(find $MKLROOT -iname mkl | head -1) "
+	  		"" if "$comp_version" == "gnu" else "--with-fc=mpiifort"
 	  	</parameter> 
+
+	  	<parameter  name="blaslapack" mode="python" type="string">
+	  		"" if "$comp_version" == "gnu" else "--with-blaslapack-dir=$blas_root/mkl"
+	  	</parameter>
 
         <parameter name="flags_index">0</parameter>
 
@@ -142,9 +146,8 @@
 	    	echo $PETSC_DIR;
 	    </do>
 	    <do ><!-- work_dir="petsc-3.11.3">-->
-	    	
 	    	cd $PETSC_DIR;
-            ./configure --with-cc=${mpicomp_C} --with-cxx=${mpicomp_CPP} --with-fc=${mpicomp_F} --with-debugging=no $optflags;
+            ./configure ${mpicomp_C} ${mpicomp_CPP} ${mpicomp_F} ${blaslapack} --with-debugging=no $optflags;
 	        make -j 20 all test;
 	        cd src/ksp/ksp/examples/tutorials/;
 	        make ${exec_name}
@@ -155,7 +158,7 @@
 	<!-- ====================  Execute  ===================== -->
 	
 	<fileset name="binaries">
-	    <prepare>echo $PWD;echo $PETSC_DIR;cd $(find compile/ -iname petsc-*| head -1);export PETSC_KSP_BINARY_DIR=$PWD/src/ksp/ksp/examples/tutorials/;echo $PETSC_KSP_BINARY_DIR</prepare>
+	    <prepare>echo $PWD;echo $PETSC_DIR;cd $(find compile/ -iname petsc-*| head -1);export PETSC_KSP_BINARY_DIR=$PWD/src/ksp/ksp/examples/tutorials<!-- ;echo $PETSC_KSP_BINARY_DIR --></prepare>
 	    <link rel_path_ref="internal" directory="$$PETSC_KSP_BINARY_DIR">
 		${exec_name}
 	    </link>
