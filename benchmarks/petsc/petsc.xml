@@ -67,12 +67,8 @@
 			["ex2f","ex15f","ex52f","ex57f"][$variant_v]
 	    </parameter>
 
-        <parameter name="exec_cpp" mode="python">
+        <parameter name="exec_c" mode="python">
 			["ex2","ex15","ex16","ex52"][$variant_v]
-	    </parameter>
-
-        <parameter name="in_file" mode="python">
-	    	["","$block_size 2.54", "52.54", "12.54", "-2.54"][$variant_v]
 	    </parameter>
 
 	  	<parameter name="arch" type="string">
@@ -100,7 +96,11 @@
 	  	</parameter> 
 
 	  	<parameter  name="blaslapack" mode="python" type="string">
-	  		"" if "$comp_version" == "gnu" else "--with-blaslapack-dir=$blas_root/mkl"
+	  		"" if "$comp_version" == "gnu" else "--with-blaslapack-dir=$blas_root2/mkl"
+	  	</parameter>
+
+	  	<parameter  name="cluster_name" mode="python" type="string">
+	  		"$platform_name".lower().split("-")[0]
 	  	</parameter>
 
         <parameter name="flags_index">0</parameter>
@@ -115,13 +115,15 @@
 	    </parameter>
 
         <parameter name="exec_name" mode="python">
-		["$exec_cpp","$exec_fort"][$lang_index]
+		["$exec_c","$exec_fort"][$lang_index]
 	    </parameter>
 
-	    <parameter name="make_args" mode="python">
+	    <parameter name="module_mpi2" mode="python" type="string">
+	    "$module_mpi".split("-")[0]
+	    </parameter>
 
-	    ["","cpp EXE_NAME=$exec_name"][$lang_index]
-
+	    <parameter name="blas_root2" mode="python" type="string">
+	    "$blas_root" if "$cluster_name"!="gaia" else "$mpi_root".split("/impi")[0]
 	    </parameter>
 
 	</parameterset>
@@ -132,6 +134,7 @@
 	    <!-- Choose compiler and MPI versions -->
 	    <use from="platform.xml"> compiler_set </use>
 	    <use from="platform.xml"> mpi_set </use>
+	    <use from="platform.xml"> cluster_specs</use>
 
 	    <use> compiler_opts </use>
 	    	
@@ -140,10 +143,10 @@
 	    
 	    <!-- Load environment -->
 	    <do> module purge </do>
-	    <do> module load $module_compile $module_mpi $module_blas </do>
+	    <do> module load $module_compile $module_mpi2 $module_blas </do>
 
-	    <do>export PETSC_DIR=$(find $PWD -iname petsc-*| head -1);
-	    	echo $PETSC_DIR;
+	    <do>
+	    	export PETSC_DIR=$(find $PWD -iname petsc-*| head -1)
 	    </do>
 	    <do ><!-- work_dir="petsc-3.11.3">-->
 	    	cd $PETSC_DIR;
@@ -158,7 +161,9 @@
 	<!-- ====================  Execute  ===================== -->
 	
 	<fileset name="binaries">
-	    <prepare>echo $PWD;echo $PETSC_DIR;cd $(find compile/ -iname petsc-*| head -1);export PETSC_KSP_BINARY_DIR=$PWD/src/ksp/ksp/examples/tutorials<!-- ;echo $PETSC_KSP_BINARY_DIR --></prepare>
+	    <prepare><!-- echo $PWD;echo $PETSC_DIR; -->
+	    	cd $(find compile/ -iname petsc-*| head -1);export PETSC_KSP_BINARY_DIR=$PWD/src/ksp/ksp/examples/tutorials
+	    	<!-- ;echo $PETSC_KSP_BINARY_DIR --></prepare>
 	    <link rel_path_ref="internal" directory="$$PETSC_KSP_BINARY_DIR">
 		${exec_name}
 	    </link>
@@ -166,7 +171,9 @@
 
 	<parameterset name="system_parameters" init_with="platform.xml">
 	    <parameter name="nodes" type="int">1</parameter>
-	    <parameter name="taskspernode" mode="python" type="int">$NUMA_regions*$cores_per_NUMA_region</parameter>
+	    <parameter name="taskspernode" mode="python" type="int">
+	    	$NUMA_regions*$cores_per_NUMA_region
+	    </parameter>
 	    <parameter name="threadspertask" type="int">1</parameter>
 	    <parameter name="executable">./${exec_name} -m ${m} -n ${n} -log_view</parameter>
 	    <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
