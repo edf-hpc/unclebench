@@ -28,13 +28,50 @@
 			192
 		    </parameter>
 
+		    <parameter name="matrix_index">0</parameter>
+		    <parameter name="density_index">0</parameter>
+		    <parameter name="type_index">0</parameter>
+
+		    <parameter name="matrix_size" mode="python">
+		    	["10000","15000","20000","25000"][$matrix_index]
+		    </parameter>
+
+		    <parameter name="density" mode="python">
+		    	["0.01","0.01","0.02","0.05","0.1","0.2","0.35"][$matrix_index]
+		    </parameter>
+
 		    <parameter name="exec_name">
 			dsimpletest
 		    </parameter>
 
-		    <parameter name="matrix_name">
-			aster_matrix_input
+		    <parameter name="matrix_type" mode="python" type="string">
+			["aster_matrix","RNG_Sparse_Matrix","MatrixMarket"][$type_index]
 		    </parameter>
+
+		    <parameter name="matrix_name1" mode="python" type="string">
+			["aster_matrix_input"][$matrix_index]
+		    </parameter>
+
+		    <parameter name="matrix_name2" mode="python" type="string">
+			"sparse_input.txt"
+		    </parameter>
+
+		    <parameter name="matrix_name3" mode="python" type="string">
+			["fidap011","fidapm29","fidapm37"][$matrix_index]
+		    </parameter>
+
+		    <parameter name="matrix_name" mode="python">
+			["Matrices/$matrix_name1","$matrix_name2","Matrices/$matrix_name3.mtx"][$type_index]
+		    </parameter>
+
+		    <parameter name="exec_args" mode="python" type="string">
+			["","-t 2 -f $matrix_name2","-t 3 -f ${matrix_name3}.mtx --RHS ${matrix_name3_rhs1}.mtx"][$type_index]
+		    </parameter>
+
+		    <parameter name="generate_matrix" mode="python" type="string">
+			"python save_sparse.py -N $matrix_size -d $density --RHS"
+		    </parameter>
+
 		    
 		    <parameter name="memory_proportion">
 			0.1
