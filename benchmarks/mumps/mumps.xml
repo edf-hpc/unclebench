@@ -29,27 +29,27 @@
 		    </parameter>
 
 		    <parameter name="matrix_index">0</parameter>
-		    <parameter name="density_index">0</parameter>
+		    <parameter name="density_index">2</parameter>
 		    <parameter name="type_index">0</parameter>
 
 		    <parameter name="matrix_size" mode="python">
-		    	["10000","15000","20000","25000"][$matrix_index]
+		    	["10000","15000","20000","25000","30000","32000"][$matrix_index]
 		    </parameter>
 
 		    <parameter name="density" mode="python">
-		    	["0.01","0.01","0.02","0.05","0.1","0.2","0.35"][$matrix_index]
+		    	["0.005","0.01","0.02","0.05","0.1","0.2","0.35"][$density_index]
 		    </parameter>
 
 		    <parameter name="exec_name">
 			dsimpletest
 		    </parameter>
 
-		    <parameter name="matrix_type" mode="python" type="string">
-			["aster_matrix","RNG_Sparse_Matrix","MatrixMarket"][$type_index]
+		    <parameter name="MatrixType" mode="python" type="string">
+			["AsterMatrix","RNG SparseMatrix","MatrixMarket"][$type_index]
 		    </parameter>
 
 		    <parameter name="matrix_name1" mode="python" type="string">
-			["aster_matrix_input"][$matrix_index]
+			"aster_matrix_input"
 		    </parameter>
 
 		    <parameter name="matrix_name2" mode="python" type="string">
@@ -57,19 +57,23 @@
 		    </parameter>
 
 		    <parameter name="matrix_name3" mode="python" type="string">
-			["fidap011","fidapm29","fidapm37"][$matrix_index]
+			["fidap011","fidapm29","fidapm37","e40r0000","e40r2000","e40r5000"][$matrix_index]
 		    </parameter>
 
 		    <parameter name="matrix_name" mode="python">
-			["Matrices/$matrix_name1","$matrix_name2","Matrices/$matrix_name3.mtx"][$type_index]
+			["$matrix_name1","$matrix_name2","$matrix_name3.mtx"][$type_index]
+		    </parameter>
+
+		    <parameter name="RHS_file" mode="python">
+			["","","${matrix_name3}_rhs1.mtx"][$type_index]
 		    </parameter>
 
 		    <parameter name="exec_args" mode="python" type="string">
-			["","-t 2 -f $matrix_name2","-t 3 -f ${matrix_name3}.mtx --RHS ${matrix_name3_rhs1}.mtx"][$type_index]
+			["","-t 2 -f $matrix_name2","-t 3 -f ${matrix_name3}.mtx --RHS ${matrix_name3}_rhs1.mtx"][$type_index]
 		    </parameter>
 
-		    <parameter name="generate_matrix" mode="python" type="string">
-			"python save_sparse.py -N $matrix_size -d $density --RHS"
+		    <parameter name="generate_matrix" mode="python">
+			["","python save_sparse.py -N $matrix_size -d $density --RHS -f Matrices/$matrix_name2",""][$type_index]
 		    </parameter>
 
 		    
@@ -144,12 +148,20 @@
 		<!-- ====================  Execute  ===================== -->
 		
 		<fileset name="binaries">
+		    
+
+		    <prepare>pwd;cd compile/mumps-benchmark-full-src-0.0.1/public/mumps_benchmark-0.0.1;${generate_matrix}</prepare>
+
 		    <link rel_path_ref="internal" directory="compile/mumps-benchmark-full-src-0.0.1/public/mumps_benchmark-0.0.1">
 			${exec_name}
 		    </link>
 
-		    <link rel_path_ref="internal" directory="compile/mumps-benchmark-full-src-0.0.1/public/mumps_benchmark-0.0.1">
+		    <link rel_path_ref="internal" directory="compile/mumps-benchmark-full-src-0.0.1/public/mumps_benchmark-0.0.1/Matrices/">
 			${matrix_name}
+		    </link>
+
+		    <link rel_path_ref="internal" directory="compile/mumps-benchmark-full-src-0.0.1/public/mumps_benchmark-0.0.1/Matrices">
+			${RHS_file}
 		    </link>
 
 		    <link rel_path_ref="internal" directory="compile/mumps-benchmark-full-src-0.0.1/">
@@ -161,7 +173,7 @@
 		    <parameter name="nodes" type="int">1</parameter>
 		    <parameter name="taskspernode" mode="python" type="int">$NUMA_regions*$cores_per_NUMA_region</parameter>
 		    <parameter name="threadspertask" type="int">$OMP_array</parameter>
-		    <parameter name="executable">./${exec_name}</parameter>
+		    <parameter name="executable">./${exec_name} ${exec_args}</parameter>
 		    <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
 		    <parameter name="timelimit">00:30:00</parameter>
 		</parameterset>
@@ -184,38 +196,54 @@
 		  <use>system_parameters</use>
 		  <use>variant_set</use>
 
-		 
-
 		  <use from="platform.xml">jobfiles</use>
 		  <use from="platform.xml">execute_sub</use>
 
-	      <!-- <do>echo "${matrix_size} ${block_size} $in_file $nodes $taskspernode" >> in.txt</do> -->
 		  <do done_file="$done_file">$submit $submit_script</do>
-	      <!-- <do>cat setup.log >> job.out</do> -->
 		 	  
 		</step>
 	
 	<!-- =====================  Analyze  ===================== -->
 
-		<patternset name="pattern">
-		<pattern name="elapsed_time" type="float" unit="s">
-		  .*time:\s+${jube_pat_fp}
-		</pattern>
-		<pattern name="MUMPS" type="float" unit="Gflop/s">
-		  .*Gflops/s:\s+${jube_pat_fp}
-		</pattern>
-		<pattern name="OMP" type="int">
-		 .*OMP = \s+$jube_pat_int
-		</pattern>
-		<!-- <pattern name="compile_time" type="float" unit="s">
-		  ^Elapsed time:\s+${jube_pat_fp}
-		</pattern> -->
+		<patternset name="patternCompile">
+			<pattern name="compile_time" type="float" unit="s">
+			  .*Elapsed\s+time\s+:\s+${jube_pat_fp}
+			</pattern>
 		</patternset>
 
+		<patternset name="patternGen">
+			<pattern name="MatGen_time" type="float" unit="s">
+			  .*time:${jube_pat_fp}
+			</pattern>
+		</patternset>
 
+		<patternset name="pattern">
+			<pattern name="exec_time" type="float" unit="s">
+			  .*time:\s+${jube_pat_fp}
+			</pattern>
+			<pattern name="MUMPS" type="float" unit="Gflop/s">
+			  .*Gflops/s:\s+${jube_pat_fp}
+			</pattern>
+			<pattern name="OMP" type="int">
+			 .*OMP = \s+$jube_pat_int
+			</pattern>
+
+			<pattern name="N" type="int">
+			 .*N=\s+$jube_pat_int
+			</pattern>
+			<pattern name="NNZ" type="int">
+			 .*NNZ=\s+$jube_pat_int
+			</pattern>
+		</patternset>
+
+		
 		<analyzer name="analyse">
-		<use>pattern</use>
-		<analyse step="execute"><file>job.out</file></analyse>
+			<use>pattern</use>
+			<analyse step="execute">
+				<file use="patternCompile">setup.log</file>
+				<!-- <file use="patternGen">stdout</file> -->
+				<file use="pattern">job.out</file>
+			</analyse>
 		</analyzer>
 		<!-- =====================  Result  ===================== -->
 
@@ -225,8 +253,14 @@
 			  <column>nodes</column>
 			  <column>OMP</column>
 			  <column>tasks</column>
+			  <column>MatrixType</column>
+			  <!-- <column>matrix_name</column> -->
+			  <column>N</column>
+			  <column>NNZ</column>
 			  <column>MUMPS</column>
-			  <column format=".4f">elapsed_time</column>
+			  <column format=".5f">compile_time_last</column>
+			  <!-- <column format=".5f">MatGen_time</column> -->
+			  <column format=".5f">exec_time</column>
 			  <column>Version</column>
 			  <column>modules</column>
 			</table>
