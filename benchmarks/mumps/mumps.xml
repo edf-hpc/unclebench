@@ -33,7 +33,7 @@
 		    <parameter name="type_index">0</parameter>
 
 		    <parameter name="matrix_size" mode="python">
-		    	["10000","15000","20000","25000","30000","32000"][$matrix_index]
+		    	["10000","15000","20000","25000","30000","32000","35000","40000"][$matrix_index]
 		    </parameter>
 
 		    <parameter name="density" mode="python">
@@ -57,7 +57,7 @@
 		    </parameter>
 
 		    <parameter name="matrix_name3" mode="python" type="string">
-			["fidap011","fidapm29","fidapm37","e40r0000","e40r2000","e40r5000"][$matrix_index]
+			["fidap011","fidap035","fidapm11","fidapm29","fidapm37","e40r0000","e40r2000","e40r5000"][$matrix_index]
 		    </parameter>
 
 		    <parameter name="matrix_name" mode="python">
@@ -254,7 +254,7 @@
 			  <column>OMP</column>
 			  <column>tasks</column>
 			  <column>MatrixType</column>
-			  <!-- <column>matrix_name</column> -->
+			  <column>matrix_name</column>
 			  <column>N</column>
 			  <column>NNZ</column>
 			  <column>MUMPS</column>

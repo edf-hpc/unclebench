@@ -64,11 +64,11 @@
 	    <parameter name="variant_v">0</parameter>
 
         <parameter name="exec_fort" mode="python">
-			["ex2f","ex15f","ex52f","ex57f"][$variant_v]
+			["ex2f","ex15f","ex54f","ex14f"][$variant_v]
 	    </parameter>
 
         <parameter name="exec_c" mode="python">
-			["ex2","ex15","ex16","ex52"][$variant_v]
+			["ex2","ex3","ex16","ex43"][$variant_v]
 	    </parameter>
 
 	  	<parameter name="arch" type="string">
@@ -175,7 +175,7 @@
 	    	$NUMA_regions*$cores_per_NUMA_region
 	    </parameter>
 	    <parameter name="threadspertask" type="int">1</parameter>
-	    <parameter name="executable">./${exec_name} -m ${m} -n ${n} -log_view</parameter>
+	    <parameter name="executable">./${exec_name} -m ${m} -n ${n} -ne ${n} -log_view -random_exact_sol -mx ${m} -my ${n} -Ny $nodes -Nx $taskspernode </parameter>
 	    <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
 	    <parameter name="timelimit">00:30:00</parameter>
 	</parameterset>
