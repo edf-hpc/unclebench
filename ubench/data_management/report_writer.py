@@ -93,7 +93,7 @@ class ReportWriter:
         """
         required_fields = set(['tester','platform','date_start','date_end','dir','comment', \
                                'result'])
-        context_fields = set(['compare','compare_threshold','compare_comment','context','context_res'])
+        context_fields = set(['compare','compare_threshold','compare_comment','row_headers','column_headers'])
         report_files = {}
         session_list = []
 
@@ -155,7 +155,7 @@ class ReportWriter:
             for r_field in context_fields:
                 fields_to_find.remove(r_field)
 
-            context_in = (common_dic_report_bench['context'], common_dic_report_bench['context_res'])
+            context_in = (common_dic_report_bench['row_headers'], common_dic_report_bench['column_headers'])
             context_out = None
             date_interval_list = []
             dir_list = []
