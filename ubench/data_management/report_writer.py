@@ -295,20 +295,27 @@ class ReportWriter:
         """
         Recursive results array printing
         """
+        # When there is only one context left, line can be added to the result array.
         if len(context_list) == 1:
+            empty_line = True # If evry result found is empty do not append current_line.
             for col in columns:
                 if col in sorted(dataframe[context_list[-1]].unique()):
                     result = dataframe[dataframe[context_list[-1]]==col].result.tolist()
                     if len(result) == 1:
                         array_line.append(result[0])
+                        if result[0]:
+                            empty_line = False
                     else:
                         res_list = []
                         for res in result:
+                            if res:
+                                empty_line = False
                             res_list.append(res)
                         array_line.append(res_list)
                 else:
                     array_line.append("N/A")
-            perf_array.append(array_line)
+            if not empty_line:
+                perf_array.append(array_line)
             return
         try:
             sorted_ctx = sorted(int(x) for x in dataframe[context_list[0]].unique().tolist())
