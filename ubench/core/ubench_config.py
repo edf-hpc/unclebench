@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 ##############################################################################
 #  This file is part of the UncleBench benchmarking tool.                    #
@@ -30,12 +30,12 @@ import pwd
 # to configparser for PEP 8 compliance.
 from sys import version_info
 if version_info.major == 2:
-    import configparser as configparser
+    import ConfigParser as configparser
 else:
     import configparser as configparser
 
 class UbenchConfig:
-    
+
     def __init__(self):
         """
            Reads PATH variables    ╭   ·system environment (highest priority)
@@ -45,13 +45,13 @@ class UbenchConfig:
         """
         # settings_source will store the origin of each setting.
         self.settings_source = dict()
-        
-        self.var = [('INSTALL_DIR','UBENCH_PLUGIN_DIR'), ('INSTALL_DIR','UBENCH_PLATFORM_DIR'), 
-               ('INSTALL_DIR','UBENCH_BENCHMARK_DIR'), ('INSTALL_DIR','UBENCH_CONF_DIR'), 
+
+        self.var = [('INSTALL_DIR','UBENCH_PLUGIN_DIR'), ('INSTALL_DIR','UBENCH_PLATFORM_DIR'),
+               ('INSTALL_DIR','UBENCH_BENCHMARK_DIR'), ('INSTALL_DIR','UBENCH_CONF_DIR'),
                ('INSTALL_DIR','UBENCH_CSS_PATH'), ('INSTALL_DIR','UBENCH_TEMPLATES_PATH'),
-               ('WORK_DIR','UBENCH_RUN_DIR_BENCH'), ('WORK_DIR','UBENCH_RESOURCE_DIR'), 
+               ('WORK_DIR','UBENCH_RUN_DIR_BENCH'), ('WORK_DIR','UBENCH_RESOURCE_DIR'),
                ('WORK_DIR','UBENCH_REPORT_DIR')]
-        
+
         # the order of the following 4 calls define implicitly the settings priority.
         # environment defined settings will have highest priority.
         self.init_default('package')
@@ -60,10 +60,10 @@ class UbenchConfig:
         self.init_environ('environment')
         self.set_environment_vars()
 
-        
+
     def init_environ(self, origin):
         """ Init path with ENVIRONMENT settings """
-        
+
         # Install directories
         if os.environ.get('UBENCH_PLUGIN_DIR') is not None:
             self.plugin_dir=os.environ.get('UBENCH_PLUGIN_DIR')
@@ -98,7 +98,7 @@ class UbenchConfig:
 
     def init_config_local(self, origin):
         """ Init path with LOCAL settings """
-        
+
         config = configparser.ConfigParser()
         f = config.read('' + pwd.getpwuid(os.getuid()).pw_dir + '/.unclebench/ubench.conf')
         if len(f) > 0:
@@ -107,7 +107,7 @@ class UbenchConfig:
 
     def init_config_sys(self, origin):
         """ Init path with SYSTEM settings """
-        
+
         config = configparser.ConfigParser()
         f = config.read('/etc/unclebench/ubench.conf')
         if len(f) > 0:
@@ -116,19 +116,19 @@ class UbenchConfig:
 
     def init_default(self, origin):
         """ Init path with PACKAGE settings """
-        
+
         # Install directories
         self.plugin_dir='/usr/share/unclebench/lib/plugins'
         self.settings_source['UBENCH_PLUGIN_DIR'] = {'origin' : origin, 'val' : self.plugin_dir}
         self.platform_dir='/usr/share/unclebench/platform'
         self.settings_source['UBENCH_PLATFORM_DIR'] = {'origin' : origin, 'val' : self.platform_dir}
         #os.environ['UBENCH_PLATFORM_DIR']=self.platform_dir
-        
+
         self.benchmark_dir='/usr/share/unclebench/benchmarks'
         self.settings_source['UBENCH_BENCHMARK_DIR'] = {'origin' : origin, 'val' : self.benchmark_dir}
         #os.environ['UBENCH_BENCHMARK_DIR']=self.benchmark_dir
-        
-        self.conf_dir='/etc/unclebench' 
+
+        self.conf_dir='/etc/unclebench'
         self.settings_source['UBENCH_CONF_DIR'] = {'origin' : origin, 'val' : self.conf_dir}
         self.stylesheet_path='/usr/share/unclebench/css/asciidoctor-bench-report.css'
         self.settings_source['UBENCH_CSS_PATH'] = {'origin' : origin, 'val' : self.stylesheet_path}
@@ -148,12 +148,12 @@ class UbenchConfig:
             self.resource_dir=os.environ.get('SCRATCHDIR') + '/ubench/resource'
         self.settings_source['UBENCH_RESOURCE_DIR'] = {'origin' : origin, 'val' : self.resource_dir}
         #os.environ['UBENCH_RESOURCE_DIR']=self.resource_dir
-        
+
         self.report_dir=self.run_dir+'/reports'
         self.settings_source['UBENCH_REPORT_DIR'] = {'origin' : origin, 'val' : self.report_dir}
 
 
-        
+
     def load_config(self, config_parser, origin):
         """ General procedure used to load variables found in ubench.conf
             and to update `settings_source` dictionary accordingly.
@@ -189,25 +189,25 @@ class UbenchConfig:
             self.report_dir = config_parser.get(section, 'UBENCH_REPORT_DIR')
             self.settings_source['UBENCH_REPORT_DIR'] = {'origin' : origin, 'val' : self.report_dir}
 
-    
+
     def set_environment_vars(self):
         """ Sets environment variables if         UBENCH_PLATFORM_DIR
             they were not previously set:         UBENCH_BENCHMARK_DIR
-                                                  UBENCH_RESOURCE_DIR   
+                                                  UBENCH_RESOURCE_DIR
         """
-        
+
         if os.environ.get('UBENCH_PLATFORM_DIR') is None:
             os.environ['UBENCH_PLATFORM_DIR'] = self.settings_source['UBENCH_PLATFORM_DIR']['val']
-        
+
         if os.environ.get('UBENCH_BENCHMARK_DIR') is None:
             os.environ['UBENCH_BENCHMARK_DIR'] = self.settings_source['UBENCH_BENCHMARK_DIR']['val']
-        
+
         if os.environ.get('UBENCH_RESOURCE_DIR') is None:
             os.environ['UBENCH_RESOURCE_DIR'] = self.settings_source['UBENCH_RESOURCE_DIR']['val']
 
 
     def print_config(self, pad = 30):
-        """ Procedure used to display the origin of the settings loaded 
+        """ Procedure used to display the origin of the settings loaded
             and which can be invoked at the command line using `-log` flag """
 
         max_var = max([len(i) for i in list(self.settings_source.keys())])
@@ -216,15 +216,15 @@ class UbenchConfig:
         pad_var = max_var + 10
         pad_origin = max_origin + 10
         line_length = pad_var + pad_origin + max_val + 3
-        
-        print(('\n {:<{pad_var}} {:<{pad_origin}} {}'.format('Variable', 'Origin', 'Value', pad_var = pad_var, pad_origin = pad_origin)))
-        print(('─'*line_length))
+
+        print('\n {:<{pad_var}} {:<{pad_origin}} {}'.format('Variable', 'Origin', 'Value', pad_var = pad_var, pad_origin = pad_origin))
+        print('─'*line_length)
         for i in self.settings_source:
-            print((' {:<{pad_var}} {:<{pad_origin}} {}'.format(i, self.settings_source[i]['origin'], self.settings_source[i]['val'], pad_var = pad_var, pad_origin = pad_origin)))
-        print(('─'*line_length))
+            print(' {:<{pad_var}} {:<{pad_origin}} {}'.format(i, self.settings_source[i]['origin'], self.settings_source[i]['val'], pad_var = pad_var, pad_origin = pad_origin))
+        print('─'*line_length)
         print('')
 
-        
+
     def get_platform_list(self):
         """ Get list of available platforms """
         platform_list=[]
@@ -273,7 +273,7 @@ class UbenchConfig:
                   tree = ET.parse(os.path.join(self.benchmark_dir,bench_dir,filename))
               except ET.ParseError:
                   continue
-                  
+
               root = tree.getroot()
               if self.find_rec(root,'step','execute'):
                   execute_step=True
