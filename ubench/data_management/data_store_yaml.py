@@ -18,7 +18,7 @@
 #                                                                            #
 ##############################################################################
 
-import data_store
+from . import data_store
 import yaml
 from collections import OrderedDict
 

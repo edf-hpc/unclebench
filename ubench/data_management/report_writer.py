@@ -52,7 +52,7 @@ class ReportWriter:
             try:
                 self.metadata = yaml.load(mfile)
             except Exception as e:
-                print "Cannot load metadata file:"+str(e)
+                print("Cannot load metadata file:"+str(e))
 
     @staticmethod
     def _read_date(date_str):
@@ -73,7 +73,7 @@ class ReportWriter:
         """
         Translate a single element dictionnary to a two element tuple key, value
         """
-        return one_el_dictionnary.items()[0]
+        return list(one_el_dictionnary.items())[0]
 
     @staticmethod
     def _get_default_dic(main_dic):
@@ -109,7 +109,7 @@ class ReportWriter:
         global_parameters = set(['author','title','version','introduction','conclusion'])
         for gp_key in global_parameters:
             if not gp_key:
-                print("Warning: {} field is missing",gp_key)
+                print(("Warning: {} field is missing",gp_key))
                 dic_report_main[gp_key] = ''
             else:
                 dic_report_main[gp_key] = self.metadata[gp_key]
@@ -120,7 +120,7 @@ class ReportWriter:
             try:
                 os.makedirs(output_dir)
             except OSError:
-                print("Error: cannot mkdir {}".format(output_dir))
+                print(("Error: cannot mkdir {}".format(output_dir)))
                 return
 
         # Parse benchmarks
@@ -149,7 +149,7 @@ class ReportWriter:
                 elif r_field in dic_contexts_default:
                     common_dic_report_bench[r_field] = dic_contexts_default[r_field]
                 else:
-                    print("Please precise {} for benchmark {}".format(r_field, bench_name))
+                    print(("Please precise {} for benchmark {}".format(r_field, bench_name)))
                     return
 
             for r_field in context_fields:
@@ -196,7 +196,7 @@ class ReportWriter:
                     elif r_field in dic_sessions_default:
                         dic_report_bench[r_field] = dic_sessions_default[r_field]
                     else:
-                        print("Please precise {} for benchmark {}".format(r_field, bench_name))
+                        print(("Please precise {} for benchmark {}".format(r_field, bench_name)))
                         return
 
                 # Get performance array
@@ -212,8 +212,8 @@ class ReportWriter:
                                             date_interval, context_in)
 
                 if bench_dataframe.empty:
-                    print("Error : no value found for session {} and benchmark {}".\
-                          format(session,bench_name))
+                    print(("Error : no value found for session {} and benchmark {}".\
+                          format(session,bench_name)))
                     return
 
                 perf_array_list, sub_bench_list \
@@ -227,7 +227,7 @@ class ReportWriter:
                     dic_report_bench['cmdline'] = list(set(run_metadata['cmdline']))
                 else:
                     dic_report_bench['cmdline'] = ["N/A"]
-                dic_report_bench['perf_array_list'] = zip(perf_array_list, sub_bench_list)
+                dic_report_bench['perf_array_list'] = list(zip(perf_array_list, sub_bench_list))
                 dic_report_bench['sub_bench_list'] = sub_bench_list
                 dic_report_bench['ncols'] = len(perf_array_list[-1][-1])
 
@@ -271,7 +271,7 @@ class ReportWriter:
             for df_comp in c_list:
                 df_comp.drop(sub_bench, 1, inplace=True)
 
-        dic_compare['dataframe_list'] = zip(c_list,sub_bench_list)
+        dic_compare['dataframe_list'] = list(zip(c_list,sub_bench_list))
         dic_compare['ncols'] = len(c_list[-1].columns)
         out_filename = bench_name+"_comparison.asc"
 

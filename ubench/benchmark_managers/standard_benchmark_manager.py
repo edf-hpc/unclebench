@@ -30,13 +30,12 @@ import ubench.core.ubench_config as uconfig
 import ubench.benchmark_managers.benchmark_manager as benm
 from shutil import copy,copytree
 
-class StandardBenchmarkManager(benm.BenchmarkManager):
+class StandardBenchmarkManager(benm.BenchmarkManager, metaclass=abc.ABCMeta):
     """
     Abstract class that manages standard benchmarks.
     get_benchmarking_api method must be implemented by subclass to set
     a benchmarking API.
     """
-    __metaclass__ = abc.ABCMeta
 
 
     def __init__(self, benchmark_name, platform, uconf):
@@ -84,7 +83,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             try:
                 os.makedirs(parent_run_dir)
             except Exception as e:
-                print 'Error while making directory {0} : {1}'.format(parent_run_dir, str(e))
+                print('Error while making directory {0} : {1}'.format(parent_run_dir, str(e)))
 
         src_dir = self.benchmark_src_path
         dest_dir = self.benchmark_path
@@ -92,9 +91,9 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         try:
             copytree(src_dir, dest_dir, symlinks=True)
         except OSError as oserror:
-            print '---- '+self.benchmark_name+\
-                ' description files are already present in run directory and will be overwritten.'
-        print '---- Copying '+self.benchmark_src_path+' to '+self.benchmark_path
+            print('---- '+self.benchmark_name+\
+                ' description files are already present in run directory and will be overwritten.')
+        print('---- Copying '+self.benchmark_src_path+' to '+self.benchmark_path)
 
         for f in os.listdir(src_dir):
             copy(os.path.join(src_dir, f), dest_dir)
@@ -128,33 +127,33 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
             self.benchmarking_api.set_custom_nodes(nnodes_list, nodes_id_list)
           except ValueError:
-            print 'Custom node configuration is not valid.'
+            print('Custom node configuration is not valid.')
             return
           except IndexError:
-            print 'Custom node configuration is not valid.'
+            print('Custom node configuration is not valid.')
             return
 
         if opt_dict['execute']:
           self.benchmarking_api.set_execution_only_mode()
 
 
-        print '---- Launching benchmark in background'
+        print('---- Launching benchmark in background')
 
         try:
           run_dir, ID = self.benchmarking_api.run(platform)
         except RuntimeError as rerror:
-          print '---- Error launching benchmark :'
-          print str(rerror)
+          print('---- Error launching benchmark :')
+          print(str(rerror))
           return
         except OSError:
-          print
+          print()
           return
 
-        print '---- benchmark run directory :', run_dir
+        print('---- benchmark run directory :', run_dir)
         logfile_path = os.path.join(run_dir, 'ubench.log')
         date = time.strftime("%c")
         flattened_w_list = ''
-        if opt_dict.has_key('w_list'):
+        if 'w_list' in opt_dict:
           for nnodes, nodes_id in w_list:
             if nodes_id:
               flattened_w_list += str(nodes_id)+' '
@@ -170,11 +169,11 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             logfile.write('Date            : {0} \n'.format(date))
             logfile.write('Run_directory   : {0} \n'.format(run_dir))
             logfile.write('Nodes           : {0} \n'.format(flattened_w_list))
-            if opt_dict.has_key('raw_cli'):
+            if 'raw_cli' in opt_dict:
               logfile.write('cmdline         : {0} \n'.format(' '.join(opt_dict['raw_cli'])))
 
-        print '---- Use the following command to follow benchmark progress :'\
-            +'    " ubench log -p {0} -b {1} -i {2}"'.format(platform, self.benchmark_name, ID)
+        print('---- Use the following command to follow benchmark progress :'\
+            +'    " ubench log -p {0} -b {1} -i {2}"'.format(platform, self.benchmark_name, ID))
 
     def list_parameters(self, default_values):
         """
@@ -182,18 +181,18 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         :param default_values: If true, tries to interpret parameters.
         :type default_values: boolean
         """
-        print self.benchmark_src_path
+        print(self.benchmark_src_path)
         if not self.benchmarking_api:
             self.benchmarking_api = self.get_benchmarking_api()
         all_parameters = self.benchmarking_api.list_parameters(default_values)
         for type_param in all_parameters:
-            print "\n"
+            print("\n")
             if default_values:
-                print "DEFAULT PARAMETER VALUES\n"
-            print type_param + " parameters"
-            print "-----------------------------------------------"
+                print("DEFAULT PARAMETER VALUES\n")
+            print(type_param + " parameters")
+            print("-----------------------------------------------")
             for parameter, value in all_parameters[type_param]:
-                print parameter.rjust(20)+' : '+value
+                print(parameter.rjust(20)+' : '+value)
 
     def set_parameter(self, dict_options):
         """
@@ -205,7 +204,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             self.benchmarking_api = self.get_benchmarking_api()
         modified_params = self.benchmarking_api.set_parameter(dict_options)
         for elem in modified_params:
-            print '---- {0} parameter was modified from {1} to {2} for this run'.format(*elem)
+            print('---- {0} parameter was modified from {1} to {2} for this run'.format(*elem))
         return
 
 #===============      Analyze part   ===============#
@@ -217,10 +216,10 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         try:
             if not self.benchmarking_api:
                 self.benchmarking_api = self.get_benchmarking_api()
-            print self.benchmarking_api.get_log(idb)
+            print(self.benchmarking_api.get_log(idb))
         except IOError as io_error:
-            print '---- Error: cannot find benchmark logs :'
-            print str(io_error)
+            print('---- Error: cannot find benchmark logs :')
+            print(str(io_error))
             return
 
     def list_runs(self):
@@ -254,44 +253,44 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                         list_data[nbenchs][field[0]] = field[1].strip()
 
         if not list_data:
-            print '----no benchmark run found for : {0}'.format(self.benchmark_name)
+            print('----no benchmark run found for : {0}'.format(self.benchmark_name))
 
         # Print dictionnary with a table layout.
 
         separating_line = ''
-        columns = list(set([c for x in list_data.keys() for c in list_data[x].keys()]))
+        columns = list(set([c for x in list(list_data.keys()) for c in list(list_data[x].keys())]))
 
         max_dict = {k:0 for k in columns}
 
-        for data in list_data.values():
+        for data in list(list_data.values()):
             max_dict.update({k:max([v, len(data[k])])\
-                             for k, v in max_dict.items() if data.has_key(k)})
+                             for k, v in list(max_dict.items()) if k in data})
 
         if 'Platform' in columns:
             columns.remove('Platform')
         if 'Benchmark_name' in columns:
             columns.remove('Benchmark_name')
 
-        if len(list_data.values()) > 0:
-            header = list_data.values()[0]
-            print "\nPlatform: {0} \nBenchmark: {1}\n".\
-                format(header['Platform'], header['Benchmark_name'])
+        if len(list(list_data.values())) > 0:
+            header = list(list_data.values())[0]
+            print("\nPlatform: {0} \nBenchmark: {1}\n".\
+                format(header['Platform'], header['Benchmark_name']))
 
         for column in columns:
             sys.stdout.write(column.ljust(max_dict[column])+' | ')
             separating_line += '-'*(max_dict[column]+2)
 
         separating_line += '-'*(len(columns)-1)
-        print ''
-        print separating_line
+        print('')
+        print(separating_line)
 
-        for bench in list_data.values():
+        for bench in list(list_data.values()):
             for column in columns:
-                if bench.has_key(column):
+                if column in bench:
                     sys.stdout.write(bench[column].ljust(max_dict[column])+' | ')
                 else:
                     sys.stdout.write(''.ljust(max_dict[column])+' | ')
-            print ''
+            print('')
 
 
     def analyse(self, benchmark_id):
@@ -357,17 +356,17 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                         max_width[col] = max(max_width[col], len(elem))
                     col += 1
 
-            print ''
+            print('')
             for row in self.result_array:
                 col = 0
                 for elem in row[:-1]:
-                    print str(elem).ljust(max_width[col]+1),
+                    print(str(elem).ljust(max_width[col]+1), end=' ')
                     col += 1
                 if row[-1]:
-                    print str(row[-1]).strip()
+                    print(str(row[-1]).strip())
                 else:
-                    print ''
-            print ''
+                    print('')
+            print('')
 
 
     def print_transposed_result_array(self, output_file=None):

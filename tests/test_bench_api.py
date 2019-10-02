@@ -61,7 +61,7 @@ def test_load_bench_file():
 
 def test_out_xml_path(init_env):
   benchmarking_api=jba.JubeBenchmarkingAPI("simple","")
-  print init_env.config['run_path']
+  print(init_env.config['run_path'])
   assert benchmarking_api.jube_xml_files.bench_xml_path_out == os.path.join(init_env.config['run_path'],"simple")
 
 def test_xml_get_result_file(init_env):

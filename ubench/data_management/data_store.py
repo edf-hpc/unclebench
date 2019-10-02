@@ -23,11 +23,10 @@ import datetime
 import pandas
 import os
 
-class DataStore():
+class DataStore(metaclass=abc.ABCMeta):
     """
     Load, write, extract data from unclebench performance results data files.
     """
-    __metaclass__ = abc.ABCMeta
 
     def __init__(self):
         pass
@@ -120,7 +119,7 @@ class DataStore():
         if context[0] and context[1]:
             for ctx in context[0]:
                 if ctx in [context[1]]:
-                    print("Error : {} is in both column and row contexts".format(ctx))
+                    print(("Error : {} is in both column and row contexts".format(ctx)))
                     return({}, pandas.DataFrame(), (None,None), None)
 
         # Fill report_info
@@ -163,8 +162,8 @@ class DataStore():
                                 report_info[column] = []
                             report_info[column].append(value[column])
                         else:
-                            print("Error, context {} does not exist for benchmark {}"\
-                                  .format(column,benchmark_name))
+                            print(("Error, context {} does not exist for benchmark {}"\
+                                  .format(column,benchmark_name)))
                             exit
 
 
@@ -188,7 +187,7 @@ class DataStore():
         concatenated_metadata = {}
 
         if not os.path.isdir(data_dir):
-            print("Cannot find "+data_dir+" directory")
+            print(("Cannot find "+data_dir+" directory"))
             exit(1)
 
         for (dirpath, dirnames, filenames) in os.walk(data_dir):
@@ -204,24 +203,24 @@ class DataStore():
                 else:
                     concatenated_panda = pandas.concat([concatenated_panda, current_panda])
 
-                for field, value in metadata.items():
+                for field, value in list(metadata.items()):
                     if not field in concatenated_metadata:
                         concatenated_metadata[field] = []
                     concatenated_metadata[field].append(value)
 
                 if (result_context)and(result_context!=current_context):
-                    print "Different result files structure for benchmark {}.".\
-                        format(benchmark_name)
-                    print "Different context found : {} and {}".\
-                        format(str(current_context),str(result_context))
+                    print("Different result files structure for benchmark {}.".\
+                        format(benchmark_name))
+                    print("Different context found : {} and {}".\
+                        format(str(current_context),str(result_context)))
                 else:
                     result_context=current_context
 
                 if (sub_bench)and(sub_bench != current_sub_bench):
-                    print "Different result files structure for benchmark {}.".\
-                        format(benchmark_name)
-                    print "Two different result_bench fields : {} and {}".\
-                        format(current_sub_bench, sub_bench)
+                    print("Different result files structure for benchmark {}.".\
+                        format(benchmark_name))
+                    print("Two different result_bench fields : {} and {}".\
+                        format(current_sub_bench, sub_bench))
                 else:
                     sub_bench=current_sub_bench
 

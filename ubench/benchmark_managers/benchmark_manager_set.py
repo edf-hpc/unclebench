@@ -95,10 +95,10 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
             try:
                 bench_m.print_log(idb)
             except OSError as ose:
-                print '    No run was found for '+\
-                    '{0} benchmark with id {1}: '.format(bench_m.benchmark_name, str(idb))
-                print '    '+str(ose)
-        print ''
+                print('    No run was found for '+\
+                    '{0} benchmark with id {1}: '.format(bench_m.benchmark_name, str(idb)))
+                print('    '+str(ose))
+        print('')
 
 
     def list_runs(self):
@@ -107,21 +107,21 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
             try:
                 bench_m.list_runs()
             except OSError as ose:
-                print '    No run was found for {0} benchmark :'.\
-                    format(bench_m.benchmark_name)
-                print '    '+str(ose)
-            print ''
+                print('    No run was found for {0} benchmark :'.\
+                    format(bench_m.benchmark_name))
+                print('    '+str(ose))
+            print('')
 
     def analyse(self, benchmark_id):
         """ Analyse benchmark results
         :param benchmark_id: id of the benchmark to analyze
         :type benchmark_id: int"""
         for bench_m in self.benchmark_manager_list:
-            print '----analysing {0} results'.format(bench_m.benchmark_name)
+            print('----analysing {0} results'.format(bench_m.benchmark_name))
             try:
                 bench_m.analyse(benchmark_id)
             except IOError:
-                print '----no {0} run found'.format(bench_m.benchmark_name)
+                print('----no {0} run found'.format(bench_m.benchmark_name))
 
     def analyse_last(self):
         """ Analyse last benchmark results """
@@ -135,13 +135,13 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
         :param benchmark_id: id of the benchmark to analyze
         :type benchmark_id: int"""
         for bench_m in self.benchmark_manager_list:
-            print '----extracting results'
-            print '----benchmark results path: {0}'.format(bench_m.benchmark_results_path)
+            print('----extracting results')
+            print('----benchmark results path: {0}'.format(bench_m.benchmark_results_path))
             try:
                 bench_m.extract_results(benchmark_id)
             except IOError:
-                print '----no result analyzer found, only'+\
-                    ' raw results will be copied to the report directory'
+                print('----no result analyzer found, only'+\
+                    ' raw results will be copied to the report directory')
 
     def extract_results_last(self):
         """ Get results from benchmarks last runs"""

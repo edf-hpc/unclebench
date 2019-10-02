@@ -30,4 +30,4 @@ def get_bench_multisource_git(bench):
 
 init_env()
 get_bench_multisource_git("aster")
-print "Files were generated in {0}".format(test_env.config['run_path'])
+print("Files were generated in {0}".format(test_env.config['run_path']))

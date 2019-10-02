@@ -30,7 +30,7 @@ import pwd
 # to configparser for PEP 8 compliance.
 from sys import version_info
 if version_info.major == 2:
-    import ConfigParser as configparser
+    import configparser as configparser
 else:
     import configparser as configparser
 
@@ -100,7 +100,7 @@ class UbenchConfig:
         """ Init path with LOCAL settings """
         
         config = configparser.ConfigParser()
-        f = config.read(u'' + pwd.getpwuid(os.getuid()).pw_dir + '/.unclebench/ubench.conf')
+        f = config.read('' + pwd.getpwuid(os.getuid()).pw_dir + '/.unclebench/ubench.conf')
         if len(f) > 0:
             self.load_config(config, origin)
 
@@ -109,7 +109,7 @@ class UbenchConfig:
         """ Init path with SYSTEM settings """
         
         config = configparser.ConfigParser()
-        f = config.read(u'/etc/unclebench/ubench.conf')
+        f = config.read('/etc/unclebench/ubench.conf')
         if len(f) > 0:
             self.load_config(config, origin)
 
@@ -210,18 +210,18 @@ class UbenchConfig:
         """ Procedure used to display the origin of the settings loaded 
             and which can be invoked at the command line using `-log` flag """
 
-        max_var = max([len(i) for i in self.settings_source.keys()])
+        max_var = max([len(i) for i in list(self.settings_source.keys())])
         max_origin = max([len(k['origin']) for k in list(self.settings_source.values())])
         max_val = max([len(k['val']) for k in list(self.settings_source.values())])
         pad_var = max_var + 10
         pad_origin = max_origin + 10
         line_length = pad_var + pad_origin + max_val + 3
         
-        print('\n {:<{pad_var}} {:<{pad_origin}} {}'.format('Variable', 'Origin', 'Value', pad_var = pad_var, pad_origin = pad_origin))
-        print('─'*line_length)
+        print(('\n {:<{pad_var}} {:<{pad_origin}} {}'.format('Variable', 'Origin', 'Value', pad_var = pad_var, pad_origin = pad_origin)))
+        print(('─'*line_length))
         for i in self.settings_source:
-            print(' {:<{pad_var}} {:<{pad_origin}} {}'.format(i, self.settings_source[i]['origin'], self.settings_source[i]['val'], pad_var = pad_var, pad_origin = pad_origin))
-        print('─'*line_length)
+            print((' {:<{pad_var}} {:<{pad_origin}} {}'.format(i, self.settings_source[i]['origin'], self.settings_source[i]['val'], pad_var = pad_var, pad_origin = pad_origin)))
+        print(('─'*line_length))
         print('')
 
         

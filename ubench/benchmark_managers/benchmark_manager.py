@@ -4,11 +4,10 @@ Define BenchmarkManager abstract class.
 
 import abc
 
-class BenchmarkManager():
+class BenchmarkManager(metaclass=abc.ABCMeta):
     """
     Abtract class that defines the interface to manage a benchmark.
     """
-    __metaclass__ = abc.ABCMeta
 
 
     @abc.abstractmethod

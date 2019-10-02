@@ -19,7 +19,7 @@ class Tempbench:
 
 
   def create_dir_structure(self):
-    for name, path in self.config.iteritems():
+    for name, path in self.config.items():
       if not os.path.exists(path):
         os.makedirs(path)
 
@@ -39,6 +39,6 @@ class Tempbench:
 
   def destroy_dir_structure(self):
     self.config.pop('bench_input', None)
-    for name, path in self.config.iteritems():
+    for name, path in self.config.items():
       if os.path.exists(path):
         shutil.rmtree(path)

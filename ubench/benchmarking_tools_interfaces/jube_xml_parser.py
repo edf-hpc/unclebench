@@ -39,19 +39,19 @@ class JubeXMLParser():
     # I have to do a tuple here
     parser = ET.XMLParser(remove_blank_text = True)
     self.bench_xml = { xml_file : ET.parse(os.path.join(self.bench_xml_path_in,xml_file),parser)  for xml_file in bench_xml_files}
-    self.bench_xml_root = [bench_xml.getroot() for bench_xml in self.bench_xml.values()]
+    self.bench_xml_root = [bench_xml.getroot() for bench_xml in list(self.bench_xml.values())]
     self.platforms_dir = platforms_dir
     self.platform_dir = tempfile.mkdtemp()
     self.platform_xml = []
     self.config_xml = ""
 
   def write_bench_xml(self):
-    for name,xml_file in self.bench_xml.iteritems():
+    for name,xml_file in self.bench_xml.items():
       xml_file.write(os.path.join(self.bench_xml_path_out,name),pretty_print=True)
     return True
 
   def write_platform_xml(self):
-    for name,p_xml in self.platform_xml.iteritems():
+    for name,p_xml in self.platform_xml.items():
       p_xml.write(os.path.join(self.platform_dir,name))
 
   def delete_platform_dir(self):
@@ -219,19 +219,19 @@ class JubeXMLParser():
       protocol = source['protocol']
       for file_source in source['files']:
         if name:
-          if not protocol_config.has_key(name):
+          if name not in protocol_config:
                 protocol_config[name] = []
           protocol_config[name].append(os.path.basename(file_source))
 
-      if source.has_key('revision'):
+      if 'revision' in source:
         for revision_source in source['revision']:
           if name:
             name_revision=name+"_revision"
-            if not protocol_config.has_key(name_revision):
+            if name_revision not in protocol_config:
               protocol_config[name_revision] = []
             protocol_config[name_revision].append(revision_source)
 
-      if bench_config.has_key(protocol):
+      if protocol in bench_config:
         bench_config[protocol].update(protocol_config)
       else:
         bench_config[protocol] = protocol_config
@@ -255,7 +255,7 @@ class JubeXMLParser():
     for b_xml in self.bench_xml_root:
       for parameter_node in b_xml.getiterator('parameter'):
         load_param = parameter_node.get('name')
-        if  load_param in dict_options.keys():
+        if  load_param in list(dict_options.keys()):
           parameters_list.append((load_param,
                                   parameter_node.text.strip(),
                                   str(dict_options[load_param])))
@@ -266,10 +266,10 @@ class JubeXMLParser():
 
   def set_params_platform(self,dict_options):
     parameters_list=[]
-    for p_xml in self.platform_xml.values():
+    for p_xml in list(self.platform_xml.values()):
       for parameter_node in p_xml.getroot().getiterator('parameter'):
         load_param = parameter_node.get('name')
-        if  load_param in dict_options.keys():
+        if  load_param in list(dict_options.keys()):
           parameters_list.append((load_param,
                                   parameter_node.text.strip(),
                                   str(dict_options[load_param])))
@@ -392,14 +392,14 @@ class JubeXMLParser():
 
         benchmark.insert(len(benchmark.getchildren()),debug_result)
 
-        for protocol in bench_config.keys():
+        for protocol in list(bench_config.keys()):
           # add another level
 
-          for name,options in bench_config[protocol].iteritems():
+          for name,options in bench_config[protocol].items():
             # if '-revision' in name:
             # Handling several revision
               # new_name = name.replace('-revision','')
-            num_items = bench_config[protocol].keys()
+            num_items = list(bench_config[protocol].keys())
 
             if ( protocol == 'svn' or protocol=='git') and not '_revision' in name and len(num_items)>1:
               name_id = name+'_id'
@@ -426,7 +426,7 @@ class JubeXMLParser():
 
 
           # create link for benchmark directory
-          for name,options in bench_config[protocol].iteritems():
+          for name,options in bench_config[protocol].items():
             if not '_revision' in name:
               link = ET.SubElement(files_element,'link',attrib={'rel_path_ref': 'external'})
               if protocol == 'svn' or protocol == 'git':
@@ -501,11 +501,11 @@ class JubeXMLParser():
 
         custom_id=ET.SubElement(custom_element,'parameter',\
                                   attrib={'name':'custom_id'})
-        custom_id.text=(',').join(map(str,range(0,len(custom_nodes_numbers))))
+        custom_id.text=(',').join(map(str,list(range(0,len(custom_nodes_numbers)))))
 
         custom_nodes=ET.SubElement(custom_element,'parameter',\
                                      attrib={'name':'custom_nodes','mode':'python','type':'int'})
-        custom_nodes.text=str(map(int,custom_nodes_numbers))+'[$custom_id]'
+        custom_nodes.text=str(list(map(int,custom_nodes_numbers)))+'[$custom_id]'
 
         if custom_nodes_ids:
           custom_nodes_id=ET.SubElement(custom_element,'parameter',\
@@ -690,7 +690,7 @@ class JubeXMLParser():
   def get_params_platform(self,platform_name):
     parameters_list=[]
     self.load_platform_xml(platform_name)
-    for platform_xml in self.platform_xml.values():
+    for platform_xml in list(self.platform_xml.values()):
       for parameter_node in platform_xml.getiterator('parameter'):
         if parameter_node.text:
           parameters_list.append((parameter_node.get('name'),parameter_node.text.strip()))

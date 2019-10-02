@@ -23,12 +23,12 @@ import os
 import re
 import sys
 from subprocess import call, Popen, PIPE
-import benchmarking_api as bapi
+from . import benchmarking_api as bapi
 import time
 import csv
 import ubench.core.ubench_config as uconfig
 import ubench.data_management.data_store_yaml as data_store_yaml
-import jube_xml_parser
+from . import jube_xml_parser
 import tempfile
 
 try :
@@ -248,7 +248,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         cmd_output.close()
 
-        for key, value in results.items():
+        for key, value in list(results.items()):
           result_file_path = os.path.join(benchmark_rundir,"result/ubench_results.dat")
 
           # we add the part of results which corresponds to a given execute
@@ -561,7 +561,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     parsed_data = []
     while variable_hash:
       temp_hash = {}
-      for k,v in variable_hash.iteritems():
+      for k,v in variable_hash.items():
         python_exp = re.sub(parameter_regex_sub,self.val_repl,v)
         if not re.findall(parameter_regex_find,python_exp):
           try:
@@ -579,7 +579,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
   def val_repl(self,matchobj):
     match_variable_name = re.match('^\.*\$(\w+)\.*|^\.*\$\{(\w+)\\}\.*',matchobj.group(0)).group(1,2)
     name = [x for x in match_variable_name if x is not None ][0]
-    if self.jube_const_params.has_key(name):
+    if name in self.jube_const_params:
       return str(self.jube_const_params[name])
     else:
       return matchobj.group(0)

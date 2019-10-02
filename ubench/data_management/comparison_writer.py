@@ -40,7 +40,7 @@ class ComparisonWriter:
             print("")
             with pandas.option_context('display.max_rows', None, 'display.max_columns', \
                                       None,'expand_frame_repr', False):
-                print(dframe.to_string(index=False))
+                print((dframe.to_string(index=False)))
 
     def compare_pandas(self, pandas_list, context, session_list=None):
         """
@@ -51,10 +51,10 @@ class ComparisonWriter:
         # Check context
         for key_f in context[0]:
             if key_f not in panda_ref:
-                print('    '+str(key_f)+\
-                      ' is not a valid context field, valid context fields for given directories are:')
+                print(('    '+str(key_f)+\
+                      ' is not a valid context field, valid context fields for given directories are:'))
                 for cfield in panda_ref:
-                    print('     - '+str(cfield))
+                    print(('     - '+str(cfield)))
                     return "No result"
 
         result_columns_pre_merge = [ x for x in list(panda_ref.columns.values) if x not in context[0]]
@@ -143,7 +143,7 @@ class ComparisonWriter:
             for t in types:
                 try:
                     return t(value)
-                except ValueError, TypeError:
+                except ValueError as TypeError:
                     continue
             return default
         return convert

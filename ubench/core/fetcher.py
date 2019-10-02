@@ -18,8 +18,8 @@
 #  along with UncleBench.  If not, see <http://www.gnu.org/licenses/>.       #
 #                                                                            #
 ##############################################################################
-import getpass, time, os, urllib2
-from urlparse import urlparse,urljoin
+import getpass, time, os, urllib.request, urllib.error, urllib.parse
+from urllib.parse import urlparse,urljoin
 from subprocess import Popen,PIPE
 import shutil
 
@@ -33,9 +33,9 @@ class Fetcher():
 
 
   def get_credentials(self):
-    print 'Enter password for user: ' + self.login
+    print('Enter password for user: ' + self.login)
     self.password=getpass.getpass()
-    print ''
+    print('')
 
   def parse_env_variable(self,path):
     new_path = os.popen("echo " + path).read().strip()
@@ -67,8 +67,8 @@ class Fetcher():
 
   def scm_fetch(self,url,files,scm_name="svn",revision=None,branch=None,do_cmds=None):
     fetch_message = 'Fetching benchmark {0} from {1}:'.format(self.benchmark_name,scm_name)
-    print fetch_message
-    print '-'*len(fetch_message)
+    print(fetch_message)
+    print('-'*len(fetch_message))
 
     if scm_name=="svn":
       self.get_credentials()
@@ -124,7 +124,7 @@ class Fetcher():
 
         # Check if the files exist in the directory
         if not os.path.isdir(os.path.join(benchresource_dir+file_bench)):
-            print "WARNING :", os.path.join(benchresource_dir+file_bench)," does not exist"
+            print("WARNING :", os.path.join(benchresource_dir+file_bench)," does not exist")
 
         # Execute actions from do tags
         if do_cmds:
@@ -132,13 +132,13 @@ class Fetcher():
             do_process=Popen(do_cmd,cwd=os.path.join(benchresource_dir,file_bench[1:]),shell=True)
             do_process.wait()
 
-    print 'Benchmark {0} fetched'.format(self.benchmark_name)
+    print('Benchmark {0} fetched'.format(self.benchmark_name))
 
 
   def local(self,files,do_cmds=None):
     fetch_message = 'Fetching benchmark {0} from local:'.format(self.benchmark_name)
-    print fetch_message
-    print '-'*len(fetch_message)
+    print(fetch_message)
+    print('-'*len(fetch_message))
     benchresource_dir=os.path.join(self.resource_dir,self.benchmark_name)
     if not os.path.exists(benchresource_dir):
       os.mkdir(benchresource_dir)
@@ -146,7 +146,7 @@ class Fetcher():
     for file_bench in files:
       file_bench = self.parse_env_variable(file_bench)
       basename = os.path.basename(file_bench)
-      print "Copying file: {0} into {1} ".format(basename,benchresource_dir)
+      print("Copying file: {0} into {1} ".format(basename,benchresource_dir))
       destfile_path=os.path.join(benchresource_dir,basename)
       shutil.copyfile(file_bench,destfile_path)
 
@@ -156,7 +156,7 @@ class Fetcher():
         do_process.wait()
 
 
-    print 'Benchmark {0} fetched'.format(self.benchmark_name)
+    print('Benchmark {0} fetched'.format(self.benchmark_name))
 
   def https(self,url,files):
 
@@ -165,7 +165,7 @@ class Fetcher():
       url_bench = url.split(' ')[0]
       self.get_credentials()
       self.__connect(url_bench,self.login,self.password)
-      print "Connected"
+      print("Connected")
     else:
       url_bench = url
 
@@ -173,8 +173,8 @@ class Fetcher():
       os.makedirs(self.resource_dir)
 
     fetch_message = 'Fetching benchmark {0} from web:'.format(self.benchmark_name)
-    print fetch_message
-    print '-'*len(fetch_message)
+    print(fetch_message)
+    print('-'*len(fetch_message))
     benchresource_dir=os.path.join(self.resource_dir,self.benchmark_name)
     if not os.path.exists(benchresource_dir):
       os.mkdir(benchresource_dir)
@@ -195,44 +195,44 @@ class Fetcher():
             os.mkdir(destdir_path)
 
           self.__download(urlsrc,destfile_path)
-        except urllib2.HTTPError as e:
-          print '      HTTP Error '+str(e.code)+' downloading file '+urlsrc+' : '+e.reason
-          print 'retrying ({0}/{1})'.format(num_retries,max_retries)
+        except urllib.error.HTTPError as e:
+          print('      HTTP Error '+str(e.code)+' downloading file '+urlsrc+' : '+e.reason)
+          print('retrying ({0}/{1})'.format(num_retries,max_retries))
           num_retries+=1
         else:
           downloaded=True
           break
 
     if downloaded:
-      print 'Benchmark {0} fetched'.format(self.benchmark_name)
+      print('Benchmark {0} fetched'.format(self.benchmark_name))
 
   def __connect(self,url,username,password):
     """ Connect to a http server using authentification """
-    proxy_handler = urllib2.ProxyHandler({})
-    auth=urllib2.HTTPPasswordMgrWithDefaultRealm()
+    proxy_handler = urllib.request.ProxyHandler({})
+    auth=urllib.request.HTTPPasswordMgrWithDefaultRealm()
 
     auth.add_password(None,
                       url,
                       user=username,
                       passwd=password)
 
-    handler=urllib2.HTTPBasicAuthHandler(auth)
+    handler=urllib.request.HTTPBasicAuthHandler(auth)
 
-    opener=urllib2.build_opener(proxy_handler,handler)
-    urllib2.install_opener(opener)
+    opener=urllib.request.build_opener(proxy_handler,handler)
+    urllib.request.install_opener(opener)
 
   def __download(self,urlsrc,destfile_path):
     """ Download a file from an url or just do a standard copy if url is a
     path and not an url """
 
-    print ''
-    print '  Source: '+urlsrc
-    print '  --> Destination: '+destfile_path
+    print('')
+    print('  Source: '+urlsrc)
+    print('  --> Destination: '+destfile_path)
 
     try:
-      file_src = urllib2.urlopen(urlsrc)
+      file_src = urllib.request.urlopen(urlsrc)
 
-    except urllib2.HTTPError as e:
+    except urllib.error.HTTPError as e:
       raise
     else:
       file_dest=open(destfile_path,'w+')

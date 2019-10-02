@@ -93,14 +93,14 @@ class UbenchCmd:
             try:
                 opt_dict['w'] = self.translate_wlist_to_scheduler_wlist(opt_dict['w'])
             except Exception as exc:
-                print '---- Custom node configuration is not valid : {0}'.format(str(exc))
+                print('---- Custom node configuration is not valid : {0}'.format(str(exc)))
                 return
-        print ''
-        print '-- Ubench platform name set to : {0}'.format(self.platform)
+        print('')
+        print('-- Ubench platform name set to : {0}'.format(self.platform))
 
         if not os.path.isdir(self.uconf.resource_dir):
-            print '---- The resource directory {0} does not exist.'.format(self.uconf.resource_dir)+\
-                'Please run ubench fetch to retrieve sources and test cases.'
+            print('---- The resource directory {0} does not exist.'.format(self.uconf.resource_dir)+\
+                'Please run ubench fetch to retrieve sources and test cases.')
             return
 
         # Set custom parameters
@@ -112,14 +112,14 @@ class UbenchCmd:
           self.bm_set.set_parameter(dict_options)
           # we read a file which contains a dictionary with the options
 
-        if opt_dict.has_key('custom_params'):
+        if 'custom_params' in opt_dict:
           for elem in opt_dict['custom_params']:
             try:
               splitted_param = re.split(':', elem, 1)
               dict_options[splitted_param[0]] = splitted_param[1]
             except Exception as exc:
-              print '---- {0} is not formated correctly'.format(elem)+\
-                ', please consider using : -c param:new_value'
+              print('---- {0} is not formated correctly'.format(elem)+\
+                ', please consider using : -c param:new_value')
             self.bm_set.set_parameter(dict_options)
 
         # Run each benchmarks
@@ -136,22 +136,22 @@ class UbenchCmd:
             multisource = jube_xml_files.get_bench_multisource()
 
             if multisource is None:
-                print "ERROR !! : Multisource information for benchmark not found"
+                print("ERROR !! : Multisource information for benchmark not found")
                 return None
 
             fetch_bench = fetcher.Fetcher(resource_dir=self.uconf.resource_dir,\
                                           benchmark_name=benchmark_name)
             for source in multisource:
 
-                if not source.has_key('do_cmds'):
+                if 'do_cmds' not in source:
                     source['do_cmds'] = None
 
                 if source['protocol'] == 'https':
                     fetch_bench.https(source['url'], source['files'])
                 elif source['protocol'] == 'svn' or source['protocol'] == 'git':
-                    if not source.has_key('revision'):
+                    if 'revision' not in source:
                         source['revision'] = None
-                    if not source.has_key('branch'):
+                    if 'branch' not in source:
                         source['branch'] = None
 
                     fetch_bench.scm_fetch(source['url'], source['files'], \
@@ -167,10 +167,10 @@ class UbenchCmd:
         Compare bencharks results from different directories.
         """
         cwriter = comparison_writer.ComparisonWriter(threshold)
-        print "    comparing :"
+        print("    comparing :")
         for rdir in input_directories:
-            print "    - "+rdir
-        print ""
+            print("    - "+rdir)
+        print("")
         cwriter.print_comparison(benchmark_name, input_directories, context)
 
 
@@ -185,7 +185,7 @@ class UbenchCmd:
                                              compare_template, report_template)
         report_name = "ubench_performance_report"
 
-        print("    Writing report {} in {} directory".format(report_name+".html", output_dir))
+        print(("    Writing report {} in {} directory".format(report_name+".html", output_dir)))
         rwriter.write_report(output_dir, report_name)
 
         asciidoctor_cmd\
@@ -203,7 +203,7 @@ class UbenchCmd:
         try:
             scheduler_interface = slurmi.SlurmInterface()
         except:
-            print "Warning!! Unable to load slurm module"
+            print("Warning!! Unable to load slurm module")
             scheduler_interface = None
             return
 
@@ -219,7 +219,7 @@ class UbenchCmd:
                 slice_size = int(catch.group(1))
                 available_nodes_list = scheduler_interface.get_available_nodes(slice_size)
                 njobs = len(available_nodes_list)
-                sub_wlist[idxn:idxn+1] = zip([slice_size]*njobs, available_nodes_list)
+                sub_wlist[idxn:idxn+1] = list(zip([slice_size]*njobs, available_nodes_list))
                 stride += njobs-1
             else:
                 # Manage the cn[10,13-17] notation
@@ -227,14 +227,14 @@ class UbenchCmd:
                 if catch:
                     nnodes_list = [scheduler_interface.get_nnodes_from_string(catch.group(1))]
                     nodes_list = [catch.group(1)]
-                    sub_wlist[idxn:idxn+1] = zip(nnodes_list, nodes_list)
+                    sub_wlist[idxn:idxn+1] = list(zip(nnodes_list, nodes_list))
                 else:
                     # Manage the 2,4 notation that is needed to launch jobs
                     # without defined node targets.
                     catch = re.search(r'^([\d+,]*)([\d]+)$', str(welem))
                     if catch:
                         nnodes_list = [int(x) for x in re.split(',', str(welem))]
-                        sub_wlist[idxn:idxn+1] = zip(nnodes_list, [None]*len(nnodes_list))
+                        sub_wlist[idxn:idxn+1] = list(zip(nnodes_list, [None]*len(nnodes_list)))
                         stride += len(nnodes_list)-1
                     else:
                         # Manage the 2,4,cn[200-205] notation that is used
@@ -244,9 +244,9 @@ class UbenchCmd:
                             nnodes_list = [int(x) for x in re.split(',', catch.group(1))]
                             nodes_list = str(catch.group(2))
                             sub_wlist[idxn:idxn+1]\
-                                = zip(nnodes_list, \
+                                = list(zip(nnodes_list, \
                                       scheduler_interface.\
-                                      get_truncated_nodes_lists(nnodes_list, nodes_list))
+                                      get_truncated_nodes_lists(nnodes_list, nodes_list)))
 
                             stride += len(nnodes_list)-1
                         else:

@@ -62,7 +62,7 @@ class SlurmInterface:
           node_count=0
           nodeset = NodeSet()
           if len(node_dict) > 0:
-               for key, value in sorted(node_dict.iteritems()):
+               for key, value in sorted(node_dict.items()):
                     if value['state']=='IDLE':
                          nodetype=value
                          nodeset.update(key)
