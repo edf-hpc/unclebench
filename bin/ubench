@@ -197,9 +197,9 @@ args = parser.parse_args()
 # initialize class
 platform_arg = ""
 benchmark_arg = ""
-if vars(args).has_key('p'):
+if 'p' in vars(args):
     platform_arg = args.p
-if vars(args).has_key('b'):
+if 'b' in vars(args):
     benchmark_arg = args.b
 
 commands = ubench_commands.UbenchCmd(platform=platform_arg, benchmark_list=benchmark_arg)
