@@ -27,6 +27,11 @@ import time
 import yaml
 import ubench.data_management.data_store_yaml as dsy
 import ubench.data_management.comparison_writer as comparison_writer
+import logging
+
+from matplotlib import pyplot as plt
+import seaborn as sns
+
 
 class ReportWriter:
     """
@@ -256,6 +261,59 @@ class ReportWriter:
         self.jinja_templated_write(dic_report_main, self.report_template, \
                                    os.path.join(output_dir,report_name+".asc"))
 
+    @staticmethod
+    def _write_cplot(c_list, sub_bench, sub_bench_list, context, output_filename):
+        """
+        Plot comparison dataframes in c_list, each dataframe corresponding to a sub
+        benchmark listed in sub_bench_list.
+        """
+        df_toplot = pandas.concat(c_list)
+
+        # Choose facetgrid parameters according to row_headers and column_headers
+        # defined with context variable.
+        if  [eld for eld in df_toplot[context[1]] if  str(eld).isdigit()] :
+            x_data = context[1]
+            if len(context[0])>1:
+                row_label = context[0][1]
+            else:
+                row_label = context[0][0]
+        else:
+            x_data = context[0][0]
+            row_label = context[1]
+
+        if len(sub_bench_list)>1:
+            hue_label = sub_bench
+            if len(context[0])>1:
+                col_label = context[0][1]
+            else:
+                col_label = None
+        else:
+            if len(context[0])>1:
+                hue_label = context[0][1]
+            else:
+                hue_label = None
+            col_label = None
+
+        # Debug information
+        #logging.basicConfig(format='%(levelname)s:\n%(message)s', level=logging.DEBUG)
+        logging.debug("row_label: {}\n col_label: {}\n hue_label: {}\n x_data: {}\n"\
+                      .format(row_label, col_label, hue_label, x_data))
+
+
+        # Build FacetGrid graph
+        facetg = sns.FacetGrid(data = df_toplot, row = row_label,\
+                               col = col_label, hue = hue_label, height = 5,\
+                               aspect = 1.2 , sharex = True, sharey = False)
+
+        # Choose base 2 log scale as this axis often represents bytes or
+        # number of nodes
+        plt.xscale('symlog', basex=2)
+
+        facetg = facetg.map(plt.scatter, x_data,df_toplot.columns[-1]).add_legend()
+
+        # Save figure
+        plt.savefig(output_filename)
+
 
     def write_comparison(self, output_dir, bench_name, sub_bench, sub_bench_list, \
                          date_interval_list, dir_list, context, threshold, session_list):
@@ -267,12 +325,19 @@ class ReportWriter:
         c_list = cwriter.compare(bench_name, dir_list, \
                                  date_interval_list, (context[0]+[context[1]], None),
                                  session_list)
+
+
+        # Plot a comparison graph
+        self._write_cplot(c_list, sub_bench, sub_bench_list, context, os.path.join(output_dir,bench_name+'.png'))
+
+
         if(sub_bench):
             for df_comp in c_list:
                 df_comp.drop(sub_bench, 1, inplace=True)
 
         dic_compare['dataframe_list'] = list(zip(c_list,sub_bench_list))
         dic_compare['ncols'] = len(c_list[-1].columns)
+        dic_compare['figure'] = bench_name+'.png'
         out_filename = bench_name+"_comparison.asc"
 
         self.jinja_templated_write(dic_compare, self.compare_template, \
