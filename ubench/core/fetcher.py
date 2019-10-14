@@ -18,8 +18,10 @@
 #  along with UncleBench.  If not, see <http://www.gnu.org/licenses/>.       #
 #                                                                            #
 ##############################################################################
-import getpass, time, os, urllib.request, urllib.error, urllib.parse
-from urllib.parse import urlparse,urljoin
+from six.moves import urllib
+
+import getpass, time, os #, urllib.request, urllib.error, urllib.parse
+#from urllib.parse import urlparse,urljoin
 from subprocess import Popen,PIPE
 import shutil
 
@@ -88,11 +90,11 @@ class Fetcher():
       fetched = False
 
       for file_bench in files:
-        urlparsed = urlparse(url)
+        urlparsed = urllib.parse.urlparse(url)
         if not os.path.isabs(file_bench):
           file_bench ="/"+file_bench
 
-        url_file=urljoin(url,urlparsed.path+file_bench)
+        url_file = urllib.parse.urljoin(url,urlparsed.path+file_bench)
         base_name = os.path.basename(file_bench)
 
         fetch_command=""
@@ -189,8 +191,8 @@ class Fetcher():
       max_retries = 5
       while(num_retries < max_retries ):
         try:
-          urlparsed = urlparse(url_bench)
-          urlsrc=urljoin(url_bench,urlparsed.path+file_bench)
+          urlparsed = urllib.parse.urlparse(url_bench)
+          urlsrc= urllib.parse.urljoin(url_bench,urlparsed.path+file_bench)
           destdir_path=os.path.dirname(destfile_path)
           if not os.path.exists(destdir_path):
             os.mkdir(destdir_path)

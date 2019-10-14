@@ -20,10 +20,12 @@
 
 import abc
 import datetime
-import pandas
 import os
+import pandas
+import six
 
-class DataStore(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class DataStore():
     """
     Load, write, extract data from unclebench performance results data files.
     """

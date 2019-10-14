@@ -3,8 +3,10 @@ Define BenchmarkManager abstract class.
 """
 
 import abc
+import six
 
-class BenchmarkManager(metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class BenchmarkManager():
     """
     Abtract class that defines the interface to manage a benchmark.
     """
