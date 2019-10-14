@@ -22,7 +22,7 @@
 class BenchmarkingAPI:
     """ Interface class for benchmarking environnement tools """
 
-    def __init__(self,benchmark_name,platform_name):
+    def __init__(self, benchmark_name, platform_name):
         """ Constructor
         :param benchmark_name: name of the benchmark
         :type benchmark_name: str
@@ -31,7 +31,7 @@ class BenchmarkingAPI:
         """
         pass
 
-    def analyse(self,benchmark_id):
+    def analyse(self, benchmark_id):
         """ Analyze benchmark results
         :param benchmark_id: id of the benchmark to be analyzed
         :type benchmark_id: int
@@ -55,7 +55,7 @@ class BenchmarkingAPI:
         """
         pass
 
-    def get_log(self,idb=-1):
+    def get_log(self, idb=-1):
         """ Get a log from a benchmark run
         :param idb: id of the benchmark
         :type idb:int
@@ -65,7 +65,7 @@ class BenchmarkingAPI:
         pass
 
 
-    def extract_result(self,benchmark_id):
+    def extract_result(self, benchmark_id):
         """ Get result from a jube benchmark with its id and build a python result array
         :param benchmark_id: id of the benchmark
         :type benchmark_id:int
@@ -83,7 +83,7 @@ class BenchmarkingAPI:
         """
         pass
 
-    def run(self,platform):
+    def run(self, platform):
         """ Run benchmark on a given platform and return the benchmark run directory path
         and a benchmark ID.
         :param platform: name of the platform used to configure the benchmark options relative
@@ -94,7 +94,7 @@ class BenchmarkingAPI:
         """
         pass
 
-    def set_custom_nodes(self,nnodes_list,nodes_id_list):
+    def set_custom_nodes(self, nnodes_list, nodes_id_list):
         """
         Modify benchmark xml file to set custom nodes configurations.
         :param nnodes_list: list of number of nodes ex: [1,6]
@@ -104,27 +104,25 @@ class BenchmarkingAPI:
         """
         pass
 
-    def status(self,benchmark_id):
+    def status(self, benchmark_id):
 
         pass
 
-    def list_parameters(self,config_dir_path=None):
+    def list_parameters(self, default_values):
         """
         List benchmark customisable parameters
-        :param config_dir_path: Optional parameter reprenting the path of the config files (usefull when a benchmark has never been run).
-        :type config_dir_path: str
+        :param default_values: TODO
+        :type default_values: TODO
         :returns: Return a list of tuples [(param1,value),(param2,value),....]
         :rtype: list of tuples
         """
         pass
 
-    def set_parameter(self,parameter_name,value):
+    def set_parameter(self, doc_options):
         """
         Set custom parameter from its name and a new value.
-        :param parameter_name: name of the parameter to customize
-        :type parameter_name:
-        :param value: value to substitute to old value
-        :type value: str
+        :param dic_options: TODO
+        :type dict_options: TODO
         :returns: Return a list of tuples [(filename,param1,old_value,new_value),(filename,param2,old_value,new_value),....]
         :rtype: List of 3-tuples ex:[(parameter_name,old_value,value),....]
         """
