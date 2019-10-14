@@ -253,7 +253,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         cmd_output.flush()
         cmd_output.seek(0)
         results = {}
-        workpackages = re.findall(r"Workpackages(.*?)\n{2,}", cmd_output.read(), re.DOTALL)[0]
+        workpackages = re.findall(r"Workpackages(.*?)\n{2,}",
+                                  cmd_output.read().decode('utf-8'), re.DOTALL)[0]
         workdirs = {}
         regex_workdir = r"^\s+(\d+).*("+re.escape(output_dir)+r".*work).*"
 
@@ -265,7 +266,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                 workdirs[id_workpackage] = path_workpackage
 
         cmd_output.seek(0)
-        parameterization = re.findall(r"ID:(.*?)(?=\n{3,}|\sID)", cmd_output.read()+'\n', re.DOTALL)
+        parameterization = re.findall(r"ID:(.*?)(?=\n{3,}|\sID)",
+                                      cmd_output.read().decode('utf-8')+'\n', re.DOTALL)
         for execution_step in parameterization:
             id_step = [x.strip() for x in execution_step.split("\n")][0]
             param_step = [x.strip() for x in execution_step.split("\n")][1:]
