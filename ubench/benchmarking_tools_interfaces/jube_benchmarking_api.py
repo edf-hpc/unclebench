@@ -369,19 +369,14 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         output_dir = self.jube_xml_files.get_bench_outputdir()
         benchmark_rundir = self.get_bench_rundir(benchmark_id)
 
-        # checking that all preprocess has finished
-
         benchmark_runpath = os.path.join(old_path, output_dir, benchmark_rundir)
 
-        if not os.path.isfile(os.path.join(benchmark_runpath, '.bench_done')):
-            continue_cmd = Popen('jube continue --hide-animation ./'+\
-                                 output_dir+' --id '+benchmark_id,\
-                                 cwd=os.getcwd(), stdout=open(os.devnull, "w"), shell=True,
-                                 universal_newlines=True)
-            continue_cmd.wait()
-            flag_file = open(os.path.join(benchmark_runpath, '.bench_done'), 'w')
-            flag_file.write("OK")
-            flag_file.close()
+        # Continue benchmark steps that were not already executed. This is                                                                                                                                                # often mandatory to execute postprocessing steps.
+        continue_cmd = Popen('jube continue --hide-animation ./'+\
+                             output_dir+' --id '+benchmark_id,\
+                             cwd=os.getcwd(), stdout=open(os.devnull, "w"), shell=True,
+                             universal_newlines=True)
+        continue_cmd.wait()
 
         configuration_file_path = os.path.join(benchmark_runpath, 'configuration.xml')
         try:
