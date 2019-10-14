@@ -95,7 +95,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         os.chdir(self.benchmark_path)
         output_dir = self.jube_xml_files.get_bench_outputdir()
         input_str = 'jube analyse ./'+output_dir+' --id '+benchmark_id
-        analyse_from_jube = Popen(input_str, cwd=os.getcwd(), shell=True, stdout=PIPE)
+        analyse_from_jube = Popen(input_str, cwd=os.getcwd(), shell=True, stdout=PIPE, universal_newlines=True)
         benchmark_results_path = ''
 
 
@@ -212,10 +212,11 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             # Updating state with continue command
             continue_cmd = Popen('jube continue --hide-animation ./'+\
                                  output_dir+' --id '+benchmark_id, cwd=os.getcwd(),\
-                                 stdout=open(os.devnull, "w"), shell=True)
+                                 stdout=open(os.devnull, "w"), shell=True, universal_newlines=True)
             continue_cmd.wait()
             input_str = 'jube info ./'+output_dir+' --id '+benchmark_id+' --step '+step
-            status_from_jube = Popen(input_str, cwd=os.getcwd(), shell=True, stdout=PIPE)
+            status_from_jube = Popen(input_str, cwd=os.getcwd(), shell=True, stdout=PIPE,
+                                     universal_newlines=True)
             global_status[step] = []
             for line in status_from_jube.stdout:
                 if re.search(r"^\s+\d+\s+\|\s+\w+\s+\|.*", line):
@@ -245,7 +246,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         jube_cmd = "jube info ./{0} --id {1} --step execute".format(output_dir, benchmark_id)
 
         cmd_output = tempfile.TemporaryFile()
-        result_from_jube = Popen(jube_cmd, cwd=os.getcwd(), shell=True, stdout=cmd_output)
+        result_from_jube = Popen(jube_cmd, cwd=os.getcwd(), shell=True, stdout=cmd_output,
+                                 universal_newlines=True)
         ret_code = result_from_jube.wait()
 
         cmd_output.flush()
@@ -372,7 +374,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         if not os.path.isfile(os.path.join(benchmark_runpath, '.bench_done')):
             continue_cmd = Popen('jube continue --hide-animation ./'+\
                                  output_dir+' --id '+benchmark_id,\
-                                 cwd=os.getcwd(), stdout=open(os.devnull, "w"), shell=True)
+                                 cwd=os.getcwd(), stdout=open(os.devnull, "w"), shell=True,
+                                 universal_newlines=True)
             continue_cmd.wait()
             flag_file = open(os.path.join(benchmark_runpath, '.bench_done'), 'w')
             flag_file.write("OK")
@@ -390,7 +393,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         input_str = 'jube result ./'+output_dir+\
                     ' --id '+benchmark_id +' -o '+ cvsfile + ' ' + debugfile
-        result_from_jube = Popen(input_str, cwd=os.getcwd(), shell=True, stdout=PIPE)
+        result_from_jube = Popen(input_str, cwd=os.getcwd(), shell=True, stdout=PIPE,
+                                 universal_newlines=True)
         result_from_jube.wait()
         result_array = []
         # Get data from result array
@@ -463,7 +467,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                     self.benchmark_name+'.xml --tag '+platform+' > /dev/null &'
         my_env = os.environ
         my_env['UBENCH_PLATFORM_DIR'] = platform_dir
-        Popen(input_str, cwd=os.getcwd(), shell=True, env=my_env)
+        Popen(input_str, cwd=os.getcwd(), shell=True, env=my_env, universal_newlines=True)
 
         # Get the run directory without waiting for jube run command to finish
         run_dir = self.analyse_last()
@@ -561,7 +565,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         if benchmark_id == 'last':
             jube_last_cmd = Popen('jube info ./'+output_dir+' -i last', cwd=os.getcwd(),
-                                  shell=True, stdout=PIPE)
+                                  shell=True, stdout=PIPE, universal_newlines=True)
             dir_pattern = re.compile(r'\S+: (\/.*)')
             return dir_pattern.findall(jube_last_cmd.stdout.read())[0]
         else:

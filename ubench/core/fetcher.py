@@ -110,13 +110,13 @@ class Fetcher():
         if not fetched:
           # Execute the fetch command just one time
 
-          fetch_process = Popen(fetch_command,cwd=benchresource_dir,shell=True)
+          fetch_process = Popen(fetch_command, cwd=benchresource_dir, shell=True, universal_newlines=True)
           fetch_process.wait()
           fetched = True
 
         fetch_dir=os.path.join(self.resource_dir,self.benchmark_name,scm_name)
 
-        # Create symbolic link to the file bench with its full path 
+        # Create symbolic link to the file bench with its full path
         if rev > 0:
           dest_symlink = os.path.join(fetch_dir,rev+"_"+base_name)
           if not os.path.exists(dest_symlink):
@@ -129,7 +129,8 @@ class Fetcher():
         # Execute actions from do tags
         if do_cmds:
           for do_cmd in do_cmds :
-            do_process=Popen(do_cmd,cwd=os.path.join(benchresource_dir,file_bench[1:]),shell=True)
+            do_process = Popen(do_cmd, cwd=os.path.join(benchresource_dir,file_bench[1:]),
+                               shell=True, universal_newlines=True)
             do_process.wait()
 
     print('Benchmark {0} fetched'.format(self.benchmark_name))
@@ -152,7 +153,7 @@ class Fetcher():
 
     if do_cmds:
       for do_cmd in do_cmds :
-        do_process=Popen(do_cmd,cwd=benchresource_dir,shell=True)
+        do_process = Popen(do_cmd, cwd=benchresource_dir, shell=True, universal_newlines=True)
         do_process.wait()
 
 

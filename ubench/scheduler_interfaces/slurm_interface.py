@@ -117,7 +117,7 @@ class SlurmInterface:
          """
 
          job_cmd ="sacct --jobs={0} -n -p --format=JobName,Elapsed,NodeList,Submit,Start".format(job_id)
-         job_process = Popen(job_cmd,cwd=os.getcwd(),shell=True, stdout=PIPE)
+         job_process = Popen(job_cmd,cwd=os.getcwd(),shell=True, stdout=PIPE, universal_newlines=True)
          job_info=[]
          for line in job_process.stdout:
            fields = line.split("|")

@@ -192,7 +192,7 @@ class UbenchCmd:
             = 'asciidoctor -a stylesheet=' + self.uconf.stylesheet_path + " "\
             + os.path.join(os.getcwd(),output_dir,report_name+".asc")
 
-        Popen(asciidoctor_cmd, cwd=os.getcwd(), shell=True)
+        Popen(asciidoctor_cmd, cwd=os.getcwd(), shell=True, universal_newlines=True)
 
 
     def translate_wlist_to_scheduler_wlist(self, w_list_arg):
