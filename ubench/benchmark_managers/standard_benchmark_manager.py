@@ -33,7 +33,8 @@ import ubench.core.ubench_config as uconfig
 import ubench.benchmark_managers.benchmark_manager as benm
 from shutil import copy,copytree
 
-class StandardBenchmarkManager(benm.BenchmarkManager, metaclass=abc.ABCMeta):
+@six.add_metaclass(abc.ABCMeta)
+class StandardBenchmarkManager(benm.BenchmarkManager):
     """
     Abstract class that manages standard benchmarks.
     get_benchmarking_api method must be implemented by subclass to set
