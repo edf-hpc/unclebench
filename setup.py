@@ -30,7 +30,9 @@ setup(name='ubench',
                    "It is currently based on (JUBE http://www.fz-juelich.de/ias/jsc/EN/Expertise/Support/Software/JUBE/_node.html) but any benchmarking engine can be easily integrated."\
                    "Its architecture make it easier to handle platforms settings, benchmark descriptions, sources and test cases as separate resources."\
                    "It provides useful commands to modify parameters on the fly without having to modify the benchmark or platform description files',",
-      install_requires=['clustershell>=1.6'],
+      install_requires=[
+          'clustershell>=1.6'
+          'seaborn>=0.9.0'],
       url='https://github.com/edf-hpc/unclebench',
       author=__author__,
       author_email='dsp-cspito-ccn-hpc@edf.fr',
