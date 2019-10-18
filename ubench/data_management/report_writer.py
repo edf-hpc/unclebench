@@ -30,8 +30,6 @@ import ubench.data_management.comparison_writer as comparison_writer
 import logging
 
 from matplotlib import pyplot as plt
-import seaborn as sns
-
 
 class ReportWriter:
     """
@@ -338,10 +336,13 @@ class ReportWriter:
         c_list = cwriter.compare(bench_name, dir_list, \
                                  date_interval_list, (context[0]+[context[1]], None),
                                  session_list)
-
-
+        try:
+            import seaborn as sns
+        except ImportError:
+            log.warning('seaborn failed to import graphs will not be generated', exc_info=True)
+        else:
         # Plot a comparison graph
-        self._write_cplot(c_list, sub_bench, sub_bench_list, context, os.path.join(output_dir,bench_name+'.png'))
+            self._write_cplot(c_list, sub_bench, sub_bench_list, context, os.path.join(output_dir,bench_name+'.png'))
 
 
         if(sub_bench):
