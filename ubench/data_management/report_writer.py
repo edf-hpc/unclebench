@@ -268,28 +268,41 @@ class ReportWriter:
         benchmark listed in sub_bench_list.
         """
         df_toplot = pandas.concat(c_list)
+        column_headers = context[1]
+        row_headers = context[0]
 
         # Choose facetgrid parameters according to row_headers and column_headers
         # defined with context variable.
-        if  [eld for eld in df_toplot[context[1]] if  str(eld).isdigit()] :
-            x_data = context[1]
-            if len(context[0])>1:
-                row_label = context[0][1]
+
+        if  [eld for eld in df_toplot[column_headers] if  str(eld).isdigit()] :
+            # column_headers are numeric, use them as x_axis
+            x_data = column_headers
+            if len(row_headers)>1:
+                # two row_headers are given
+                # use the second one as row_label if it exists.
+                row_label = row_headers[-1]
             else:
-                row_label = context[0][0]
+                row_label = row_headers[0]
         else:
-            x_data = context[0][0]
-            row_label = context[1]
+            # column_headers are not numeric, probably a limited number
+            # of possibility, use it as row labels for facets.
+            x_data = row_headers[0]
+            row_label = column_headers
 
         if len(sub_bench_list)>1:
+            # If benchmark is composed of sub benchmarks
+            # use their names as hue label
             hue_label = sub_bench
-            if len(context[0])>1:
-                col_label = context[0][1]
+            # If there are multiple row_headers use the last one
+            # if not already use as row_label
+            # else does not use col_label
+            if len(row_headers)>1 and (row_label!=row_headers[-1]):
+                col_label = row_headers[-1]
             else:
                 col_label = None
         else:
-            if len(context[0])>1:
-                hue_label = context[0][1]
+            if len(row_headers)>1:
+                hue_label = row_headers[-1]
             else:
                 hue_label = None
             col_label = None
