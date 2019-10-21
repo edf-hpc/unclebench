@@ -94,6 +94,15 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         os.chdir(self.benchmark_path)
         output_dir = self.jube_xml_files.get_bench_outputdir()
+
+        # Continue benchmark steps that were not already executed.
+        # This is often mandatory to execute postprocessing steps.
+        cmd_str = 'jube continue --hide-animation {} --id {}'.format(output_dir,benchmark_id)
+        continue_cmd = Popen(cmd_str, cwd=os.getcwd(),
+                             stdout=open(os.devnull, "w"), shell=True,
+                             universal_newlines=True)
+        continue_cmd.wait()
+
         input_str = 'jube analyse ./'+output_dir+' --id '+benchmark_id
         analyse_from_jube = Popen(input_str, cwd=os.getcwd(), shell=True, stdout=PIPE, universal_newlines=True)
         benchmark_results_path = ''
@@ -371,14 +380,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         benchmark_runpath = os.path.join(old_path, output_dir, benchmark_rundir)
 
-        # Continue benchmark steps that were not already executed. This is                                                                                                                                                # often mandatory to execute postprocessing steps.
-        continue_cmd = Popen('jube continue --hide-animation ./'+\
-                             output_dir+' --id '+benchmark_id,\
-                             cwd=os.getcwd(), stdout=open(os.devnull, "w"), shell=True,
-                             universal_newlines=True)
-        continue_cmd.wait()
-
         configuration_file_path = os.path.join(benchmark_runpath, 'configuration.xml')
+
         try:
             self.jube_xml_files.load_config_xml(configuration_file_path)
         except:
@@ -388,40 +391,33 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         cvsfile = self.jube_xml_files.get_result_cvsfile()
         debugfile = "paths"
 
-        input_str = 'jube result ./'+output_dir+\
-                    ' --id '+benchmark_id +' -o '+ cvsfile + ' ' + debugfile
-        result_from_jube = Popen(input_str, cwd=os.getcwd(), shell=True, stdout=PIPE,
+        input_str = 'jube result {} --id {} -o {} {}'.format(output_dir,
+                                                             benchmark_id,
+                                                             cvsfile,
+                                                             debugfile)
+        jube_command = Popen(input_str, cwd=os.getcwd(), shell=True, stdout=PIPE,
                                  universal_newlines=True)
-        result_from_jube.wait()
+
+        jube_stdout, _ = jube_command.communicate()
         result_array = []
-        # Get data from result array
-        empty = True
+
         with open(os.path.join(benchmark_rundir, 'result/ubench_results.dat'), 'w') as result_file:
 
-            for line in result_from_jube.stdout:
+            for line in jube_stdout.split('\\n'):
                 result_file.write(line)
 
-                empty = False
+        jubecvsfile_path = os.path.join(benchmark_runpath,'result','{}.dat'.format(cvsfile))
 
-                splitted_line = []
-                if len(line.strip()) > 0:
-                    splitted_line = line.replace("\n", "").split(',')
+        try:
+            with open(jubecvsfile_path,'r') as jubecsvfile:
+                jubereader = csv.reader(jubecsvfile)
+                for row in jubereader:
 
-                # Merge '[' and ']' sections to authorize [,]
-                idx = 0
-                while idx < len(splitted_line)-1:
-                    if ('[' in splitted_line[idx]) and \
-                       (not ']' in splitted_line[idx]):
-                        splitted_line[idx:(idx+2)] = [','.join(splitted_line[idx:(idx+2)])]
-                    else:
-                        idx += 1
-
-                if len(line.strip()) > 0:
-                    result_array.append(splitted_line)
-        if empty:
-            raise IOError
-        # Restore working directory
-        os.chdir(old_path)
+                    if isinstance(row,list):
+                        result_array.append(row)
+        except IOError:
+            print("JUBE cvs file not found")
+            return []
 
         return result_array
 
