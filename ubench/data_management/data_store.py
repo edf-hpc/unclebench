@@ -24,6 +24,15 @@ import os
 import pandas
 import six
 
+def _read_date(date_str):
+    """
+    Read date from string.
+    Tue May 15 17:15:08 2018
+    """
+    date_time = datetime.datetime.strptime(date_str, '%a %b %d %H:%M:%S %Y')
+
+    return date_time
+
 @six.add_metaclass(abc.ABCMeta)
 class DataStore():
     """
@@ -41,19 +50,22 @@ class DataStore():
     def load(self, input_file):
         pass
 
-    @staticmethod
-    def _read_date(date_str):
-        """
-        Read date from string.
-        Tue May 15 17:15:08 2018
-        """
-        date_time = datetime.datetime.strptime(date_str, '%a %b %d %H:%M:%S %Y')
+    def extract_data_from_file(self, filename, benchmark_name, date_interval=None):
+        """ Extract benchmark performance data from a file.
 
-        return date_time
+        Data are extracted if the benchmark date lies in date_interval and
+        the benchmark is benchmark_name.
 
-    def _extract_data_from_file(self, filename, benchmark_name, date_interval=None):
-        """
-        Extract performance data from a file.
+        Args:
+            filename: name of the file containing data.
+            benchmark_name: name of the benchmark.
+            date_interval: tuple with two dates with the following format :
+                           Tue May 18 14:12:02 2038
+
+        Returns:
+            A tuple containaing two dictionnaries, one with metadata which is
+            information common to evry run. and one with information specific to
+            each run.
         """
         metadata ,data = self.load(filename)
         if not (data):
@@ -65,18 +77,18 @@ class DataStore():
 
         # Check if dates correspond
         if(date_interval):
-            run_date = DataStore._read_date(metadata['Date'])
+            run_date = _read_date(metadata['Date'])
             if(run_date<date_interval[0]) or (run_date>date_interval[1]):
                 return(None,None)
 
         return(metadata, data)
 
-    def _file_to_panda(self, filename, benchmark_name, date_interval=None, context=(None,None)):
+    def file_to_panda(self, filename, benchmark_name, date_interval=None, context=(None,None)):
         """
         Return a panda from a file if it is an unclebench performance data file
         with date and benchmark name correponding to those given as argument.
         """
-        metadata, data = self._extract_data_from_file(filename, benchmark_name, date_interval)
+        metadata, data = self.extract_data_from_file(filename, benchmark_name, date_interval)
 
         if not context[0]:
             context = ([], context[1])
@@ -177,8 +189,8 @@ class DataStore():
         return (metadata, pandas.DataFrame(report_info), context, result_name_column)
 
 
-    def _dir_to_pandas(self, data_dir, benchmark_name, \
-                       date_interval=None,context=(None,None)):
+    def dir_to_pandas(self, data_dir, benchmark_name, \
+                      date_interval=None,context=(None,None)):
         """
         Load evry data file found in "data_dir" and return a list
         of dictionnaries, each one containing data from a file.
@@ -195,7 +207,7 @@ class DataStore():
         for (dirpath, dirnames, filenames) in os.walk(data_dir):
             for fname in filenames:
                 metadata, current_panda, current_context, current_sub_bench \
-                    = self._file_to_panda(os.path.join(dirpath, fname), \
+                    = self.file_to_panda(os.path.join(dirpath, fname), \
                                           benchmark_name, date_interval, context)
 
                 if current_panda.empty:

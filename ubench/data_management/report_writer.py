@@ -25,11 +25,10 @@ import pandas
 import sys
 import time
 import yaml
+import logging
 import ubench.data_management.data_store_yaml as dsy
 import ubench.data_management.comparison_writer as comparison_writer
-import logging
 
-from matplotlib import pyplot as plt
 
 class ReportWriter:
     """
@@ -211,8 +210,8 @@ class ReportWriter:
                 dir_list.append(dic_report_bench['dir'])
 
                 run_metadata, bench_dataframe, context_out, sub_bench \
-                    = dstore._dir_to_pandas(dic_report_bench['dir'], bench_name, \
-                                            date_interval, context_in)
+                    = dstore.dir_to_pandas(dic_report_bench['dir'], bench_name, \
+                                           date_interval, context_in)
 
                 if bench_dataframe.empty:
                     print(("Error : no value found for session {} and benchmark {}".\
@@ -259,73 +258,6 @@ class ReportWriter:
         self.jinja_templated_write(dic_report_main, self.report_template, \
                                    os.path.join(output_dir,report_name+".asc"))
 
-    @staticmethod
-    def _write_cplot(c_list, sub_bench, sub_bench_list, context, output_filename):
-        """
-        Plot comparison dataframes in c_list, each dataframe corresponding to a sub
-        benchmark listed in sub_bench_list.
-        """
-        df_toplot = pandas.concat(c_list)
-        column_headers = context[1]
-        row_headers = context[0]
-
-        # Choose facetgrid parameters according to row_headers and column_headers
-        # defined with context variable.
-
-        if  [eld for eld in df_toplot[column_headers] if  str(eld).isdigit()] :
-            # column_headers are numeric, use them as x_axis
-            x_data = column_headers
-            if len(row_headers)>1:
-                # two row_headers are given
-                # use the second one as row_label if it exists.
-                row_label = row_headers[-1]
-            else:
-                row_label = row_headers[0]
-        else:
-            # column_headers are not numeric, probably a limited number
-            # of possibility, use it as row labels for facets.
-            x_data = row_headers[0]
-            row_label = column_headers
-
-        if len(sub_bench_list)>1:
-            # If benchmark is composed of sub benchmarks
-            # use their names as hue label
-            hue_label = sub_bench
-            # If there are multiple row_headers use the last one
-            # if not already use as row_label
-            # else does not use col_label
-            if len(row_headers)>1 and (row_label!=row_headers[-1]):
-                col_label = row_headers[-1]
-            else:
-                col_label = None
-        else:
-            if len(row_headers)>1:
-                hue_label = row_headers[-1]
-            else:
-                hue_label = None
-            col_label = None
-
-        # Debug information
-        #logging.basicConfig(format='%(levelname)s:\n%(message)s', level=logging.DEBUG)
-        logging.debug("row_label: {}\n col_label: {}\n hue_label: {}\n x_data: {}\n"\
-                      .format(row_label, col_label, hue_label, x_data))
-
-
-        # Build FacetGrid graph
-        facetg = sns.FacetGrid(data = df_toplot, row = row_label,\
-                               col = col_label, hue = hue_label, height = 5,\
-                               aspect = 1.2 , sharex = True, sharey = False)
-
-        # Choose base 2 log scale as this axis often represents bytes or
-        # number of nodes
-        plt.xscale('symlog', basex=2)
-
-        facetg = facetg.map(plt.scatter, x_data,df_toplot.columns[-1]).add_legend()
-
-        # Save figure
-        plt.savefig(output_filename)
-
-
     def write_comparison(self, output_dir, bench_name, sub_bench, sub_bench_list, \
                          date_interval_list, dir_list, context, threshold, session_list):
         """
@@ -336,13 +268,9 @@ class ReportWriter:
         c_list = cwriter.compare(bench_name, dir_list, \
                                  date_interval_list, (context[0]+[context[1]], None),
                                  session_list)
-        try:
-            import seaborn as sns
-        except ImportError:
-            log.warning('seaborn failed to import graphs will not be generated', exc_info=True)
-        else:
+
         # Plot a comparison graph
-            self._write_cplot(c_list, sub_bench, sub_bench_list, context, os.path.join(output_dir,bench_name+'.png'))
+        cwriter.write_cplot(c_list, sub_bench, sub_bench_list, context, os.path.join(output_dir,bench_name+'.png'))
 
 
         if(sub_bench):

@@ -18,10 +18,13 @@
 #  along with UncleBench.  If not, see <http://www.gnu.org/licenses/>.       #
 #                                                                            #
 ##############################################################################
+import logging
 import os
 import numpy as np
 import pandas
 import ubench.data_management.data_store_yaml as dsy
+
+from matplotlib import pyplot as plt
 
 class ComparisonWriter:
 
@@ -29,6 +32,73 @@ class ComparisonWriter:
         """ Constructor """
         self.dstore = dsy.DataStoreYAML()
         self.threshold = threshold
+
+    def write_cplot(self,c_list, sub_bench, sub_bench_list, context, output_filename):
+        """
+        Plot comparison dataframes in c_list, each dataframe corresponding to a sub
+        benchmark listed in sub_bench_list.
+        """
+
+        try:
+            import seaborn as sns
+        except ImportError:
+            log.warning('seaborn failed to import graphs will not be generated', exc_info=True)
+            return
+
+        df_toplot = pandas.concat(c_list)
+        column_headers = context[1]
+        row_headers = context[0]
+
+        # Choose facetgrid parameters according to row_headers and column_headers
+        # defined with context variable.
+
+        if  [eld for eld in df_toplot[column_headers] if  str(eld).isdigit()] :
+            # column_headers are numeric, use them as x_axis
+            x_data = column_headers
+            if len(row_headers)>1:
+                # two row_headers are given
+                # use the second one as row_label if it exists.
+                row_label = row_headers[-1]
+            else:
+                row_label = row_headers[0]
+        else:
+            # column_headers are not numeric, probably a limited number
+            # of possibility, use it as row labels for facets.
+            x_data = row_headers[0]
+            row_label = column_headers
+
+        if len(sub_bench_list)>1:
+            # If benchmark is composed of sub benchmarks
+            # use their names as hue label
+            hue_label = sub_bench
+            # If there are multiple row_headers use the last one
+            # if not already used as row_label
+            if len(row_headers)>1 and (row_label!=row_headers[-1]):
+                col_label = row_headers[-1]
+            else:
+                col_label = None
+        else:
+            if len(row_headers)>1:
+                hue_label = row_headers[-1]
+            else:
+                hue_label = None
+            col_label = None
+
+        logging.debug("row_label: {}\n col_label: {}\n hue_label: {}\n x_data: {}\n"\
+                      .format(row_label, col_label, hue_label, x_data))
+
+        # Build FacetGrid graph
+        facetg = sns.FacetGrid(data = df_toplot, row = row_label,\
+                               col = col_label, hue = hue_label, height = 5,\
+                               aspect = 1.2 , sharex = True, sharey = False)
+
+        # Choose base 2 log scale as this axis often represents bytes or
+        # number of nodes
+        plt.xscale('symlog', basex=2)
+
+        facetg = facetg.map(plt.scatter, x_data,df_toplot.columns[-1]).add_legend()
+        plt.savefig(output_filename)
+
 
     def print_comparison(self, benchmark_name, input_directories, context=(None,None)):
         """
@@ -67,14 +137,12 @@ class ComparisonWriter:
                                       suffixes=['', '_post_'+str(idx)])
             idx += 1
 
-
         # At last merge add a _pre suffix to reference result
         if len(pandas_list)>1:
             pd_compare = pandas.merge(pd_compare, pandas_list[-1], \
                                       on=context[0], suffixes=['_pre', '_post_'+str(idx)])
         else:
             pd_compare = panda_ref
-
 
         pd_compare_columns_list = list(pd_compare.columns.values)
         result_columns = [ x for x in pd_compare_columns_list if x not in context[0]]
@@ -179,8 +247,8 @@ class ComparisonWriter:
         for input_dir, date_interval in config_list:
 
             metadata, current_panda, current_context, current_sub_bench\
-                = self.dstore._dir_to_pandas(input_dir, benchmark_name, \
-                                             date_interval, context=context_in)
+                = self.dstore.dir_to_pandas(input_dir, benchmark_name, \
+                                            date_interval, context=context_in)
             if current_panda.empty:
                 continue
 
