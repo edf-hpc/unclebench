@@ -54,29 +54,27 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         """
         bapi.BenchmarkingAPI.__init__(self, benchmark_name, platform_name)
         self.uconf = uconfig.UbenchConfig()
-        self.benchmark_path_in \
-          = os.path.join(self.uconf.benchmark_dir,\
-                         benchmark_name,\
-                         benchmark_name+".xml")
+        self.benchmark_path_in = os.path.join(self.uconf.benchmark_dir,
+                                              benchmark_name,
+                                              benchmark_name+".xml")
 
         self.benchmark_name = benchmark_name
         self.platform_name = platform_name
-        benchmark_dir = os.path.join(self.uconf.benchmark_dir,\
+        benchmark_dir = os.path.join(self.uconf.benchmark_dir,
                                      benchmark_name)
 
         benchmark_files = [file_b for  file_b in \
                            os.listdir(benchmark_dir) \
                            if file_b.endswith(".xml")]
-        self.benchmark_path \
-          = os.path.join(self.uconf.run_dir,\
-                         platform_name,\
-                         benchmark_name)
 
-        self.jube_xml_files \
-          = jube_xml_parser.JubeXMLParser(benchmark_dir,\
-                                          benchmark_files,\
-                                          self.benchmark_path,\
-                                          self.uconf.platform_dir)
+        self.benchmark_path = os.path.join(self.uconf.run_dir,
+                                           platform_name,
+                                           benchmark_name)
+
+        self.jube_xml_files = jube_xml_parser.JubeXMLParser(benchmark_dir,
+                                                            benchmark_files,
+                                                            self.benchmark_path,
+                                                            self.uconf.platform_dir)
         self.jube_xml_files.load_platform_xml(platform_name)
         self.jube_const_params = {}
 
@@ -103,10 +101,9 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                              universal_newlines=True)
         continue_cmd.wait()
 
-        input_str = 'jube analyse ./'+output_dir+' --id '+benchmark_id
+        input_str = 'jube analyse {} --id {}'.format(output_dir,benchmark_id)
         analyse_from_jube = Popen(input_str, cwd=os.getcwd(), shell=True, stdout=PIPE, universal_newlines=True)
         benchmark_results_path = ''
-
 
         for line in analyse_from_jube.stdout:
             if 'Analyse data storage: ' in line:
@@ -157,8 +154,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                 if os.path.isdir(result_dir):
                     dir_list.append(result_dir)
 
-            newest_result_dir \
-              = max(dir_list, key=os.path.getmtime)
+            newest_result_dir = max(dir_list, key=os.path.getmtime)
             idb_s = newest_result_dir
         else:
             idb_s = str(idb).zfill(6)
@@ -196,6 +192,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             with open(fpath, 'r') as log_file:
                 result += log_file.read()+'\n'
 
+
         return '\n-------------------------------------------------------\n'\
             +'==== Log for {0} benchmark. (run ID = {1})  ==== \n'\
             .format(self.benchmark_name, os.path.basename(idb_s))\
@@ -219,11 +216,13 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         global_status = {}
         for step in bench_steps:
             # Updating state with continue command
-            continue_cmd = Popen('jube continue --hide-animation ./'+\
-                                 output_dir+' --id '+benchmark_id, cwd=os.getcwd(),\
-                                 stdout=open(os.devnull, "w"), shell=True, universal_newlines=True)
+            # countinue_str = 'jube continue --hide-animation
+            cmd_str = 'jube continue --hide-animation {} --id {}'.format(output_dir,benchmark_id)
+            continue_cmd = Popen(cmd_str, cwd=os.getcwd(),
+                                 stdout=open(os.devnull, "w"), shell=True,
+                                 universal_newlines=True)
             continue_cmd.wait()
-            input_str = 'jube info ./'+output_dir+' --id '+benchmark_id+' --step '+step
+            input_str = 'jube info {} --id {} --step {}'.format(output_dir,benchmark_id,step)
             status_from_jube = Popen(input_str, cwd=os.getcwd(), shell=True, stdout=PIPE,
                                      universal_newlines=True)
             global_status[step] = []
@@ -456,10 +455,11 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         old_run_dir = self.analyse_last()
 
-        input_str = 'jube run --hide-animation '+\
-                    self.benchmark_name+'.xml --tag '+platform+' > /dev/null &'
         my_env = os.environ
         my_env['UBENCH_PLATFORM_DIR'] = platform_dir
+        input_str = 'jube run --hide-animation {}.xml --tag {}'.format(self.benchmark_name,
+                                                                       platform)
+
         Popen(input_str, cwd=os.getcwd(), shell=True, env=my_env, universal_newlines=True)
 
         # Get the run directory without waiting for jube run command to finish
@@ -617,7 +617,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         """
         TODO
         """
-        match_variable_name = re.match(r'^\.*\$(\w+)\.*|^\.*\$\{(\w+)\\}\.*',\
+        match_variable_name = re.match(r'^\.*\$(\w+)\.*|^\.*\$\{(\w+)\\}\.*',
                                        matchobj.group(0)).group(1, 2)
         name = [x for x in match_variable_name if x is not None][0]
         if name in self.jube_const_params:
