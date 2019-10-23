@@ -332,13 +332,11 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         if not set the array is printed on stdout.
         :type output_file: string"""
         result_array=self.result_array
-        for i in range(0,len(result_array)/2):
-            result_array[i].append(result_array[len(result_array)/2+i][0])
 
-        result_array=result_array[:len(result_array)/2]
-        if not debug_mode:
-            for i in range(0,len(result_array)):
-                result_array[i]=result_array[i][:len(result_array[i])-1]
+        # if not debug_mode:
+        #     for i in range(len(result_array)):
+        #         result_array[i]=result_array[i][:len(result_array[i])-1]
+        
         self.result_array=result_array
         if output_file:
             output_file.write('[options="header"]\n')
