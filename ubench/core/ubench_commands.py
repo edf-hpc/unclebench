@@ -35,7 +35,7 @@ except ImportError:
 import ubench.benchmarking_tools_interfaces.jube_xml_parser as jube_xml_parser
 import ubench.core.fetcher as fetcher
 import ubench.data_management.comparison_writer as comparison_writer
-import ubench.data_management.report_writer as report_writer
+import ubench.data_management.report as report
 import pandas as pd
 import yaml
 
@@ -181,12 +181,12 @@ class UbenchCmd:
         bench_template = os.path.join(self.uconf.templates_path, "bench.html")
         compare_template =  os.path.join(self.uconf.templates_path, "compare.html")
         report_template =  os.path.join(self.uconf.templates_path, "report.html")
-        rwriter = report_writer.ReportWriter(metadata_file, bench_template,
-                                             compare_template, report_template)
+        perf_report = report.Report(metadata_file, bench_template,
+                                compare_template, report_template)
         report_name = "ubench_performance_report"
 
         print(("    Writing report {} in {} directory".format(report_name+".html", output_dir)))
-        rwriter.write_report(output_dir, report_name)
+        perf_report.write(output_dir, report_name)
 
         asciidoctor_cmd\
             = 'asciidoctor -a stylesheet=' + self.uconf.stylesheet_path + " "\
