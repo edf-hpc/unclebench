@@ -58,7 +58,7 @@ class Report:
         self.required_fields = set(['tester', 'platform', 'date_start',
                                     'date_end', 'dir', 'comment',
                                     'result'])
-        self.context_fields = set(['compare', 'compare_threshold',
+        self.context_fields = set(['compare_array', 'compare_graph', 'compare_threshold',
                                    'compare_comment', 'row_headers',
                                    'column_headers'])
         self.metadata = {}
@@ -340,16 +340,20 @@ class Report:
                                                    output_dir)
 
             # Write performance comparison across sessions
-            if bool(common_report_data['compare']):
+
+            compare_file = \
+                self.write_comparison(benchmark_name,
+                                      sub_bench,
+                                      sub_bench_list,
+                                      context,
+                                      common_report_data['compare_threshold'],
+                                      common_report_data['compare_array'],
+                                      common_report_data['compare_graph'],
+                                      output_dir)
+            if compare_file:
                 if not 'compare' in self.report_files:
                     self.report_files['compare'] = {}
-
-                self.report_files['compare'][benchmark_name]\
-                    = self.write_comparison(output_dir, benchmark_name,
-                                            sub_bench, sub_bench_list,
-                                            self.date_interval_list, self.directory_list,
-                                            context, common_report_data['compare_threshold'],
-                                            self.session_list)
+                self.report_files['compare'][benchmark_name] = compare_file
 
         # Write full report
         self.report_dictionnary['report_files'] = self.report_files
@@ -359,33 +363,38 @@ class Report:
 
 
 
-    def write_comparison(self, output_dir, bench_name, sub_bench, sub_bench_list, \
-                         date_interval_list, dir_list, context, threshold, session_list):
+    def write_comparison(self,
+                         benchmark_name,
+                         sub_bench,
+                         sub_bench_list,
+                         context,
+                         compare_threshold,
+                         compare_array,
+                         compare_graph,
+                         output_dir):
         """
         Write performance comparison report section
         """
         dic_compare = {}
-        cwriter = comparison_writer.ComparisonWriter(threshold)
-        c_list = cwriter.compare(bench_name, dir_list, \
-                                 date_interval_list, (context[0]+[context[1]], None),
-                                 session_list)
+        cwriter = comparison_writer.ComparisonWriter(compare_threshold)
+        c_list = cwriter.compare(benchmark_name, self.directory_list, \
+                                 self.date_interval_list, (context[0]+[context[1]], None),
+                                 self.session_list)
+        if(compare_array):
+            dic_compare['dataframe_list'] = list(zip(c_list, sub_bench_list))
+            dic_compare['ncols'] = len(c_list[-1].columns)
 
-        # Plot a comparison graph
-        cwriter.write_cplot(c_list, sub_bench, sub_bench_list,
-                            context, os.path.join(output_dir, bench_name+'.png'))
+        dic_compare['figure_list'] = []
+        if(compare_graph):
+            # Plot a comparison graph
+            cwriter.write_cplot(c_list, sub_bench, sub_bench_list,
+                                context, os.path.join(output_dir, benchmark_name+'.png'))
+            dic_compare['figure_list'].append(benchmark_name+'.png')
 
-        if(sub_bench):
-            for df_comp in c_list:
-                df_comp.drop(sub_bench, 1, inplace=True)
-
-        dic_compare['dataframe_list'] = list(zip(c_list, sub_bench_list))
-        dic_compare['ncols'] = len(c_list[-1].columns)
-        dic_compare['figure'] = bench_name+'.png'
-        out_filename = bench_name+"_comparison.asc"
+        out_filename = benchmark_name+"_comparison.asc"
 
         self.jinja_templated_write(dic_compare, self.compare_template, \
                                    os.path.join(output_dir, out_filename))
-
         return out_filename
 
     def get_default_fields(self, parameter_list):
