@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #  This file is part of the UncleBench benchmarking tool.                    #
-#        Copyright (C) 2017  EDF SA                                          #
+#        Copyright (C) 2019 EDF SA                                           #
 #                                                                            #
 #  UncleBench is free software: you can redistribute it and/or modify        #
 #  it under the terms of the GNU General Public License as published by      #
@@ -10,44 +10,54 @@
 #                                                                            #
 #  UncleBench is distributed in the hope that it will be useful,             #
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of            #
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the              #
 #  GNU General Public License for more details.                              #
 #                                                                            #
 #  You should have received a copy of the GNU General Public License         #
-#  along with UncleBench.  If not, see <http://www.gnu.org/licenses/>.       #
+#  along with UncleBench. If not, see <http://www.gnu.org/licenses/>.        #
 #                                                                            #
 ##############################################################################
+# pylint: disable=superfluous-parens, fixme, invalid-name
+""" Define UbenchCmd class """
 
-"""
-Define UbenchCmd class
-"""
+
 import os
 import re
 from subprocess import Popen
+import yaml
+
 import ubench.core.ubench_config as uconfig
 import ubench.benchmark_managers.benchmark_manager_set as bms
+import ubench.benchmarking_tools_interfaces.jube_xml_parser as jube_xml_parser
+import ubench.core.fetcher as fetcher
+import ubench.data_management.comparison_writer as comparison_writer
+import ubench.data_management.report as report
 
 try:
     import ubench.scheduler_interfaces.slurm_interface as slurmi
 except ImportError:
     pass
 
-import ubench.benchmarking_tools_interfaces.jube_xml_parser as jube_xml_parser
-import ubench.core.fetcher as fetcher
-import ubench.data_management.comparison_writer as comparison_writer
-import ubench.data_management.report as report
-import pandas as pd
-import yaml
 
+class UbenchCmd(object):
+    """ Implements Unclebench commands.
 
-class UbenchCmd:
+    Each Unclebench command that can be calld from the command
+    line is defined in this class.
+
+    Attributes:
+        log
+        list_parameters
+        result
+        run
+        fetch
+        compare
+        report
     """
-    Class defining methods corresponding to unclebench commands
-    """
+
     def __init__(self, platform, benchmark_list=None):
-        """
-        TOCOMMENT
-        """
+        """ Class constructor """
+
         self.uconf = uconfig.UbenchConfig()
         self.run_dir = os.path.join(self.uconf.run_dir, platform)
         self.platform = platform
@@ -58,7 +68,13 @@ class UbenchCmd:
 
 
     def log(self, id_list=None):
-        """ TOCOMMENT"""
+        """ Provides information about benchmark execution
+
+        Args:
+            id_list (optional): by default, it will print information on last
+                                execution for the instance benchmark and platform.
+        """
+
         if not id_list:
             id_list = [-1]
         for idb in id_list:
@@ -66,12 +82,14 @@ class UbenchCmd:
 
 
     def list_parameters(self, default_values=False):
-        """ TOCOMMENT"""
+        """ Lists benchmark parameters """
+
         self.bm_set.list_parameters(default_values)
 
 
-    def result(self, id_list,debug_mode):
-        """ TOCOMMENT """
+    def result(self, id_list, debug_mode):
+        """ Prints benchmark results """
+
         if not id_list:
             id_list = ['last']
 
@@ -82,55 +100,60 @@ class UbenchCmd:
             self.bm_set.extract_results(idb)
             self.bm_set.print_result_array(debug_mode)
 
+
     def listb(self):
         """ Lists runs information"""
+
         self.bm_set.list_runs()
 
-    # def run(self, w_list=None, customp_list=None, execute=False,raw_cli=None):
-    def run(self, opt_dict ={}):
+
+    def run(self, opt_dict={}):  # pylint: disable=dangerous-default-value
         """ TOCOMMENT """
+
         if opt_dict['w']:
             try:
                 opt_dict['w'] = self.translate_wlist_to_scheduler_wlist(opt_dict['w'])
-            except Exception as exc:
+            except Exception as exc:  # pylint: disable=broad-except
                 print('---- Custom node configuration is not valid : {0}'.format(str(exc)))
                 return
         print('')
         print('-- Ubench platform name set to : {0}'.format(self.platform))
 
         if not os.path.isdir(self.uconf.resource_dir):
-            print('---- The resource directory {0} does not exist.'.format(self.uconf.resource_dir)+\
-                'Please run ubench fetch to retrieve sources and test cases.')
+            print('---- The resource directory {0} does not exist.'.
+                  format(self.uconf.resource_dir) +
+                  'Please run ubench fetch to retrieve sources and test cases.')
             return
 
         # Set custom parameters
         dict_options = {}
         if opt_dict['file_params']:
-          with open(opt_dict['file_params'],'r') as params_file:
-            dict_options=yaml.load(params_file)
+            with open(opt_dict['file_params'], 'r') as params_file:
+                dict_options = yaml.load(params_file)
 
-          self.bm_set.set_parameter(dict_options)
-          # we read a file which contains a dictionary with the options
+            self.bm_set.set_parameter(dict_options)
+            # we read a file which contains a dictionary with the options
 
         if 'custom_params' in opt_dict:
-          for elem in opt_dict['custom_params']:
-            try:
-              splitted_param = re.split(':', elem, 1)
-              dict_options[splitted_param[0]] = splitted_param[1]
-            except Exception as exc:
-              print('---- {0} is not formated correctly'.format(elem)+\
-                ', please consider using : -c param:new_value')
-            self.bm_set.set_parameter(dict_options)
+            for elem in opt_dict['custom_params']:
+                try:
+                    splitted_param = re.split(':', elem, 1)
+                    dict_options[splitted_param[0]] = splitted_param[1]
+                except Exception as exc:  # pylint: disable=broad-except
+                    print('---- {0} is not formated correctly'.format(elem) +
+                          ', please consider using : -c param:new_value')
+                self.bm_set.set_parameter(dict_options)
 
         # Run each benchmarks
         self.bm_set.run(self.platform, opt_dict)
 
 
     def fetch(self):
-        """ TOCOMMENT """
+        """ Fetches benchmarks sources """
+
         for benchmark_name in self.benchmark_list:
             benchmark_dir = os.path.join(self.uconf.benchmark_dir, benchmark_name)
-            benchmark_files = [file_b for  file_b in os.listdir(benchmark_dir) \
+            benchmark_files = [file_b for file_b in os.listdir(benchmark_dir)
                                if file_b.endswith(".xml")]
             jube_xml_files = jube_xml_parser.JubeXMLParser(benchmark_dir, benchmark_files)
             multisource = jube_xml_files.get_bench_multisource()
@@ -139,7 +162,7 @@ class UbenchCmd:
                 print("ERROR !! : Multisource information for benchmark not found")
                 return None
 
-            fetch_bench = fetcher.Fetcher(resource_dir=self.uconf.resource_dir,\
+            fetch_bench = fetcher.Fetcher(resource_dir=self.uconf.resource_dir,
                                           benchmark_name=benchmark_name)
             for source in multisource:
 
@@ -148,23 +171,29 @@ class UbenchCmd:
 
                 if source['protocol'] == 'https':
                     fetch_bench.https(source['url'], source['files'])
+
                 elif source['protocol'] == 'svn' or source['protocol'] == 'git':
                     if 'revision' not in source:
                         source['revision'] = None
                     if 'branch' not in source:
                         source['branch'] = None
-
-                    fetch_bench.scm_fetch(source['url'], source['files'], \
-                                          source['protocol'], source['revision'], \
+                    fetch_bench.scm_fetch(source['url'], source['files'],
+                                          source['protocol'], source['revision'],
                                           source['branch'], source['do_cmds'])
+
                 elif source['protocol'] == 'local':
                     fetch_bench.local(source['files'], source['do_cmds'])
 
 
-    def compare(self, input_directories, benchmark_name , context=(None,None), \
+    # pylint: disable=no-self-use
+    def compare(self, input_directories, benchmark_name, context=(None, None),
                 threshold=None):
-        """
-        Compare bencharks results from different directories.
+        """ Compare bencharks results from different directories.
+
+        Args:
+            input_directories:
+            benchmark_name:
+            context:
         """
         cwriter = comparison_writer.ComparisonWriter(threshold)
         print("    comparing :")
@@ -175,34 +204,39 @@ class UbenchCmd:
 
 
     def report(self, metadata_file, output_dir):
-        """
-        Build a performance report.
+        """ Build a performance report.
+
+        Args:
+            metadata_file: file containing parameters for report build
+            outpit_dir: where to store the report
         """
         bench_template = os.path.join(self.uconf.templates_path, "bench.html")
-        compare_template =  os.path.join(self.uconf.templates_path, "compare.html")
-        report_template =  os.path.join(self.uconf.templates_path, "report.html")
+        compare_template = os.path.join(self.uconf.templates_path, "compare.html")
+        report_template = os.path.join(self.uconf.templates_path, "report.html")
         perf_report = report.Report(metadata_file, bench_template,
-                                compare_template, report_template)
+                                    compare_template, report_template)
         report_name = "ubench_performance_report"
 
         print(("    Writing report {} in {} directory".format(report_name+".html", output_dir)))
         perf_report.write(output_dir, report_name)
 
-        asciidoctor_cmd\
-            = 'asciidoctor -a stylesheet=' + self.uconf.stylesheet_path + " "\
-            + os.path.join(os.getcwd(),output_dir,report_name+".asc")
+        asciidoctor_cmd = ('asciidoctor -a stylesheet=' + self.uconf.stylesheet_path
+                           + " " + os.path.join(os.getcwd(), output_dir, report_name + ".asc"))
 
         Popen(asciidoctor_cmd, cwd=os.getcwd(), shell=True, universal_newlines=True)
 
 
+    # pylint: disable=undefined-loop-variable,too-many-locals,redefined-variable-type
     def translate_wlist_to_scheduler_wlist(self, w_list_arg):
+        """ Translate ubench custom node list format to scheduler custome node list format
+
+        Args:
+            w_list_arg:
         """
-        Translate ubench custom node list format to scheduler custome node list format
-        TODO determine scheduler_interface from platform data.
-        """
+
         try:
             scheduler_interface = slurmi.SlurmInterface()
-        except:
+        except:  # pylint:disable=bare-except
             print("Warning!! Unable to load slurm module")
             scheduler_interface = None
             return
@@ -211,16 +245,17 @@ class UbenchCmd:
         for sub_wlist in w_list:
             sub_wlist_temp = list(sub_wlist)
             stride = 0
+
         for idx, welem in enumerate(sub_wlist_temp):
             # Manage the all keyword that is meant to launch benchmarks on evry idle node
             catch = re.search(r'^all(\d+)$', str(welem))
-            idxn = idx+stride
+            idxn = idx + stride
             if catch:
                 slice_size = int(catch.group(1))
                 available_nodes_list = scheduler_interface.get_available_nodes(slice_size)
                 njobs = len(available_nodes_list)
                 sub_wlist[idxn:idxn+1] = list(zip([slice_size]*njobs, available_nodes_list))
-                stride += njobs-1
+                stride += njobs - 1
             else:
                 # Manage the cn[10,13-17] notation
                 catch = re.search(r'^(\D+.*)$', str(welem))
@@ -235,7 +270,7 @@ class UbenchCmd:
                     if catch:
                         nnodes_list = [int(x) for x in re.split(',', str(welem))]
                         sub_wlist[idxn:idxn+1] = list(zip(nnodes_list, [None]*len(nnodes_list)))
-                        stride += len(nnodes_list)-1
+                        stride += len(nnodes_list) - 1
                     else:
                         # Manage the 2,4,cn[200-205] notation that is used
                         # to get cn[200-201] cn[200-203]
@@ -243,12 +278,11 @@ class UbenchCmd:
                         if catch:
                             nnodes_list = [int(x) for x in re.split(',', catch.group(1))]
                             nodes_list = str(catch.group(2))
-                            sub_wlist[idxn:idxn+1]\
-                                = list(zip(nnodes_list, \
-                                      scheduler_interface.\
-                                      get_truncated_nodes_lists(nnodes_list, nodes_list)))
-
-                            stride += len(nnodes_list)-1
+                            sub_wlist[idxn:idxn+1] = list(
+                                zip(nnodes_list,
+                                    scheduler_interface.get_truncated_nodes_lists(nnodes_list,
+                                                                                  nodes_list)))
+                            stride += len(nnodes_list) - 1
                         else:
                             raise Exception(str(welem)+'format is not correct')
 
