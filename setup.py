@@ -16,6 +16,9 @@
 #  along with UncleBench.  If not, see <http://www.gnu.org/licenses/>.       #
 #                                                                            #
 ##############################################################################
+# pylint: disable=line-too-long
+""" Provides setup configuration """
+
 
 try:
     from setuptools import setup
@@ -24,21 +27,28 @@ except ImportError:
 
 from ubench.release import __version__, __author__
 
+
 setup(name='ubench',
       version=__version__,
-      description="Unclebench is a tool for automating the running of complex benchmarks on HPC clusters."\
-                   "It is currently based on (JUBE http://www.fz-juelich.de/ias/jsc/EN/Expertise/Support/Software/JUBE/_node.html) but any benchmarking engine can be easily integrated."\
-                   "Its architecture make it easier to handle platforms settings, benchmark descriptions, sources and test cases as separate resources."\
-                   "It provides useful commands to modify parameters on the fly without having to modify the benchmark or platform description files',",
+      description=('Unclebench is a tool for automating the running of complex'
+                   ' benchmarks on HPC clusters. It is currently based on JUBE'
+                   ' (http://www.fz-juelich.de/ias/jsc/EN/Expertise/Support/Software/JUBE/_node.html)'
+                   ' but any benchmarking engine can be easily integrated.'
+                   ' Its architecture make it easier to handle platforms'
+                   ' settings, benchmark descriptions, sources and test cases as'
+                   ' separate resources. It provides useful commands to modify'
+                   ' parameters on the fly without having to modify the'
+                   ' benchmark or platform description files'),
       install_requires=[
           'clustershell>=1.6'
           'seaborn>=0.9.0'],
       url='https://github.com/edf-hpc/unclebench',
       author=__author__,
       author_email='dsp-cspito-ccn-hpc@edf.fr',
-      scripts = ['bin/ubench'],
+      scripts=['bin/ubench'],
       license='GPLv3',
-      packages=['ubench','ubench.core',
+      packages=['ubench',
+                'ubench.core',
                 'ubench.benchmark_managers',
                 'ubench.benchmarking_tools_interfaces',
                 'ubench.data_management',
