@@ -1,8 +1,7 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 ##############################################################################
 #  This file is part of the UncleBench benchmarking tool.                    #
-#        Copyright (C) 2019  EDF SA                                          #
+#        Copyright (C) 2019 EDF SA                                           #
 #                                                                            #
 #  UncleBench is free software: you can redistribute it and/or modify        #
 #  it under the terms of the GNU General Public License as published by      #
@@ -11,13 +10,14 @@
 #                                                                            #
 #  UncleBench is distributed in the hope that it will be useful,             #
 #  but WITHOUT ANY WARRANTY; without even the implied warranty of            #
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the              #
 #  GNU General Public License for more details.                              #
 #                                                                            #
 #  You should have received a copy of the GNU General Public License         #
-#  along with UncleBench.  If not, see <http://www.gnu.org/licenses/>.       #
+#  along with UncleBench. If not, see <http://www.gnu.org/licenses/>.        #
 #                                                                            #
 ##############################################################################
+""" Provides release information"""
 
-__version__ = '0.3.6'
+__version__ = '0.3.7'
 __author__ = 'EDF CCN HPC'
