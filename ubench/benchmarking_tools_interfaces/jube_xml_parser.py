@@ -891,16 +891,16 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
                 platform_path = os.path.join(path_raw, 'platform.xml')
                 nodetype_path = os.path.join(path_raw, 'nodetype.xml')
 
-            if os.path.exists(platform_path):
-                paths_platform_xml['platform.xml'] = ET.parse(platform_path)
-                path.text = self.platform_dir
+                if os.path.exists(platform_path):
+                    paths_platform_xml['platform.xml'] = ET.parse(platform_path)
+                    path.text = self.platform_dir
 
-            elif os.path.exists(nodetype_path):
-                platform_updir = os.path.dirname(path_raw)
-                path.text = self.platform_dir
-                paths_platform_xml['nodetype.xml'] = ET.parse(nodetype_path)
-                paths_platform_xml['platform.xml'] = ET.parse(
-                    os.path.join(platform_updir, 'platform.xml'))
+                elif os.path.exists(nodetype_path):
+                    platform_updir = os.path.dirname(path_raw)
+                    path.text = self.platform_dir
+                    paths_platform_xml['nodetype.xml'] = ET.parse(nodetype_path)
+                    paths_platform_xml['platform.xml'] = ET.parse(
+                        os.path.join(platform_updir, 'platform.xml'))
 
         self.platform_xml = paths_platform_xml
         platforms_xml.write(os.path.join(self.platform_dir, 'platforms.xml'))
