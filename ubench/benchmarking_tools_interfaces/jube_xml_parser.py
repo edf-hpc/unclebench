@@ -24,7 +24,36 @@ import os
 import re
 import tempfile
 import shutil
+import logging
 import lxml.etree as ET
+
+def parse_xml(xml_path, parser=None):
+    """
+    Wrapper of ElementTree parse method to handle ParseError
+    and IOError gracefully
+
+    Args:
+        xml_path: path of the xml file to parse
+        parser: ElementTree xml parser
+    """
+    try:
+        xml_element_tree = ET.parse(xml_path, parser)
+    except ET.ParseError as p_error:
+        msg = "Template file %s is malformed or not an xml"
+        logging.error(msg,
+                      xml_path, exc_info=False)
+        logging.debug(msg,
+                      xml_path, exc_info=True)
+        exit(1)
+    except IOError as io_error:
+        msg = "File %s cannot be loaded"
+        logging.error(msg,
+                      xml_path, exc_info=False)
+        logging.debug(msg,
+                      xml_path, exc_info=True)
+        exit(1)
+    else:
+        return xml_element_tree
 
 
 class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-many-instance-attributes
@@ -49,7 +78,7 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
         parser = ET.XMLParser(remove_blank_text=True)
 
         self.bench_xml = {
-            xml_file: ET.parse(os.path.join(self.bench_xml_path_in, xml_file),
+            xml_file: parse_xml(os.path.join(self.bench_xml_path_in, xml_file),
                                parser)
             for xml_file in bench_xml_files
         }
@@ -104,14 +133,14 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
         """ docstring """
 
         self.generate_platform()
-        return ET.parse(os.path.join(self.platform_dir, 'platforms.xml'))
+        return parse_xml(os.path.join(self.platform_dir, 'platforms.xml'))
 
 
     # The file is loaded later on, when the benchmark has already been run
     def load_config_xml(self, path):
         """ docstring """
 
-        self.config_xml = ET.parse(path).getroot()
+        self.config_xml = parse_xml(path).getroot()
 
 
     def get_bench_outputdir(self):
@@ -846,9 +875,8 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
 
         # Generate a file with all platform paths
         platform_dir = self.platforms_dir
-        template_xml = ET.parse(
-            os.path.join(platform_dir,
-                         'template.xml'))  # This contain the file platform.xml
+        template_xml = parse_xml(os.path.join(platform_dir, 'template.xml'))
+
         platform_directories = self.get_dirs(platform_dir)
         include_dir = template_xml.getroot().find('include-path')
         platform_element = ET.Element('path')
@@ -892,14 +920,14 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
                 nodetype_path = os.path.join(path_raw, 'nodetype.xml')
 
                 if os.path.exists(platform_path):
-                    paths_platform_xml['platform.xml'] = ET.parse(platform_path)
+                    paths_platform_xml['platform.xml'] = parse_xml(platform_path)
                     path.text = self.platform_dir
 
                 elif os.path.exists(nodetype_path):
                     platform_updir = os.path.dirname(path_raw)
                     path.text = self.platform_dir
-                    paths_platform_xml['nodetype.xml'] = ET.parse(nodetype_path)
-                    paths_platform_xml['platform.xml'] = ET.parse(
+                    paths_platform_xml['nodetype.xml'] = parse_xml(nodetype_path)
+                    paths_platform_xml['platform.xml'] = parse_xml(
                         os.path.join(platform_updir, 'platform.xml'))
 
         self.platform_xml = paths_platform_xml
