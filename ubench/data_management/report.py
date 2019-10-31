@@ -58,12 +58,9 @@ class Report:
         self.required_fields = set(['tester', 'platform', 'date_start',
                                     'date_end', 'dir', 'comment',
                                     'result'])
-        self.context_fields = set(['compare_array', 'compare_graph', 'compare_threshold',
-                                   'compare_comment', 'row_headers',
-                                   'column_headers'])
+        self.context_fields = set(['row_headers','column_headers'])
         self.metadata = {}
         self.initialize(metadata_file)
-
 
         return
 
@@ -181,6 +178,12 @@ class Report:
         # This will be extended by benchmarks and session sections
         report_from_contexts = {}
         report_from_contexts['benchmark_name'] = benchmark_name
+
+        # Set default values for some common fields
+        report_from_contexts['compare_threshold'] = 0.0
+        report_from_contexts['compare_array'] = False
+        report_from_contexts['compare_graph'] = True
+        report_from_contexts['compare_comment'] = ""
 
         dic_contexts = {}
         for ctx_el in self.metadata['contexts']:
@@ -303,10 +306,6 @@ class Report:
 
             self.report_dictionnary['benchmarks'].append(benchmark_name)
             fields_to_find = self.required_fields.union(self.context_fields)
-
-            # this data is common to evry session
-            common_report_data = {}
-            common_report_data['benchmark_name'] = benchmark_name
 
             # For each benchmark look for report fields in context, sessions
             # and benchmark sections
