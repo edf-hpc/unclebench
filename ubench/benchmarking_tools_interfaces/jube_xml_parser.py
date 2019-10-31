@@ -42,14 +42,14 @@ def parse_xml(xml_path, parser=None):
         msg = "Template file %s is malformed or not an xml"
         logging.error(msg,
                       xml_path, exc_info=False)
-        logging.debug(msg,
+        logging.debug(msg+": "+str(p_error),
                       xml_path, exc_info=True)
         exit(1)
     except IOError as io_error:
         msg = "File %s cannot be loaded"
         logging.error(msg,
                       xml_path, exc_info=False)
-        logging.debug(msg,
+        logging.debug(msg+": "+str(io_error),
                       xml_path, exc_info=True)
         exit(1)
     else:
