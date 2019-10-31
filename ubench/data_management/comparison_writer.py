@@ -310,17 +310,19 @@ class ComparisonWriter(object):
                            current_context[1])
 
             if sub_bench and current_sub_bench != sub_bench:
-                return('Different sub benchs found: {} and {}. Cannot compare results.'
-                       .format(current_sub_bench, sub_bench))
+                print('Different sub benchs found: {} and {}. Cannot compare results.'
+                      .format(current_sub_bench, sub_bench))
+                return []
             else:
                 sub_bench = current_sub_bench
 
         if not pandas_list:
-            return('No ubench results data found in given'
-                   ' directories or not well-formated data')  # pylint: disable=superfluous-parens
+            print('No ubench results data found in given'
+                  ' directories or not well-formated data')  # pylint: disable=superfluous-parens
+            return []
 
         if all(panda.empty for panda in pandas_list):
-            return('')  # pylint: disable=superfluous-parens
+            return []  # pylint: disable=superfluous-parens
 
         # List sub_benchs
         if not sub_bench:
