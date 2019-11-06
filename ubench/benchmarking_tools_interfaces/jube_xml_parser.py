@@ -75,7 +75,7 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
         self.bench_xml_path_out = bench_xml_path_out  # string
         self.bench_xml_files = bench_xml_files
 
-        parser = ET.XMLParser(remove_blank_text=True)
+        parser = ET.XMLParser(remove_blank_text=True, remove_comments=True)
 
         self.bench_xml = {
             xml_file: parse_xml(os.path.join(self.bench_xml_path_in, xml_file),
