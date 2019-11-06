@@ -78,8 +78,7 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
         parser = ET.XMLParser(remove_blank_text=True, remove_comments=True)
 
         self.bench_xml = {
-            xml_file: parse_xml(os.path.join(self.bench_xml_path_in, xml_file),
-                               parser)
+            xml_file: parse_xml(os.path.join(self.bench_xml_path_in, xml_file), parser)
             for xml_file in bench_xml_files
         }
         self.bench_xml_root = [
@@ -365,7 +364,12 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
 
 
     def get_params_bench(self):
-        """ docstring """
+        """ Returns benchmark parameters
+
+        Parses benchmark XML file and returns a list of tuples
+        with `name` and `text` for all XML elements whose tag
+        is `parameter`.
+        """
 
         # Include variable of multisource
         self.add_bench_input(dict_options=None)
@@ -935,7 +939,12 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
 
 
     def get_params_platform(self, platform_name):
-        """ docstring """
+        """ Returns platform parameters
+
+        Parses platform XML file and returns a list of tuples
+        with `name` and `text` for all XML elements whose tag
+        is `parameter`.
+        """
 
         parameters_list = []
         self.load_platform_xml(platform_name)
