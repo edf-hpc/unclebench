@@ -372,7 +372,7 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
         parameters_list = []
 
         for b_xml in self.bench_xml_root:
-            for parameter_node in b_xml.getiterator('parameter'):
+            for parameter_node in b_xml.iter('parameter'):
                 parameters_list.append(
                     (parameter_node.get('name'), parameter_node.text.strip()))
 
