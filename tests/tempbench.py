@@ -31,7 +31,7 @@ class Tempbench(object):
 
         self.config = config
         self.config['bench_path'] = config['main_path'] + '/benchmarks'
-        self.config['plugin_path'] = config['main_path'] + '/plugin'
+        # self.config['plugin_path'] = config['main_path'] + '/plugin'
         self.config['run_path'] = config['main_path'] + '/run'
         self.config['resources_path'] = config['main_path'] + '/resources'
         self.config['bench_input'] = os.path.join(repository_root, 'benchmarks/simple')
@@ -51,7 +51,7 @@ class Tempbench(object):
         """ docstring """
 
         bench_input = self.config['bench_input']
-        bench_path = os.path.join(self.config['bench_path'], 'simple.')
+        bench_path = os.path.join(self.config['bench_path'], 'simple')
         shutil.copytree(bench_input, bench_path)
 
 
