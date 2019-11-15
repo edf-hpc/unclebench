@@ -104,7 +104,7 @@ parser_run.add_argument('-w',
                               ' on all idle nodes'
                               ' ex: -w all4 to run a benchmark with 4 nodes jobs covering'
                               ' every idle node'),
-                        nargs='*',
+                        nargs='+',
                         action='append')
 
 parser_run.add_argument('-c',
