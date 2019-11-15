@@ -110,10 +110,19 @@ class Fetcher(object):
             fetch_command += '-r {0} '.format(revision)
 
         # pylint: disable=too-many-format-args
-        fetch_command += '{0} {1} --username {2} --password \'{3}\' --trust-server-cert' + \
-                         ' --non-interactive --no-auth-cache'.format(url, svn_file, svn_login,
-                                                                     svn_password)
+        svn_options = ['{url}',
+                       '{svn_file}',
+                       '--username {user}',
+                       '--password \'{passw}\'',
+                       '--trust-server-cert',
+                       '--non-interactive',
+                       '--no-auth-cache']
+        fetch_command += ' '.join(svn_options).format(url=url,
+                                                      svn_file=svn_file,
+                                                      user=svn_login,
+                                                      passw=svn_password)
 
+        # import pdb;pdb.set_trace()
         return fetch_command
 
 
@@ -150,7 +159,7 @@ class Fetcher(object):
             revision = [-1]
 
         for rev in revision:
-            if rev is -1:
+            if rev == -1:
                 benchresource_dir = os.path.join(self.resource_dir,
                                                  self.benchmark_name, scm_name)
             else:
