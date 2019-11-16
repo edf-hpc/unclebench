@@ -111,6 +111,7 @@ class UbenchCmd(object):
         """ TOCOMMENT """
 
         if opt_dict['w']:
+
             try:
                 opt_dict['w'] = self.translate_wlist_to_scheduler_wlist(opt_dict['w'])
             except Exception as exc:  # pylint: disable=broad-except
@@ -123,7 +124,7 @@ class UbenchCmd(object):
             print('---- The resource directory {0} does not exist.'.
                   format(self.uconf.resource_dir) +
                   'Please run ubench fetch to retrieve sources and test cases.')
-            return
+            exit(1)
 
         # Set custom parameters
         dict_options = {}
@@ -134,7 +135,7 @@ class UbenchCmd(object):
             self.bm_set.set_parameter(dict_options)
             # we read a file which contains a dictionary with the options
 
-        if 'custom_params' in opt_dict:
+        if opt_dict['custom_params']:
             for elem in opt_dict['custom_params']:
                 try:
                     splitted_param = re.split(':', elem, 1)
@@ -160,7 +161,7 @@ class UbenchCmd(object):
 
             if multisource is None:
                 print("ERROR !! : Multisource information for benchmark not found")
-                return None
+                exit(1)
 
             fetch_bench = fetcher.Fetcher(resource_dir=self.uconf.resource_dir,
                                           benchmark_name=benchmark_name)
@@ -226,7 +227,7 @@ class UbenchCmd(object):
         Popen(asciidoctor_cmd, cwd=os.getcwd(), shell=True, universal_newlines=True)
 
 
-    # pylint: disable=undefined-loop-variable,too-many-locals,redefined-variable-type
+    # pylint: disable=undefined-loop-variable,too-many-locals
     def translate_wlist_to_scheduler_wlist(self, w_list_arg):
         """ Translate ubench custom node list format to scheduler custome node list format
 
@@ -237,9 +238,9 @@ class UbenchCmd(object):
         try:
             scheduler_interface = slurmi.SlurmInterface()
         except:  # pylint:disable=bare-except
-            print("Warning!! Unable to load slurm module")
+            print("Error!! Unable to load slurm module")
             scheduler_interface = None
-            return
+            return None
 
         w_list = list(w_list_arg)
         for sub_wlist in w_list:
