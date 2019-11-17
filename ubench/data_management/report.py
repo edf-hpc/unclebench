@@ -58,7 +58,7 @@ class Report:
         self.required_fields = set(['tester', 'platform', 'date_start',
                                     'date_end', 'dir', 'comment',
                                     'result'])
-        self.context_fields = set(['row_headers','column_headers'])
+        self.context_fields = set(['row_headers','column_headers','compare_array','compare_graph'])
         self.metadata = {}
         self.initialize(metadata_file)
 
