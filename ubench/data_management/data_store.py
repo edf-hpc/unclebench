@@ -218,7 +218,7 @@ class DataStore():
                         else:
                             print(('Error, context {} does not exist for benchmark {}'
                                    .format(column, benchmark_name)))
-                            exit  # pylint: disable=pointless-statement
+                            exit(1)  # pylint: disable=pointless-statement
 
                     report_info['result'].append(result)
                     if result_name_column:
