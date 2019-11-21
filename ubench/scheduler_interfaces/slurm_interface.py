@@ -22,9 +22,9 @@
 
 
 import os
+import re
 from subprocess import Popen, PIPE
 from ClusterShell.NodeSet import NodeSet
-import pyslurm  # pylint: disable=import-error
 
 
 class SlurmInterface(object):
@@ -45,27 +45,23 @@ class SlurmInterface(object):
             (str) list of nodes_id
         """
 
-        node_list = []
-        a = pyslurm.node()  # pylint: disable=invalid-name
-        node_dict = a.get()
-        node_count = 0
+        cmd = "sinfo -h -t IDLE"
+        cmd_output = Popen(cmd, cwd=os.getcwd(), shell=True,
+                           stdout=PIPE, universal_newlines=True)
+
+        if cmd_output.wait():
+            return []
+
         nodeset = NodeSet()
+        for line in cmd_output.stdout:
+            nodeset_str = re.split(r'\s+', line.strip())[5]
+            nodeset.update(nodeset_str)
 
-        if len(node_dict) > 0:
-            for key, value in sorted(node_dict.items()):
 
-                if value['state'] == 'IDLE':
-                    nodetype = value  # pylint: disable=unused-variable
-                    nodeset.update(key)
-                    node_count += 1
+        split_c = int(len(nodeset)/slices_size)
+        nodes_list = [str(ns) for ns in nodeset.split(split_c)]
 
-                if node_count == slices_size:
-                    node_list.append(str(nodeset))
-                    nodeset = NodeSet()
-                    slice_str = None  # pylint: disable=unused-variable
-                    node_count = 0
-
-        return node_list
+        return nodes_list
 
 
     def get_truncated_nodes_lists(self, nnodes_list, nodes_id):
