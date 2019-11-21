@@ -58,7 +58,7 @@ class Report:
         self.required_fields = set(['tester', 'platform', 'date_start',
                                     'date_end', 'dir', 'comment',
                                     'result'])
-        self.context_fields = set(['row_headers','column_headers','compare_array','compare_graph'])
+        self.context_fields = set(['row_headers','column_headers','compare_array','compare_graph','compare_comment'])
         self.metadata = {}
         self.initialize(metadata_file)
 
@@ -70,7 +70,10 @@ class Report:
         report metadata from metadata_file.
         """
         self.report_dictionnary = {}
+        self.report_dictionnary['compare_comment'] = {}
         self.report_files = {}
+        self.report_files['compare'] = {}
+
         self.date_interval_list = []
         self.session_list = []
         self.directory_list = []
@@ -183,7 +186,9 @@ class Report:
         report_from_contexts['compare_threshold'] = 0.0
         report_from_contexts['compare_array'] = False
         report_from_contexts['compare_graph'] = True
-        report_from_contexts['compare_comment'] = ""
+        report_from_contexts['compare_comment'] = ''
+        report_from_contexts['results_filter'] = []
+
 
         dic_contexts = {}
         for ctx_el in self.metadata['contexts']:
@@ -349,9 +354,11 @@ class Report:
                                       common_report_data['compare_array'],
                                       common_report_data['compare_graph'],
                                       output_dir)
+
+            self.report_dictionnary['compare_comment'][benchmark_name] =\
+                common_report_data['compare_comment']
+
             if compare_file:
-                if not 'compare' in self.report_files:
-                    self.report_files['compare'] = {}
                 self.report_files['compare'][benchmark_name] = compare_file
 
         # Write full report
