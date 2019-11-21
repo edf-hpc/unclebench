@@ -104,8 +104,7 @@ parser_run.add_argument('-w',
                               ' on all idle nodes'
                               ' ex: -w all4 to run a benchmark with 4 nodes jobs covering'
                               ' every idle node'),
-                        nargs='+',
-                        action='append')
+                        nargs='+')
 
 parser_run.add_argument('-c',
                         '--custom-params',
@@ -280,7 +279,7 @@ commands = ubench_commands.UbenchCmd(platform=platform_arg, benchmark_list=bench
 if args.subparser_name == 'run':
     options_dictionary = vars(args)
     options_dictionary['raw_cli'] = sys.argv
-    commands.run(options_dictionary)
+    sys.exit(commands.run(options_dictionary))
 elif args.subparser_name == 'fetch':
     commands.fetch()
 elif args.subparser_name == 'result':

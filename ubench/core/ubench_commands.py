@@ -77,6 +77,7 @@ class UbenchCmd(object):
 
         if not id_list:
             id_list = [-1]
+
         for idb in id_list:
             self.bm_set.print_log(int(idb))
 
@@ -116,7 +117,7 @@ class UbenchCmd(object):
                 opt_dict['w'] = self.translate_wlist_to_scheduler_wlist(opt_dict['w'])
             except Exception as exc:  # pylint: disable=broad-except
                 print('---- Custom node configuration is not valid : {0}'.format(str(exc)))
-                return
+                return False
         print('')
         print('-- Ubench platform name set to : {0}'.format(self.platform))
 
@@ -124,7 +125,7 @@ class UbenchCmd(object):
             print('---- The resource directory {0} does not exist.'.
                   format(self.uconf.resource_dir) +
                   'Please run ubench fetch to retrieve sources and test cases.')
-            exit(1)
+            return False
 
         # Set custom parameters
         dict_options = {}
@@ -147,7 +148,7 @@ class UbenchCmd(object):
 
         # Run each benchmarks
         self.bm_set.run(self.platform, opt_dict)
-
+        return True
 
     def fetch(self):
         """ Fetches benchmarks sources """
@@ -242,51 +243,13 @@ class UbenchCmd(object):
             scheduler_interface = None
             return None
 
-        w_list = list(w_list_arg)
-        for sub_wlist in w_list:
-            sub_wlist_temp = list(sub_wlist)
-            stride = 0
-
-        for idx, welem in enumerate(sub_wlist_temp):
-            # Manage the all keyword that is meant to launch benchmarks on evry idle node
-            catch = re.search(r'^all(\d+)$', str(welem))
-            idxn = idx + stride
-            if catch:
-                slice_size = int(catch.group(1))
-                available_nodes_list = scheduler_interface.get_available_nodes(slice_size)
-                njobs = len(available_nodes_list)
-                sub_wlist[idxn:idxn+1] = list(zip([slice_size]*njobs, available_nodes_list))
-                stride += njobs - 1
+        w_list = []
+        for element in w_list_arg:
+            if element.isdigit():
+                elem_tuple = (int(element), None)
+                w_list.append(elem_tuple)
             else:
-                # Manage the cn[10,13-17] notation
-                catch = re.search(r'^(\D+.*)$', str(welem))
-                if catch:
-                    nnodes_list = [scheduler_interface.get_nnodes_from_string(catch.group(1))]
-                    nodes_list = [catch.group(1)]
-                    sub_wlist[idxn:idxn+1] = list(zip(nnodes_list, nodes_list))
-                else:
-                    # Manage the 2,4 notation that is needed to launch jobs
-                    # without defined node targets.
-                    catch = re.search(r'^([\d+,]*)([\d]+)$', str(welem))
-                    if catch:
-                        nnodes_list = [int(x) for x in re.split(',', str(welem))]
-                        sub_wlist[idxn:idxn+1] = list(zip(nnodes_list, [None]*len(nnodes_list)))
-                        stride += len(nnodes_list) - 1
-                    else:
-                        # Manage the 2,4,cn[200-205] notation that is used
-                        # to get cn[200-201] cn[200-203]
-                        catch = re.search(r'^([\d+,]*[\d+]),(.*)$', str(welem))
-                        if catch:
-                            nnodes_list = [int(x) for x in re.split(',', catch.group(1))]
-                            nodes_list = str(catch.group(2))
-                            sub_wlist[idxn:idxn+1] = list(
-                                zip(nnodes_list,
-                                    scheduler_interface.get_truncated_nodes_lists(nnodes_list,
-                                                                                  nodes_list)))
-                            stride += len(nnodes_list) - 1
-                        else:
-                            raise Exception(str(welem)+'format is not correct')
+                elem_tuple = (scheduler_interface.get_nnodes_from_string(element), element)
+                w_list.append(elem_tuple)
 
-        # Flatten the w_list
-        w_list = [item for sublist in w_list for item in sublist]
         return w_list
