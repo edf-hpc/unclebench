@@ -58,9 +58,11 @@ class Report:
         self.required_fields = set(['tester', 'platform', 'date_start',
                                     'date_end', 'dir', 'comment',
                                     'result'])
-        self.context_fields = set(['row_headers','column_headers','compare_array','compare_graph','compare_comment'])
+        self.context_fields = set(['row_headers','column_headers','compare_array',
+                                   'compare_graph','compare_comment','results_filter'])
         self.metadata = {}
         self.initialize(metadata_file)
+        self.results_filter = {}
 
         return
 
@@ -82,7 +84,6 @@ class Report:
 
         self.set_common_fields(set(['author', 'title', 'version',
                                     'introduction', 'conclusion']))
-
 
     def read_metadata(self, metadata_file):
         """
@@ -208,6 +209,11 @@ class Report:
         for r_field in self.context_fields:
             fields_to_find.remove(r_field)
 
+        # Wild fields that could be used by user defined template
+        for wild_key in dic_contexts:
+            if wild_key not in report_from_contexts:
+                report_from_contexts[wild_key] = dic_contexts[wild_key]
+
         return report_from_contexts, fields_to_find
 
     def add_session_to_report(self,
@@ -320,6 +326,8 @@ class Report:
                     fields_to_find,
                     default_fields)
 
+            self.results_filter[benchmark_name] = common_report_data['results_filter']
+
             # For each session add corresponding report information
             # according to parameters retrieved from metadata
             for session_item in self.metadata['sessions']:
@@ -344,7 +352,6 @@ class Report:
                                                    output_dir)
 
             # Write performance comparison across sessions
-
             compare_file = \
                 self.write_comparison(benchmark_name,
                                       sub_bench,
@@ -362,6 +369,7 @@ class Report:
                 self.report_files['compare'][benchmark_name] = compare_file
 
         # Write full report
+
         self.report_dictionnary['report_files'] = self.report_files
 
         self.jinja_templated_write(self.report_dictionnary, self.report_template, \
@@ -385,7 +393,7 @@ class Report:
         cwriter = comparison_writer.ComparisonWriter(compare_threshold)
         c_list = cwriter.compare(benchmark_name, self.directory_list, \
                                  self.date_interval_list, (context[0]+[context[1]], None),
-                                 self.session_list)
+                                 self.session_list, self.results_filter)
         if(compare_array):
             dic_compare['dataframe_list'] = list(zip(c_list, sub_bench_list))
             dic_compare['ncols'] = len(c_list[-1].columns)

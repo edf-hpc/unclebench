@@ -265,7 +265,7 @@ class ComparisonWriter(object):
 
 
     def compare(self, benchmark_name, input_directories, date_interval_list=None,
-                context_in=(None, None), session_list=None):
+                context_in=(None, None), session_list=None, result_filter=None):
         """ Compare results of each input directory/date_interval combination,
         results from first combination are considered as the reference.
 
@@ -276,6 +276,8 @@ class ComparisonWriter(object):
             context_in (list): list of tuples of the following form ([ctx0_0,ctx0_1,..],ctx1)
                         with ctx of str type.
             session_list (list):
+            result_filter (dic): keys are benchmark name, values are names of the measure to keep.
+                                  No value means that all measures will be considered.
         """
         # pylint: disable=too-many-arguments, too-many-locals, too-many-branches
 
@@ -296,7 +298,8 @@ class ComparisonWriter(object):
 
             metadata, current_panda, current_context, current_sub_bench \
                 = self.dstore.dir_to_pandas(input_dir, benchmark_name,
-                                            date_interval, context=context_in)
+                                            date_interval, context_in,
+                                            result_filter)
             if current_panda.empty:
                 continue
 
