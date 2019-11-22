@@ -67,17 +67,13 @@ class UbenchCmd(object):
         self.bm_set = bms.BenchmarkManagerSet(benchmark_list, platform, self.uconf)
 
 
-    def log(self, id_list=None):
+    def log(self, id_list=[-1]): # pylint: disable=dangerous-default-value
         """ Provides information about benchmark execution
 
         Args:
             id_list (optional): by default, it will print information on last
                                 execution for the instance benchmark and platform.
         """
-
-        if not id_list:
-            id_list = [-1]
-
         for idb in id_list:
             self.bm_set.print_log(int(idb))
 
@@ -88,11 +84,8 @@ class UbenchCmd(object):
         self.bm_set.list_parameters(default_values)
 
 
-    def result(self, id_list, debug_mode):
+    def result(self, id_list=['last'], debug_mode=None): # pylint: disable=dangerous-default-value
         """ Prints benchmark results """
-
-        if not id_list:
-            id_list = ['last']
 
         for idb in id_list:
             if idb == '-1':

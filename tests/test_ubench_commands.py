@@ -57,3 +57,26 @@ def test_run_withresourcedir(mocker):
     mock_bms.assert_called_with("platform", {'w':[(6, None), (1, 'cn184'), (4, 'cn[380,431-433]')],
                                              'file_params' :[],
                                              'custom_params' : []})
+
+
+def test_log(mocker):
+    """ Test log command"""
+    cmd = ubench_commands.UbenchCmd("platform", [])
+    mock_bms = mocker.patch("ubench.benchmark_managers.benchmark_manager_set.BenchmarkManagerSet.print_log")
+    cmd.log()
+    mock_bms.assert_called_with(-1)
+    cmd.log([2])
+    mock_bms.assert_called_with(2)
+    cmd.log([2, 3])
+    mock_bms.assert_called_with(3)
+
+def test_result(mocker):
+    """ Test log command"""
+    cmd = ubench_commands.UbenchCmd("platform", [])
+    mock_bms = mocker.patch("ubench.benchmark_managers.benchmark_manager_set.BenchmarkManagerSet.analyse")
+    cmd.result()
+    mock_bms.assert_called_with('last')
+    cmd.result([2], None)
+    mock_bms.assert_called_with(2)
+    cmd.result([2, 3], None)
+    mock_bms.assert_called_with(3)
