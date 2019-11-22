@@ -23,9 +23,51 @@
 
 import os
 import re
+import json
+import time
 from subprocess import Popen, PIPE
 from ClusterShell.NodeSet import NodeSet
+import ubench.config
 
+def memoize_disk(cache_file):
+    """Memoize to disk with TTL value"""
+
+    user_c_file = "{}-{}".format(cache_file, ubench.config.USER)
+
+    def decorator(original_func):
+        """Decorator"""
+        # cache format:
+        # date : timestamp
+        # data : hash {}
+
+        def new_func(cls, param):
+            """ Wrapper function"""
+            now = time.time()
+
+            try:
+                cache = json.load(open(user_c_file, 'r'))
+
+            except (IOError, ValueError):
+                cache = {}
+
+            no_cache = True
+
+            if 'date' in cache:
+                if now-cache['date'] < ubench.config.MEM_DISK_TTL:
+                    no_cache = False
+
+            if no_cache:
+                data = {}
+                data['date'] = time.time()
+                data['data'] = original_func(cls, param)
+                json.dump(data, open(user_c_file, 'w'))
+                return data['data']
+
+            return cache['data']
+
+        return new_func
+
+    return decorator
 
 class SlurmInterface(object):
     """ Provides methods to execute jobs with slurm scheduler """
@@ -128,5 +170,57 @@ class SlurmInterface(object):
                 job_info_temp['job_submit_time'] = fields[3]
                 job_info_temp['job_start_time'] = fields[4]
                 job_info.append(job_info_temp)
+
+        return job_info
+
+    @memoize_disk('/tmp/ubench_cache')
+    def get_jobs_state(self, job_ids=[]):#pylint: disable=dangerous-default-value
+        """Return a hash with jobs status using a list of jobs ids"""
+
+        # two commands
+
+        # $ squeue -h -j -o "%.18i %.8T"
+        #    175757  RUNNING
+
+        # $ sacct -n --jobs=jobid1.0,jobid2.0 --format=JobId,State
+        # 26938.0     COMPLETED
+        # 26382.0     COMPLETED
+
+        # Possible states: CANCELLED COMPLETED PENDING RUNNING TIMEOUT
+
+        # { jobid : 'STATE' } => { 12441 : 'RUNNING', 12818 : 'COMPLETED' }
+
+        squeue_rex = re.compile(r'^\s+(\d+)\s+(\w+)')
+        sacct_rex = re.compile(r'^\s*(\d+)\.0\s+(\w+)')
+        squeue_cmd = "squeue -h -j {} -o \"%.18i %.8T\"".format(",".join(job_ids))
+        job_ids_0 = [job_id+'.0' for job_id in job_ids]
+        sacct_cmd = "sacct -n --jobs={} --format=JobId,State".format(",".join(job_ids_0))
+        try_count = 0
+        while True:
+            job_info = {}
+
+            s_process = Popen(squeue_cmd, cwd=os.getcwd(), shell=True,
+                              stdout=PIPE, universal_newlines=True)
+
+            for line in s_process.stdout:
+                match = squeue_rex.match(line)
+                if match:
+                    groups = match.groups()
+                    job_info[groups[0]] = groups[1]
+
+            s_process = Popen(sacct_cmd, cwd=os.getcwd(), shell=True,
+                              stdout=PIPE, universal_newlines=True)
+            for line in s_process.stdout:
+                match = sacct_rex.match(line)
+                if match:
+                    groups = match.groups()
+                    job_info[groups[0]] = groups[1]
+
+            # we garantee information for every job
+            if len(job_info) == len(job_ids) or try_count > 3:
+                break
+            else:
+                # do not loop forever
+                try_count += 1
 
         return job_info
