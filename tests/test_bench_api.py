@@ -314,7 +314,7 @@ def test_fetcher_cmd_no_revision(mocker, init_env):
     fetch_bench = fetcher.Fetcher(
         resource_dir=init_env.config['resources_path'],
         benchmark_name='simple')
-    fetch_bench.scm_fetch(scm['url'], scm['files'], scm['type'], None, None,
+    fetch_bench.scm_fetch(scm['url'], scm['files'], scm['type'], [''], None,
                           None)
     username = os.getlogin()
     fetch_command = "svn export {0}/{1} {1} --username {2} --password '' ".format(

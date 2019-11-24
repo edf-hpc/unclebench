@@ -86,7 +86,7 @@ class Fetcher(object):
 
         fetch_command += '--single-branch {0} '.format(url)
 
-        if commit > 0:
+        if commit :
             git_dir = os.path.join(benchresource_dir, repo_name)
             fetch_command += '; ( cd {0}; git reset --hard {1} )'.format(
                 git_dir, commit)
@@ -99,14 +99,14 @@ class Fetcher(object):
                   svn_file,
                   svn_login=None,
                   svn_password=None,
-                  revision=None):
+                  revision=''):
 
         """ Internal method """
         # pylint: disable=no-self-use, too-many-arguments
 
         print("ER: svn_fetch")
         fetch_command = 'svn export '
-        if revision > 0:
+        if revision:
             fetch_command += '-r {0} '.format(revision)
 
         # pylint: disable=too-many-format-args
@@ -122,7 +122,7 @@ class Fetcher(object):
                                                       user=svn_login,
                                                       passw=svn_password)
 
-        # import pdb;pdb.set_trace()
+
         return fetch_command
 
 
@@ -130,7 +130,7 @@ class Fetcher(object):
                   url,
                   files,
                   scm_name='svn',
-                  revision=None,
+                  revision=[''],
                   branch=None,
                   do_cmds=None):
         """ Fetches benchmark resource files from SCM.
@@ -155,17 +155,14 @@ class Fetcher(object):
             self.get_credentials()
 
         # create scm directory if it does not exist
-        if revision is None:
-            revision = [-1]
-
         for rev in revision:
-            if rev == -1:
-                benchresource_dir = os.path.join(self.resource_dir,
-                                                 self.benchmark_name, scm_name)
-            else:
+            if rev:
                 benchresource_dir = os.path.join(self.resource_dir,
                                                  self.benchmark_name, scm_name,
                                                  rev)
+            else:
+                benchresource_dir = os.path.join(self.resource_dir,
+                                                 self.benchmark_name, scm_name)
 
             if not os.path.exists(benchresource_dir):
                 os.makedirs(benchresource_dir)
@@ -208,7 +205,7 @@ class Fetcher(object):
                                          self.benchmark_name, scm_name)
 
                 # Create symbolic link to the file bench with its full path
-                if rev > 0:
+                if rev:
                     dest_symlink = os.path.join(fetch_dir,
                                                 rev + '_' + base_name)
                     if not os.path.exists(dest_symlink):
