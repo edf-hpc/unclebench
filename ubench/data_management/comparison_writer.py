@@ -89,15 +89,21 @@ class ComparisonWriter(object):
             row_label = column_headers
 
         if len(sub_bench_list) > 1:
-
             # If benchmark is composed of sub benchmarks
             # use their names as hue label
             hue_label = sub_bench
 
             # If there are multiple row_headers use the last one
             # if not already used as row_label
-            if len(row_headers) > 1 and (row_label != row_headers[-1]):
-                col_label = row_headers[-1]
+            if len(row_headers) > 1:
+                if (row_label != row_headers[-1]):
+                    col_label = row_headers[-1]
+                else:
+                    col_label = row_headers[-2]
+                    if len(row_headers) > 2:
+                        col_label = row_headers[0]
+                        row_label = row_headers[1]
+                        hue_label = row_headers[2]
             else:
                 col_label = None
         else:
@@ -120,6 +126,7 @@ class ComparisonWriter(object):
         # number of nodes
         plt.xscale('symlog', basex=2)
 
+        facetg = facetg.map(plt.grid, linewidth=0.5,linestyle=':',color='k')
         facetg = facetg.map(plt.scatter, x_data, df_toplot.columns[-1]).add_legend()
         plt.savefig(output_filename)
 
