@@ -157,7 +157,7 @@ class DataStore():
         # Check if there are sub_bench
         result_name_column = None
         for id_exec in sorted(data.keys()):  # This guarantees the order of nodes
-            result_name_column = metadata['Benchmark_name'] + '_bench'
+            result_name_column = metadata['Benchmark_name'] + '_results'
 
         # Build report_info dictionnary
         report_info = {}
@@ -229,7 +229,8 @@ class DataStore():
 
 
     def dir_to_pandas(self, data_dir, benchmark_name,
-                      date_interval=None, context=(None, None)):
+                      date_interval=None, context=(None, None),
+                      result_filter=None):
         """ Load evry data file found in "data_dir" and return a list
         of dictionnaries, each one containing data from a file.
 
@@ -238,8 +239,10 @@ class DataStore():
             benchmark_name
             date_interval
             context
+            result_filter (dic): keys are benchmark name, values are names of the measure to keep.
+                                  No value means that all measures will be considered.
         """
-        # pylint: disable=too-many-locals, too-many-branches
+        # pylint: disable=too-many-locals, too-many-branches, too-many-arguments
 
         concatenated_panda = pandas.DataFrame()
         result_context = None
@@ -258,10 +261,23 @@ class DataStore():
 
                 if current_panda.empty:
                     continue
+
+                # Apply filter to results, usefull to avoid printing part of benchmark
+                # results that would not be meaningfull.
+                if result_filter:
+                    if benchmark_name in result_filter:
+                        if result_filter[benchmark_name]:
+                            result_field_name = benchmark_name+"_results"
+                            current_panda = current_panda[
+                                current_panda[result_field_name].
+                                isin(result_filter[benchmark_name])]
+
                 if concatenated_panda.empty:
                     concatenated_panda = current_panda
                 else:
-                    concatenated_panda = pandas.concat([concatenated_panda, current_panda])
+                    concatenated_panda = pandas.concat(# pylint: disable=redefined-variable-type
+                        [concatenated_panda, current_panda]
+                    )
 
                 for field, value in list(metadata.items()):
                     if not field in concatenated_metadata:
