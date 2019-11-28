@@ -45,6 +45,36 @@ class MockPopen(object):
         elif self.cmd == "sacct":
             return [" 26938.0     COMPLETED", " 26382.0     COMPLETED"]
 
+        elif self.cmd == "juberun":
+            return ["######################################################################  ",
+                    "# benchmark: simple",
+                    "#                  ",
+                    "#                  ",
+                    "######################################################################  ",
+                    "",
+                    "stepname | all | open | wait | error | done",
+                    "---------+-----+------+------+-------+-----",
+                    "execute |   1 |    0 |    0 |     0 |    1",
+                    " ",
+                    ">>>> Benchmark information and further useful commands:",
+                    ">>>>       id: 2",
+                    ">>>>   handle: benchmark_runs",
+                    ">>>>      dir: benchmark_runs/000002",
+                    ">>>>  analyse: jube analyse benchmark_runs --id 2",
+                    ">>>>   result: jube result benchmark_runs --id 2",
+                    ">>>>     info: jube info benchmark_runs --id 2",
+                    ">>>>      log: jube log benchmark_runs --id 2",
+                    "#####################################################################"]
+
+        elif self.cmd == "jubeanalyse":
+            return ["######################################################################",
+                    "# Analyse benchmark simple id: 1",
+                    "######################################################################",
+                    ">>> Start analyse",
+                    ">>> Analyse finished",
+                    ">>> Analyse data storage: benchmark_runs/000001/analyse.xml",
+                    "######################################################################"]
+
         return [""]
 
 

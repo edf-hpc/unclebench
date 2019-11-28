@@ -24,8 +24,13 @@ import mock
 import pytest_mock
 import ubench.core.ubench_commands as ubench_commands
 
+BMS_MOCK = ["ubench",
+            "benchmark_managers",
+            "benchmark_manager_set",
+            "BenchmarkManagerSet"]
+
 def test_wlist():
-    """ docstring """
+    """Test translation of list of nodes"""
 
     cmd = ubench_commands.UbenchCmd("platform", [])
     assert cmd.translate_wlist_to_scheduler_wlist(['1', '2', '3']) == [(1, None), (2, None), (3, None)]
@@ -33,18 +38,18 @@ def test_wlist():
     assert cmd.translate_wlist_to_scheduler_wlist(['6', 'cn184', 'host1']) == [(6, None), (1, 'cn184'), (1, 'host1')]
 
 def test_run_noresourcedir(mocker):
-    """ docstring """
+    """ Test with results result dir failing """
 
-    mock_bms = mocker.patch("ubench.benchmark_managers.benchmark_manager_set.BenchmarkManagerSet.run")
+    mock_bms = mocker.patch(".".join(BMS_MOCK+["run"]))
 
     cmd = ubench_commands.UbenchCmd("platform", [])
 
     assert cmd.run({'w':[]}) is False
 
 def test_run_withresourcedir(mocker):
-    """ docstring """
+    """Test with results method with result dir success"""
 
-    mock_bms = mocker.patch("ubench.benchmark_managers.benchmark_manager_set.BenchmarkManagerSet.run")
+    mock_bms = mocker.patch(".".join(BMS_MOCK+["run"]))
     mock_isdir = mocker.patch("os.path.isdir")
     cmd = ubench_commands.UbenchCmd("platform", [])
 
@@ -62,7 +67,7 @@ def test_run_withresourcedir(mocker):
 def test_log(mocker):
     """ Test log command"""
     cmd = ubench_commands.UbenchCmd("platform", [])
-    mock_bms = mocker.patch("ubench.benchmark_managers.benchmark_manager_set.BenchmarkManagerSet.print_log")
+    mock_bms = mocker.patch(".".join(BMS_MOCK+["print_log"]))
     cmd.log()
     mock_bms.assert_called_with(-1)
     cmd.log([2])
@@ -73,10 +78,16 @@ def test_log(mocker):
 def test_result(mocker):
     """ Test log command"""
     cmd = ubench_commands.UbenchCmd("platform", [])
-    mock_bms = mocker.patch("ubench.benchmark_managers.benchmark_manager_set.BenchmarkManagerSet.analyse")
-    cmd.result()
+    mock_bms = mocker.patch(".".join(BMS_MOCK+["analyse"]))
+    cmd.result(['last'])
     mock_bms.assert_called_with('last')
     cmd.result([2], None)
     mock_bms.assert_called_with(2)
     cmd.result([2, 3], None)
     mock_bms.assert_called_with(3)
+
+def test_result_none(mocker):
+    """Test result with None value """
+    cmd = ubench_commands.UbenchCmd("platform", [])
+    mock_bms = mocker.patch(".".join(BMS_MOCK+["analyse"]))
+    cmd.result(None, None)

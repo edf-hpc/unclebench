@@ -88,9 +88,9 @@ def test_job_status_cache(pytestconfig, mocker):
 
     # we used cached values no commmand is called
     assert not mock_popen.called
-    # we load the cached results
+    # we load cached results
     assert jobs_info == {'175757' : 'RUNNING'}
-    # we assert if the cache file has been created
+    # we assert if cache file has been created
     cache_file = '/tmp/ubench_cache-{}'.format(ubench.config.USER)
     assert os.path.isfile(cache_file)
     # # we invalidate cache
