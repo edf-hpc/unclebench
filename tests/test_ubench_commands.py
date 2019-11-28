@@ -68,7 +68,7 @@ def test_log(mocker):
     """ Test log command"""
     cmd = ubench_commands.UbenchCmd("platform", [])
     mock_bms = mocker.patch(".".join(BMS_MOCK+["print_log"]))
-    cmd.log()
+    cmd.log(None)
     mock_bms.assert_called_with(-1)
     cmd.log([2])
     mock_bms.assert_called_with(2)
