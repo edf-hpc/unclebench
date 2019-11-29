@@ -35,6 +35,17 @@ class MockPopen(object):
         """ docstring """
         return 0
 
+    # pylint: disable=R0201
+    def communicate(self):
+        """fake communicate Popen method
+        We return a string as stdout"""
+
+        return "\n".join(self.stdout), ""
+
+    @property
+    def returncode(self):
+        return 0
+
     @property
     def stdout(self):
         """ docstring """

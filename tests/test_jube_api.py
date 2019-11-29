@@ -17,7 +17,7 @@
 #                                                                            #
 ##############################################################################
 """ Provides test API """
-# pylint: disable=line-too-long,missing-docstring,unused-variable,unused-import,unused-argument
+# pylint: disable=line-too-long,missing-docstring,unused-variable,unused-import,unused-argument,redefined-outer-name,too-many-arguments
 
 import time
 import re
@@ -37,54 +37,55 @@ MOCK_JAPI = ["ubench",
              "benchmarking_tools_interfaces",
              "jube_benchmarking_api"]
 
-def test_analyse(mocker):
-    mock_listdir = mocker.patch("os.listdir")
-    mock_isdir = mocker.patch("os.path.isdir")
-    mock_chdir = mocker.patch("os.chdir")
-    jube_api = jba.JubeBenchmarkingAPI('simple', 'platform')
-    def mocksubpopen(args, shell, cwd, stdout=None, universal_newlines=False):
-        """ docstring """
-        return fake_data.MockPopen("jubeanalyse")
+MOCK_UTILS = ["ubench",
+              "utils"]
 
-    def mock_g_dir():
-        return "benchmark_runs"
-
-    mock_xml = mocker.patch(".".join(MOCK_XML+["get_bench_outputdir"]),
-                            side_effect=mock_g_dir)
-
-    mock_popen = mocker.patch(".".join(MOCK_JAPI+["Popen"]),
-                              side_effect=mocksubpopen)
-
-    assert jube_api.analyse(0) == "/tmp/ubench_pytest//run/platform/simple/benchmark_runs/000001"
-
-
-
-
-def test_run(mocker):
-
+@pytest.fixture
+def mock_os_methods(mocker):
     mock_listdir = mocker.patch("os.listdir")
     mock_isdir = mocker.patch("os.path.isdir")
     mock_chdir = mocker.patch("os.chdir")
     mock_rmdir = mocker.patch("shutil.rmtree")
+
+def mockpopen(args, shell, cwd, env, stdout=None, stderr=None, universal_newlines=False):
+    """Mock Popen"""
+    if 'analyse' in args:
+        return fake_data.MockPopen("jubeanalyse")
+
+    return fake_data.MockPopen("juberun")
+
+def mock_b_dir():
+    return "benchmark_runs"
+
+def test_analyse(mocker, mock_os_methods):
+    jube_api = jba.JubeBenchmarkingAPI('simple', 'platform')
+
+    mock_xml = mocker.patch(".".join(MOCK_XML+["get_bench_outputdir"]),
+                            side_effect=mock_b_dir)
+
+    mock_popen = mocker.patch(".".join(MOCK_UTILS+["Popen"]),
+                              side_effect=mockpopen)
+
+    assert jube_api.analyse(0) == "/tmp/ubench_pytest//run/platform/simple/benchmark_runs/000001"
+
+def test_run(mocker, mock_os_methods):
+
     jube_api = jba.JubeBenchmarkingAPI('test', 'platform')
-
-
-    def mocksubpopen(args, cwd, shell, env, stdout, universal_newlines):# pylint: disable=too-many-arguments
-        """ docstring """
-
-        return fake_data.MockPopen("juberun")
 
     def mockanalyse(bench_id):
         rand = str(time.time())
         fake_id = rand[9]
         return "/tmp/run/platform/simple/benchmark_runs/00000{}".format(fake_id)
 
-    mock_popen = mocker.patch(".".join(MOCK_JAPI+["Popen"]),
-                              side_effect=mocksubpopen)
+    mock_xml = mocker.patch(".".join(MOCK_XML+["get_bench_outputdir"]),
+                            side_effect=mock_b_dir)
+
+    mock_popen = mocker.patch(".".join(MOCK_UTILS+["Popen"]),
+                              side_effect=mockpopen)
+
     mock_analyse = mocker.patch(".".join(MOCK_JAPI+["JubeBenchmarkingAPI", "analyse"]),
                                 side_effect=mockanalyse)
 
     dir_result, id_b = jube_api.run(0)
-    id_regx = re.compile(r'00000\d')
 
-    assert id_regx.match(id_b)
+    assert isinstance(id_b, int)
