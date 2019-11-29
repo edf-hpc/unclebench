@@ -18,7 +18,7 @@
 ##############################################################################
 """ Provides test API """
 
-# pylint: disable=unused-import,unused-variable,line-too-long,unused-argument,missing-docstring
+# pylint: disable=unused-import,unused-variable,line-too-long,unused-argument,missing-docstring,superfluous-parens,too-many-arguments
 from subprocess import Popen
 import os
 import time
@@ -30,25 +30,33 @@ import ubench.scheduler_interfaces.slurm_interface as slurm_i
 import ubench.config
 import fake_data
 
+MOCK_UTILS = ["ubench",
+              "utils"]
+
 def delete_cache_file():
     cache_file = '/tmp/ubench_cache-{}'.format(ubench.config.USER)
     os.remove(cache_file)
+
+def mockpopen(args, shell, cwd, env=None, stdout=None, stderr=None, universal_newlines=False):
+    """Mock Popen"""
+    if 'sinfo' in args:
+        return fake_data.MockPopen("sinfo")
+    elif 'squeue' in args:
+        print('OK')
+        return fake_data.MockPopen("squeue")
+
+    return fake_data.MockPopen("sacct")
 
 def test_emptylist():
     """ docstring """
     interface = slurm_i.SlurmInterface()
     assert not interface.get_available_nodes()
 
-
 def test_available_nodes(mocker):
     """ docstring """
-    def mocksubpopen(args, shell, cwd, stdout=None, universal_newlines=False):
-        """ docstring """
 
-        return fake_data.MockPopen("sinfo")
-
-    mock_popen = mocker.patch("ubench.scheduler_interfaces.slurm_interface.Popen",
-                              side_effect=mocksubpopen)
+    mock_popen = mocker.patch(".".join(MOCK_UTILS+["Popen"]),
+                              side_effect=mockpopen)
 
     interface = slurm_i.SlurmInterface()
     node_list = interface.get_available_nodes(5)
@@ -58,27 +66,20 @@ def test_available_nodes(mocker):
 
 def test_job_status(mocker):
     """ docstring """
-    def mocksubpopen(args, shell, cwd, stdout=None, universal_newlines=False):
-        """ docstring """
-
-        return fake_data.MockPopen("squeue")
 
     mock_popen = mocker.patch("ubench.scheduler_interfaces.slurm_interface.Popen",
-                              side_effect=mocksubpopen)
+                              side_effect=mockpopen)
 
     interface = slurm_i.SlurmInterface()
-    assert interface.get_jobs_state(['111', '222']) == {'175757' : 'RUNNING'}
+    assert interface.get_jobs_state(['111', '222']) == {'175757' : 'RUNNING', '26382': 'COMPLETED', '26938': 'COMPLETED'}
+    # assert interface.get_jobs_state(['111', '222']) == {'175757' : 'RUNNING'}
     # time.sleep(10)
 
 def test_job_status_cache(pytestconfig, mocker):
     """ docstring """
-    def mocksubpopen(args, shell, cwd, stdout=None, universal_newlines=False):
-        """ docstring """
-
-        return fake_data.MockPopen("sacct")
 
     mock_popen = mocker.patch("ubench.scheduler_interfaces.slurm_interface.Popen",
-                              side_effect=mocksubpopen)
+                              side_effect=mockpopen)
 
     interface = slurm_i.SlurmInterface()
     jobs_info = interface.get_jobs_state(['222'])
@@ -89,7 +90,7 @@ def test_job_status_cache(pytestconfig, mocker):
     # we used cached values no commmand is called
     assert not mock_popen.called
     # we load cached results
-    assert jobs_info == {'175757' : 'RUNNING'}
+    assert jobs_info == {'175757' : 'RUNNING', '26382': 'COMPLETED', '26938': 'COMPLETED'}
     # we assert if cache file has been created
     cache_file = '/tmp/ubench_cache-{}'.format(ubench.config.USER)
     assert os.path.isfile(cache_file)
@@ -104,5 +105,5 @@ def test_job_status_cache(pytestconfig, mocker):
     mock_popen.assert_called_with(exp_cmd, cwd=repository_root,
                                   shell=True, stdout=-1, universal_newlines=True)
 
-    assert jobs_info == {'26382': 'COMPLETED', '26938': 'COMPLETED'}
+    assert interface.get_jobs_state(['111', '222']) == {'175757' : 'RUNNING', '26382': 'COMPLETED', '26938': 'COMPLETED'}
     delete_cache_file()

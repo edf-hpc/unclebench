@@ -17,7 +17,7 @@
 #  along with UncleBench.  If not, see <http://www.gnu.org/licenses/>.       #
 #                                                                            #
 ##############################################################################
-# pylint: disable=no-self-use
+# pylint: disable=no-self-use,superfluous-parens
 """ Provides SlurmInterface class"""
 
 
@@ -28,6 +28,7 @@ import time
 from subprocess import Popen, PIPE
 from ClusterShell.NodeSet import NodeSet
 import ubench.config
+import ubench.utils as utils
 
 def memoize_disk(cache_file):
     """Memoize to disk with TTL value"""
@@ -87,15 +88,16 @@ class SlurmInterface(object):
             (str) list of nodes_id
         """
 
-        cmd = "sinfo -h -t IDLE"
-        cmd_output = Popen(cmd, cwd=os.getcwd(), shell=True,
-                           stdout=PIPE, universal_newlines=True)
+        cmd_str = "sinfo -h -t IDLE"
+        ret_code, stdout, _ = utils.run_cmd(cmd_str, os.getcwd())
 
-        if cmd_output.wait():
+        if ret_code:
+            print("!!Warning: unclebech was not able to get avaiable nodes")
             return []
 
         nodeset = NodeSet()
-        for line in cmd_output.stdout:
+
+        for line in stdout:
             nodeset_str = re.split(r'\s+', line.strip())[5]
             nodeset.update(nodeset_str)
 
@@ -156,10 +158,15 @@ class SlurmInterface(object):
         job_cmd = ('sacct --jobs={0} -n -p --format=JobName,Elapsed,NodeList,Submit,Start'
                    .format(job_id))
 
-        job_process = Popen(job_cmd, cwd=os.getcwd(), shell=True,
-                            stdout=PIPE, universal_newlines=True)
+        ret_code, stdout, stderr = utils.run_cmd(job_cmd, os.getcwd())
+
+        if ret_code:
+            print("!!Warning: unclebech was not able to get job information")
+            print("!!Warning: {}".format(stderr))
+            return []
+
         job_info = []
-        for line in job_process.stdout:
+        for line in stdout:
             fields = line.split("|")
             job_name = fields[0]
             job_info_temp = {}
