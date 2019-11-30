@@ -34,8 +34,9 @@ def run_cmd(cmd_string, cwd, env=None):
 
     stdout, stderr = cmd.communicate()
     ret_code = cmd.returncode
-    stdout_stream = stdout.split('\n')
-    stderr_stream = stderr.split('\n')
+    # we remove empty lines
+    stdout_stream = [line for line in stdout.split('\n') if line]
+    stderr_stream = [line for line in stderr.split('\n') if line]
 
     return ret_code, stdout_stream, stderr_stream
 

@@ -168,6 +168,10 @@ class SlurmInterface(object):
         job_info = []
         for line in stdout:
             fields = line.split("|")
+
+            if not fields or len(fields) < 5:
+                continue
+
             job_name = fields[0]
             job_info_temp = {}
             if job_name != 'batch':
