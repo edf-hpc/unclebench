@@ -29,22 +29,22 @@ class MockPopen(object):
 
     def __init__(self, cmd):
         self.cmd = cmd
+        self.returncode = None
 
     # pylint: disable=R0201
     def wait(self):
         """ docstring """
         return 0
 
+    def poll(self):
+        """ docstring """
+        return None
+
     # pylint: disable=R0201
     def communicate(self):
         """fake communicate Popen method
         We return a string as stdout"""
-
         return "\n".join(self.stdout), ""
-
-    @property
-    def returncode(self):
-        return 0
 
     @property
     def stdout(self):

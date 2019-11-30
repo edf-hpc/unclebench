@@ -495,39 +495,38 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         self.jube_xml_files.remove_multisource()
         self.jube_xml_files.write_bench_xml()
         self.jube_xml_files.write_platform_xml()
-        output_dir = self.jube_xml_files.get_bench_outputdir()
+        output_dir = os.path.join(self.benchmark_path,
+                                  self.jube_xml_files.get_bench_outputdir())
+
         platform_dir = self.jube_xml_files.get_platform_dir()
+
+        max_id, _ = self._get_max_id(os.listdir(output_dir))
+
         my_env = os.environ
         my_env['UBENCH_PLATFORM_DIR'] = platform_dir
         input_str = 'jube run --hide-animation {}.xml --tag {}'.format(self.benchmark_name,
                                                                        platform)
+        popen_obj = utils.run_cmd_bg(input_str, self.benchmark_path, my_env)
 
-        ret_code, stdout, stderr = utils.run_cmd(input_str, self.benchmark_path, my_env)
+        if popen_obj.returncode is None:
+            new_id, numdir = self._get_max_id(os.listdir(output_dir))
+            if max_id == new_id:
+                popen_obj.poll()
 
-        if ret_code:
-            print(stderr)
+        if popen_obj.returncode:
             print('Jube parsing might have gone wrong, please check ' +
                   self.benchmark_path + '/jube-parse.log file')
             raise RuntimeError("Error when executing command: {}".format(input_str))
 
-        regex_numdir = re.compile(r'^.*/(\d+).*$')
-        benchmark_results_path = ''
-        numdir = ''
-        for line in stdout:
-            match = regex_numdir.match(line)
-            if match:
-                numdir = match.groups()[0]
-                benchmark_results_path = os.path.join(self.benchmark_path,
-                                                      output_dir,
-                                                      numdir)
+        benchmark_results_path = os.path.join(output_dir, numdir)
+
 
         if benchmark_results_path == '':
             raise RuntimeError('Error getting the directory number')
 
 
-        bench_id = int(numdir)
         self.jube_xml_files.delete_platform_dir()
-        return (benchmark_results_path, bench_id)
+        return (benchmark_results_path, new_id)
 
 
     def set_execution_only_mode(self):
@@ -682,3 +681,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             return str(self.jube_const_params[name])
 
         return matchobj.group(0)
+
+    def _get_max_id(self, file_list): # pylint: disable=no-self-use
+        ids_dict = {int(id_str): id_str for id_str in file_list if id_str.isdigit()}
+        max_id = max(ids_dict.keys())
+        return max_id, ids_dict[max_id]

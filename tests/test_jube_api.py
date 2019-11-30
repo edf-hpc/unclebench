@@ -74,8 +74,8 @@ def test_run(mocker, mock_os_methods):
 
     def mockanalyse(bench_id):
         rand = str(time.time())
-        fake_id = rand[9]
-        return "/tmp/run/platform/simple/benchmark_runs/00000{}".format(fake_id)
+        fake_id = int(rand[9])
+        return fake_id, '000001'
 
     mock_xml = mocker.patch(".".join(MOCK_XML+["get_bench_outputdir"]),
                             side_effect=mock_b_dir)
@@ -83,7 +83,7 @@ def test_run(mocker, mock_os_methods):
     mock_popen = mocker.patch(".".join(MOCK_UTILS+["Popen"]),
                               side_effect=mockpopen)
 
-    mock_analyse = mocker.patch(".".join(MOCK_JAPI+["JubeBenchmarkingAPI", "analyse"]),
+    mock_analyse = mocker.patch(".".join(MOCK_JAPI+["JubeBenchmarkingAPI", "_get_max_id"]),
                                 side_effect=mockanalyse)
 
     dir_result, id_b = jube_api.run(0)

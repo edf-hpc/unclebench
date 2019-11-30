@@ -20,6 +20,7 @@
 """ Provides useful methods"""
 
 from subprocess import Popen, PIPE
+import time
 
 def run_cmd(cmd_string, cwd, env=None):
     """Wrapper for Popen with communicate method"""
@@ -37,3 +38,17 @@ def run_cmd(cmd_string, cwd, env=None):
     stderr_stream = stderr.split('\n')
 
     return ret_code, stdout_stream, stderr_stream
+
+def run_cmd_bg(cmd_string, cwd, env=None):
+    """Wrapper for Popen no blocking"""
+    cmd = Popen(cmd_string,
+                cwd=cwd,
+                shell=True,
+                env=env,
+                stdout=PIPE,
+                stderr=PIPE,
+                universal_newlines=True)
+
+    time.sleep(1)
+    cmd.poll()
+    return cmd
