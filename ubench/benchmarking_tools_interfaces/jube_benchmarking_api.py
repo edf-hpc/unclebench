@@ -23,6 +23,7 @@ import os
 import re
 import csv
 import tempfile
+import time
 from subprocess import Popen, PIPE
 import ubench.utils as utils
 import ubench.core.ubench_config as uconfig
@@ -498,9 +499,11 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         output_dir = os.path.join(self.benchmark_path,
                                   self.jube_xml_files.get_bench_outputdir())
 
-        platform_dir = self.jube_xml_files.get_platform_dir()
+        max_id = None
+        if os.path.isdir(output_dir):
+            max_id, _ = self._get_max_id(os.listdir(output_dir))
 
-        max_id, _ = self._get_max_id(os.listdir(output_dir))
+        platform_dir = self.jube_xml_files.get_platform_dir()
 
         my_env = os.environ
         my_env['UBENCH_PLATFORM_DIR'] = platform_dir
@@ -508,10 +511,13 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                                                                        platform)
         popen_obj = utils.run_cmd_bg(input_str, self.benchmark_path, my_env)
 
-        if popen_obj.returncode is None:
+        numdir = None
+        while popen_obj.returncode is None:
+            time.sleep(1)
+            popen_obj.poll()
             new_id, numdir = self._get_max_id(os.listdir(output_dir))
-            if max_id == new_id:
-                popen_obj.poll()
+            if new_id != max_id:
+                break
 
         if popen_obj.returncode:
             print('Jube parsing might have gone wrong, please check ' +
@@ -683,6 +689,9 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         return matchobj.group(0)
 
     def _get_max_id(self, file_list): # pylint: disable=no-self-use
-        ids_dict = {int(id_str): id_str for id_str in file_list if id_str.isdigit()}
-        max_id = max(ids_dict.keys())
+        max_id = -1
+        ids_dict = {-1:'0000000'}
+        if file_list:
+            ids_dict = {int(id_str): id_str for id_str in file_list if id_str.isdigit()}
+            max_id = max(ids_dict.keys())
         return max_id, ids_dict[max_id]
