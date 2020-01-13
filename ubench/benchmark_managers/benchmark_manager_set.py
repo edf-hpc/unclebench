@@ -64,7 +64,7 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
                     jbm.JubeBenchmarkManager(benchmark_name, platform_name, uconf))
 
 
-    def run(self, platform, opt_dict={}):  # pylint: disable=dangerous-default-value
+    def run(self, opt_dict={}):  # pylint: disable=dangerous-default-value,arguments-differ
         """ Executes run command.
 
         Run benchmarks on a given platform and write a ubench.log file in
@@ -77,7 +77,7 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
         """
 
         for bench_m in self.benchmark_manager_list:
-            bench_m.run(platform, opt_dict)
+            bench_m.run(opt_dict)
 
 
     def list_parameters(self, default_values):
@@ -91,7 +91,7 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
             bench_m.list_parameters(default_values)
 
 
-    def set_parameter(self, dic_options):
+    def set_parameter(self, dic_options): # pylint: disable=arguments-differ
         """ Set custom parameter from its name and a new value.
 
         Args:

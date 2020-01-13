@@ -100,7 +100,7 @@ class BenchmarkingAPI(object):
         pass
 
 
-    def run(self, platform):
+    def run(self):
         """ Runs benchmark.
 
         Run benchmark on a given platform and return the benchmark run directory path

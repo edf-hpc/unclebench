@@ -75,6 +75,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         self.benchmark_path = os.path.join(uconf.run_dir, platform, benchmark_name)
         self.benchmark_src_path = os.path.join(uconf.benchmark_dir, benchmark_name)
         self.benchmarking_api = None
+        self.platform_name = platform
 
         # Default report parameters
         self.title = benchmark_name
@@ -130,18 +131,16 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             self.benchmarking_api = self.get_benchmarking_api()
 
 
-    def run(self, platform, opt_dict={}):
+    def run(self, opt_dict={}): # pylint: disable=arguments-differ
         """ Run benchmark on a given platform and write a ubench.log file in
         the benchmark run directory.
 
         Args:
-            platform (str): name of the platform used to retrieve parameters needed
-                            to run the benchmark.
             opt_dict (dict): dictionary with the options sent to unclebench
         """
         # pylint: disable=dangerous-default-value, too-many-locals, too-many-branches
 
-        self.init_run_dir(platform)
+        self.init_run_dir(self.platform_name)
 
         # Set custom node configuration
         if opt_dict['w']:
@@ -154,28 +153,23 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                     nodes_id_list = None
 
                 self.benchmarking_api.set_custom_nodes(nnodes_list, nodes_id_list)
-            except ValueError:
+            except (ValueError, IndexError):
                 print('Custom node configuration is not valid.')
-                return
-            except IndexError:
-                print('Custom node configuration is not valid.')
-                return
 
         if opt_dict['execute']:
             self.benchmarking_api.set_execution_only_mode()
 
-
-        print('---- Launching benchmark in background')
+        if not opt_dict['foreground']:
+            print('---- Launching benchmark in background')
 
         try:
-            run_dir, ID = self.benchmarking_api.run(platform)
+            run_dir, ID = self.benchmarking_api.run()
         except RuntimeError as rerror:
             print('---- Error launching benchmark :')
             print(str(rerror))
-            return
+
         except OSError:
-            print()
-            return
+            print('---- Error launching benchmark :')
 
         print('---- benchmark run directory :', run_dir)
         logfile_path = os.path.join(run_dir, 'ubench.log')
@@ -192,7 +186,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
         with open(logfile_path, 'w') as logfile:
             logfile.write('Benchmark_name  : {0} \n'.format(self.benchmark_name))
-            logfile.write('Platform        : {0} \n'.format(platform))
+            logfile.write('Platform        : {0} \n'.format(self.platform_name))
             logfile.write('ID              : {0} \n'.format(ID))
             logfile.write('Date            : {0} \n'.format(date))
             logfile.write('Run_directory   : {0} \n'.format(run_dir))
@@ -201,7 +195,14 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                 logfile.write('cmdline         : {0} \n'.format(' '.join(opt_dict['raw_cli'])))
 
         print('---- Use the following command to follow benchmark progress :',
-              '    " ubench log -p {0} -b {1} -i {2}"'.format(platform, self.benchmark_name, ID))
+              '    " ubench log -p {0} -b {1} -i {2}"'.format(self.platform_name,
+                                                              self.benchmark_name, ID))
+
+        if opt_dict['foreground']:
+            print('---- Waiting benchmark to finish running')
+            self.benchmarking_api.wait_run(ID, run_dir)
+            print('---- All jobs or processes in background have finished')
+
 
     def list_parameters(self, default_values):
         """ List parameters on standard output. TODO improve default values mode.
@@ -312,7 +313,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         if 'Benchmark_name' in columns:
             columns.remove('Benchmark_name')
 
-        if len(list(list_data.values())) > 0:
+        if list(list_data.values()):
             header = list(list_data.values())[0]
             print('\nPlatform: {0} \nBenchmark: {1}\n'.
                   format(header['Platform'], header['Benchmark_name']))

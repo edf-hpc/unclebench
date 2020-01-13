@@ -41,7 +41,7 @@ class BenchmarkManager():
 
 
     @abc.abstractmethod
-    def run(self, platform, opt_dict={}):  # pylint: disable=dangerous-default-value
+    def run(self):  # pylint: disable=dangerous-default-value
         """ Run benchmark on a given platform and write a ubench.log file in
         the benchmark run directory.
 

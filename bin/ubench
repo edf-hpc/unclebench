@@ -123,6 +123,12 @@ parser_run.add_argument('-e',
                         default=False,
                         action='store_true')
 
+parser_run.add_argument('--foreground',
+                        help='Peforms only the execution step of a benchmark',
+                        default=False,
+                        action='store_true')
+
+
 # Parser list
 list_help = 'List existing runs information for a given benchmark.'
 

@@ -478,14 +478,28 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         except IOError:
             raise
 
+    def extract_job_ids(self, id_dir): #pylint: disable=no-self-use
+        """ Get jobs' ids from directory"""
+        ## we have to get the id directory elsewhere
+        job_ids = []
+        dir_exec_rex = re.compile(r'^\d{6}_execute$')
+        job_id_rex = re.compile(r'^\w+\s\w+\s\w+\s(\d+)$')
+        for files in os.listdir(id_dir):
+            mat = dir_exec_rex.match(files)
+            if mat:
+                job_file_name = os.path.join(id_dir, mat.group(), "work", "stdout")
+                with  open(job_file_name, 'r') as job_file:
+                    for line in job_file:
+                        job_mat = job_id_rex.match(line)
+                        if job_mat:
+                            job_ids.append(job_mat.group(1))
+        return job_ids
 
-    def run(self, platform):
+
+
+    def run(self):
         """ Run benchmark on a given platform and return the benchmark run directory path
         and a benchmark ID.
-
-        Args:
-            platform (str): name of the platform used to configure the benchmark options relative
-                            to the platform architecture and software.
 
         Returns:
             (str) return absolute path of the benchmark result directory
@@ -508,7 +522,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         my_env = os.environ
         my_env['UBENCH_PLATFORM_DIR'] = platform_dir
         input_str = 'jube run --hide-animation {}.xml --tag {}'.format(self.benchmark_name,
-                                                                       platform)
+                                                                       self.platform_name)
         popen_obj = utils.run_cmd_bg(input_str, self.benchmark_path, my_env)
 
         numdir = None
@@ -532,7 +546,32 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
 
         self.jube_xml_files.delete_platform_dir()
+
         return (benchmark_results_path, new_id)
+
+
+    def wait_run(self, run_id, benchmark_results_path):
+        """ Wait for benchmark to finish"""
+
+        output_dir = os.path.join(self.benchmark_path,
+                                  self.jube_xml_files.get_bench_outputdir())
+
+        cmd_str = 'jube continue --hide-animation {} --id {}'.format(output_dir, run_id)
+        ret_code, _, stderr = utils.run_cmd(cmd_str, self.benchmark_path)
+
+        if ret_code:
+            print(stderr)
+            raise RuntimeError("Error when executing command: {}".format(cmd_str))
+
+        job_ids = self.extract_job_ids(benchmark_results_path)
+        scheduler_interface = slurmi.SlurmInterface()
+        job_states = ['RUNNING']
+        while job_states:
+            job_req = scheduler_interface.get_jobs_state(job_ids)
+            job_states = [job_s for job_s in job_req.values() if job_s != 'COMPLETED']
+            if job_states:
+                print("Wating for jobs id: {}".format(",".join(job_req.keys())))
+                time.sleep(60)
 
 
     def set_execution_only_mode(self):

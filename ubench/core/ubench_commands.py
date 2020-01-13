@@ -144,7 +144,7 @@ class UbenchCmd(object):
                 self.bm_set.set_parameter(dict_options)
 
         # Run each benchmarks
-        self.bm_set.run(self.platform, opt_dict)
+        self.bm_set.run(opt_dict)
         return True
 
     def fetch(self):
