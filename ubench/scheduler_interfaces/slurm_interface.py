@@ -201,6 +201,9 @@ class SlurmInterface(object):
 
         # { jobid : 'STATE' } => { 12441 : 'RUNNING', 12818 : 'COMPLETED' }
 
+        if not job_ids:
+            return {}
+
         squeue_rex = re.compile(r'^\s+(\d+)\s+(\w+)')
         sacct_rex = re.compile(r'^\s*(\d+)\.0\s+(\w+)')
         squeue_cmd = "squeue -h -j {} -o \"%.18i %.8T\"".format(",".join(job_ids))
