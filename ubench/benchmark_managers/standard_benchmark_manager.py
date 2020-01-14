@@ -155,6 +155,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                 self.benchmarking_api.set_custom_nodes(nnodes_list, nodes_id_list)
             except (ValueError, IndexError):
                 print('Custom node configuration is not valid.')
+                raise
 
         if opt_dict['execute']:
             self.benchmarking_api.set_execution_only_mode()
@@ -164,12 +165,10 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
         try:
             run_dir, ID = self.benchmarking_api.run()
-        except RuntimeError as rerror:
+        except (RuntimeError, OSError) as rerror:
             print('---- Error launching benchmark :')
             print(str(rerror))
-
-        except OSError:
-            print('---- Error launching benchmark :')
+            raise
 
         print('---- benchmark run directory :', run_dir)
         logfile_path = os.path.join(run_dir, 'ubench.log')

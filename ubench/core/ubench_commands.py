@@ -106,7 +106,15 @@ class UbenchCmd(object):
 
 
     def run(self, opt_dict={}):  # pylint: disable=dangerous-default-value
-        """ TOCOMMENT """
+        """  Run benchmark
+
+        Args:
+            dict_options:
+
+        Returns:
+            Bool: True if an error is raised, False otherwise
+        """
+
 
         if opt_dict['w']:
 
@@ -114,7 +122,7 @@ class UbenchCmd(object):
                 opt_dict['w'] = self.translate_wlist_to_scheduler_wlist(opt_dict['w'])
             except Exception as exc:  # pylint: disable=broad-except
                 print('---- Custom node configuration is not valid : {0}'.format(str(exc)))
-                return False
+                return True
         print('')
         print('-- Ubench platform name set to : {0}'.format(self.platform))
 
@@ -122,7 +130,7 @@ class UbenchCmd(object):
             print('---- The resource directory {0} does not exist.'.
                   format(self.uconf.resource_dir) +
                   'Please run ubench fetch to retrieve sources and test cases.')
-            return False
+            return True
 
         # Set custom parameters
         dict_options = {}
@@ -144,8 +152,12 @@ class UbenchCmd(object):
                 self.bm_set.set_parameter(dict_options)
 
         # Run each benchmarks
-        self.bm_set.run(opt_dict)
-        return True
+        try:
+            self.bm_set.run(opt_dict)
+        except (RuntimeError, OSError):
+            return True
+
+        return False
 
     def fetch(self):
         """ Fetches benchmarks sources """
