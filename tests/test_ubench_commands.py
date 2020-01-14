@@ -54,14 +54,14 @@ def test_run_withresourcedir(mocker):
     cmd = ubench_commands.UbenchCmd("platform", [])
 
     assert cmd.run({'w':[], 'file_params' :[], 'custom_params' : []}) is True
-    mock_bms.assert_called_with("platform", {'w':[],
-                                             'file_params' :[],
-                                             'custom_params' : []})
+    mock_bms.assert_called_with({'w':[],
+                                 'file_params' :[],
+                                 'custom_params' : []})
 
     cmd.run({'w':['6', 'cn184', 'cn[380,431-433]'], 'file_params' :[], 'custom_params' : []})
-    mock_bms.assert_called_with("platform", {'w':[(6, None), (1, 'cn184'), (4, 'cn[380,431-433]')],
-                                             'file_params' :[],
-                                             'custom_params' : []})
+    mock_bms.assert_called_with({'w':[(6, None), (1, 'cn184'), (4, 'cn[380,431-433]')],
+                                 'file_params' :[],
+                                 'custom_params' : []})
 
 
 def test_log(mocker):

@@ -68,6 +68,20 @@ class Tempbench(object):
 
         path_bench = os.path.join(self.config['run_path'], bench)
         os.makedirs(path_bench)
+        os.makedirs(os.path.join(path_bench, 'benchmark_runs'))
+        os.makedirs(os.path.join(path_bench, 'benchmark_runs', '0000000'))
+        os.makedirs(os.path.join(path_bench, 'benchmark_runs', '0000000', '000000_prepare'))
+        for i in range(1, 3):
+            path_execute = os.path.join(path_bench,
+                                        'benchmark_runs',
+                                        '0000000',
+                                        '00000{}_execute'.format(i),
+                                        'work')
+            os.makedirs(path_execute)
+            path_file = os.path.join(path_execute, 'stdout')
+            with open(path_file, 'w') as stdout_f:
+                stdout_f.write("Submitted batch job 61722{}\n".format(i))
+
 
 
     def destroy_dir_structure(self):

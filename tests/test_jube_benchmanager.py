@@ -41,7 +41,7 @@ def test_run_empty(mocker):
         "ubench.benchmark_managers.standard_benchmark_manager.StandardBenchmarkManager.init_run_dir")
 
     std_bm.benchmarking_api = fake_data.FakeAPI()
-    std_bm.run('platform', {'w':[], 'execute': False})
+    std_bm.run({'w':[], 'execute': False, 'foreground' : False})
 
 
 def test_w_option(mocker):
@@ -54,5 +54,5 @@ def test_w_option(mocker):
     std_bm = jbm.JubeBenchmarkManager('bench', 'platform', TEST_CONF)
     std_bm.benchmarking_api = fake_data.FakeAPI()
 
-    std_bm.run('platform', {'w':[(6, None), (1, 'cn184'), (4, 'cn[380,431-433]')], 'execute': False})
+    std_bm.run({'w':[(6, None), (1, 'cn184'), (4, 'cn[380,431-433]')], 'execute': False, 'foreground' : False})
     mock_set_w.assert_called_with([6, 1, 4], [None, 'cn184', 'cn[380,431-433]'])

@@ -141,7 +141,6 @@ def test_custom_nodes(init_env):
     """ docstring """
 
     # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
-
     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
     benchmarking_api.set_custom_nodes([1, 2], ['cn050', 'cn[103-107,145]'])
     benchmarking_api.jube_xml_files.write_bench_xml()
@@ -344,7 +343,7 @@ def test_run_customp(monkeypatch, init_env):
             raise NameError('param error')
         return True
 
-    def mock_bm_run_bench(self, platform, opt_dict):
+    def mock_bm_run_bench(self, opt_dict):
         return True
 
     monkeypatch.setattr(
@@ -363,3 +362,14 @@ def test_run_customp(monkeypatch, init_env):
          'file_params' : None,
          'custom_params': None}
     )
+
+def test_extract_job_id(init_env):
+    """ docstring """
+    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
+    id_dir = os.path.join(init_env.config['run_path'],
+                          'simple',
+                          'benchmark_runs',
+                          '0000000')
+
+
+    assert benchmarking_api.extract_job_ids(id_dir) == ['617222', '617221']
