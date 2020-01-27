@@ -42,7 +42,7 @@ table{border-collapse:collapse;border-spacing:0}
 html,body{font-size:100%}
 body{background:#fff;color:rgba(0,0,0,.8);padding:0;margin:0;font-family:"Noto Serif","DejaVu Serif",serif;font-weight:400;font-style:normal;line-height:1;position:relative;cursor:auto}
 a:hover{cursor:pointer}
-img,object,embed{max-width:100%;height:auto}
+img,object,embed{max-width:180%;height:auto}
 object,embed{height:100%}
 img{-ms-interpolation-mode:bicubic}
 #map_canvas img,#map_canvas embed,#map_canvas object,.map_canvas img,.map_canvas embed,.map_canvas object{max-width:none!important}
