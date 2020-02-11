@@ -123,7 +123,7 @@ class BenchmarkManager():
 
 
     @abc.abstractmethod
-    def print_result_array(self, debug_mode=False, output_file=None):
+    def print_result_array(self, output_file=None):
         """ Asciidoc printing result array
 
         Args:

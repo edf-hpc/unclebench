@@ -179,16 +179,15 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
             bench_m.extract_results_last()
 
 
-    def print_result_array(self, debug_mode=False, output_file=None):
+    def print_result_array(self, output_file=None):
         """ Asciidoc printing result array
 
         Args:
-            debug_mode (boolean): outputs aditional information to stdout
             output_file (str): path of a file where to write the array,
         """
 
         for bench_m in self.benchmark_manager_list:
-            bench_m.print_result_array(debug_mode, output_file)
+            bench_m.print_result_array(output_file)
 
 
     def print_transposed_result_array(self, output_file=None):

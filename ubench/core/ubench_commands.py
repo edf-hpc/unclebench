@@ -87,7 +87,7 @@ class UbenchCmd(object):
         self.bm_set.list_parameters(default_values)
 
 
-    def result(self, id_list, debug_mode=None): # pylint: disable=dangerous-default-value
+    def result(self, id_list): # pylint: disable=dangerous-default-value
         """ Prints benchmark results """
 
         if id_list is None:
@@ -96,7 +96,7 @@ class UbenchCmd(object):
         for idb in id_list:
             self.bm_set.analyse(idb)
             self.bm_set.extract_results(idb)
-            self.bm_set.print_result_array(debug_mode)
+            self.bm_set.print_result_array()
 
 
     def listb(self):

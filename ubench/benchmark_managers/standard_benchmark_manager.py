@@ -377,11 +377,10 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         #                           #
 
 
-    def print_result_array(self, debug_mode=False, output_file=None):
+    def print_result_array(self, output_file=None):
         """ Asciidoc printing of Jube result array
 
         Args:
-            debug_mode (bool):
             output_file (str): path of a file where to write the array.
                                If not set the array is printed on stdout.
         """

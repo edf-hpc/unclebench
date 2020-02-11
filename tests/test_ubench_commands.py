@@ -81,13 +81,13 @@ def test_result(mocker):
     mock_bms = mocker.patch(".".join(BMS_MOCK+["analyse"]))
     cmd.result(['last'])
     mock_bms.assert_called_with('last')
-    cmd.result([2], None)
+    cmd.result([2])
     mock_bms.assert_called_with(2)
-    cmd.result([2, 3], None)
+    cmd.result([2, 3])
     mock_bms.assert_called_with(3)
 
 def test_result_none(mocker):
     """Test result with None value """
     cmd = ubench_commands.UbenchCmd("platform", [])
     mock_bms = mocker.patch(".".join(BMS_MOCK+["analyse"]))
-    cmd.result(None, None)
+    cmd.result(None)

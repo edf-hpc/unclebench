@@ -33,9 +33,6 @@ ubench-result -  Print result of a benchmark run
 # -i <bench_id>
   Id of the benchmarks whose results should be printed
 
-# -d or --debug  
-  The path of the benchmark workspace where it should be executed
-
 # ENVIRONMENT
 
 

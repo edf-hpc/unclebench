@@ -212,11 +212,6 @@ parser_result.add_argument('-i',
                            help='Benchmark run IDs',
                            nargs='+')
 
-parser_result.add_argument('-d',
-                           '--debug',
-                           help='Mode to debug Unclebench',
-                           action='store_true')
-
 # Parser report
 report_help = 'Build a performance report from benchmark result directories.'
 
@@ -289,7 +284,7 @@ if args.subparser_name == 'run':
 elif args.subparser_name == 'fetch':
     commands.fetch()
 elif args.subparser_name == 'result':
-    commands.result(args.i, args.debug)
+    commands.result(args.i)
 elif args.subparser_name == 'log':
     commands.log(id_list=args.i)
 elif args.subparser_name == 'list':

@@ -541,40 +541,6 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
                                      })
                 link.text = "$UBENCH_RESOURCE_DIR/{0}/".format(benchmark_name)
 
-                debug_config = ET.Element('parameterset',
-                                          attrib={'name': 'pathd'})
-                debug_path = ET.SubElement(debug_config,
-                                           'parameter',
-                                           attrib={'name': 'work_path'})
-                benchmark.insert(3, debug_config)
-                debug_path.text = '$jube_wp_abspath'
-
-                exec_config = ET.Element('parameterset',
-                                         attrib={'name': 'bench_files'})
-                if dict_options:
-                    for opt in dict_options:
-                        exec_val = ET.SubElement(exec_config,
-                                                 'parameter',
-                                                 attrib={'name': opt})
-                        exec_val.text = dict_options[opt]
-                    benchmark.insert(4, exec_config)
-
-                debug_result = ET.Element('result')
-                debug_result_use = ET.SubElement(debug_result, 'use')
-
-                # TODO: handle multiple analyzer # pylint: disable=fixme
-                debug_result_use.text = self.get_analyzer_names()[0]
-                debug_result_path = ET.SubElement(debug_result,
-                                                  'table',
-                                                  attrib={
-                                                      'name': 'paths',
-                                                      'style': 'csv'
-                                                  })
-                debug_result_text = ET.SubElement(debug_result_path, 'column')
-                debug_result_text.text = 'work_path'
-
-                benchmark.insert(len(benchmark.getchildren()), debug_result)
-
                 # pylint: disable=consider-iterating-dictionary
                 for protocol in list(bench_config.keys()):
 
@@ -659,38 +625,6 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
                     use.text = name
                     if name not in present_params and 'bench_files_links' not in present_params:
                         step.insert(0, use)
-
-            if benchmark is None:
-                step = b_xml.findall("step[@name='execute']")
-            else:
-                step = benchmark.findall("step[@name='execute']")
-
-            if step:  # not empty
-                present_params = []
-                for use in step[0].findall('use'):
-                    present_params.append(use.text)
-                name = 'pathd'
-                use = ET.Element('use')
-                use.text = name
-                if name not in present_params:
-                    step[0].insert(0, use)
-
-                for use in step[0].findall('use'):
-                    present_params.append(use.text)
-                    name = 'compiler_set'
-                    use = ET.Element('use', attrib={'from': 'platform.xml'})
-                    use.text = name
-                if name not in present_params:
-                    step[0].insert(0, use)
-
-                for use in step[0].findall('use'):
-                    present_params.append(use.text)
-                    name = 'mpi_set'
-                    use = ET.Element('use', attrib={'from': 'platform.xml'})
-                    use.text = name
-                if name not in present_params:
-                    step[0].insert(0, use)
-
 
     def add_custom_nodes_stub(self, custom_nodes_numbers, custom_nodes_ids):
         """ docstring """
