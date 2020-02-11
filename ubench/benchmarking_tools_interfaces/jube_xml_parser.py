@@ -643,22 +643,22 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
                                 link.text = '$UBENCH_RESOURCE_DIR/{0}/${{{1}}}'.format(
                                     benchmark_name.lower(), name)
 
-            ### Adding special tags to step prepare
+            ### Adding special tags to all steps
             if benchmark is None:
-                step = b_xml.findall("step[@name='prepare']")
+                steps = b_xml.findall("step")
             else:
-                step = benchmark.findall("step[@name='prepare']")
+                steps = benchmark.findall("step")
 
-            if step:  # not empty
+            for step in steps:  # not empty
                 present_params = []
-                for use in step[0].findall('use'):
+                for use in step.findall('use'):
                     present_params.append(use.text)
 
                 for name in ['ubench_config', 'ubench_files']:
                     use = ET.Element('use')
                     use.text = name
                     if name not in present_params and 'bench_files_links' not in present_params:
-                        step[0].insert(0, use)
+                        step.insert(0, use)
 
             if benchmark is None:
                 step = b_xml.findall("step[@name='execute']")
