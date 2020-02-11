@@ -24,9 +24,6 @@
 	</fileset>
 
 	<parameterset name="container_parameters">
-  	    <!-- container_image can be set with a path to a container image file.
- 	    If so, execution and compilation steps of HPL benchmark are done in the given container.   
-	    -->
             <parameter name="container_image">0</parameter>
             <parameter name="container_exec_command" mode="python">
 		["",
@@ -66,7 +63,7 @@
 	</parameterset>
 
 	<!-- =====================  Compile  ===================== -->
-	<step name="prepare" export="true">
+	<step name="compile" export="true">
 
             <use> container_parameters </use>
             <!-- Choose compiler and MPI versions -->
@@ -91,14 +88,14 @@
 	<!-- ====================  Execute  ===================== -->
 
 	<fileset name="binaries">
-            <link rel_path_ref="internal" directory="prepare/hpl_source/bin">
+            <link rel_path_ref="internal" directory="compile/hpl_source/bin">
 		xhpl
             </link>
             <link>pq_script.py</link>
 	</fileset>
 
 	<substituteset name="sub_hpl_parameters">
-            <iofile in="prepare/HPL.dat.in" out="HPL.dat"/>
+            <iofile in="compile/HPL.dat.in" out="HPL.dat"/>
             <sub source="#PBSIZE#" dest="1"/>
             <sub source="#NNS#" dest="$variant_N"/>
             <sub source="#NNBS#" dest="1"/>
@@ -122,7 +119,7 @@
 
 	</parameterset>
 
-	<step name="execute" depend="prepare">
+	<step name="execute" depend="compile">
 
             <use> container_parameters </use>
             <use from="platform.xml">cluster_specs</use>
