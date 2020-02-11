@@ -285,7 +285,7 @@ commands = ubench_commands.UbenchCmd(platform=platform_arg, benchmark_list=bench
 if args.subparser_name == 'run':
     options_dictionary = vars(args)
     options_dictionary['raw_cli'] = sys.argv
-    sys.exit(commands.run(options_dictionary))
+    sys.exit(not commands.run(options_dictionary))
 elif args.subparser_name == 'fetch':
     commands.fetch()
 elif args.subparser_name == 'result':
