@@ -75,19 +75,6 @@ LIBdir       = $(TOPdir)/lib/$(ARCH)
 HPLlib       = $(LIBdir)/libhpl.a 
 #
 # ----------------------------------------------------------------------
-# - Message Passing library (MPI) --------------------------------------
-# ----------------------------------------------------------------------
-# MPinc tells the  C  compiler where to find the Message Passing library
-# header files,  MPlib  is defined  to be the name of  the library to be
-# used. The variable MPdir is only used for defining MPinc and MPlib.
-#
-MPdir        = ${I_MPI_ROOT}
-MPinc        = -I$(MPdir)/include
-MPlib        = -L$(MPdir)/lib/ -lmpi
-
-
-#
-# ----------------------------------------------------------------------
 # - Linear Algebra library (BLAS or VSIPL) -----------------------------
 # ----------------------------------------------------------------------
 # LAinc tells the  C  compiler where to find the Linear Algebra  library
@@ -173,8 +160,8 @@ F2CDEFS      =
 # - HPL includes / libraries / specifics -------------------------------
 # ----------------------------------------------------------------------
 #
-HPL_INCLUDES = -I$(INCdir) -I$(INCdir)/$(ARCH) $(LAinc) $(MPinc)
-HPL_LIBS     = $(HPLlib) $(LAlib) $(MPlib) -lm
+HPL_INCLUDES = -I$(INCdir) -I$(INCdir)/$(ARCH) $(LAinc)
+HPL_LIBS     = $(HPLlib) $(LAlib) -lm
 #
 # - Compile time options -----------------------------------------------
 #
