@@ -2,224 +2,228 @@
 <jube>
 
     <include-path>
-	<path> $UBENCH_PLATFORM_DIR </path>
+        <path> $UBENCH_PLATFORM_DIR </path>
     </include-path>
     <include from="platforms.xml" path="include-path"/>
 
     <multisource>
-      <source protocol="https">
-        <url>http://icl.cs.utk.edu/projectsfiles/hpcc/download/</url>
-        <file>hpcc-1.4.3.tar.gz</file>
-      </source>
-
-      <source protocol="local" >
-	<file>$UBENCH_BENCHMARK_DIR/hpcc/Make.gnu</file>
-	<file>$UBENCH_BENCHMARK_DIR/hpcc/Make.intel</file>
-	<file>$UBENCH_BENCHMARK_DIR/hpcc/hpccinf.txt.in</file>
-	<file>$UBENCH_BENCHMARK_DIR/hpcc/io.c</file>
-    </source>
-
+        <source protocol="https" name="hpcc_archive">
+            <url>http://icl.cs.utk.edu/projectsfiles/hpcc/download/</url>
+            <file>hpcc-1.4.3.tar.gz</file>
+        </source>
     </multisource>
-    
+
     <benchmark name="HPCC" outpath="benchmark_runs">
-	<comment>HPCC benchmarks</comment>
-	
-	<fileset name="source">
-	    <link> $UBENCH_RESOURCE_DIR/hpcc/hpcc-1.4.3.tar.gz</link>
-	    <link> $UBENCH_RESOURCE_DIR/hpcc/hpccinf.txt.in</link>
-	    <link> $UBENCH_RESOURCE_DIR/hpcc/Make.gnu</link>
-	    <link> $UBENCH_RESOURCE_DIR/hpcc/Make.intel</link>
-	    <link> $UBENCH_RESOURCE_DIR/hpcc/io.c</link>
-	    <prepare>tar -xzf hpcc-1.4.3.tar.gz </prepare>
-	</fileset>
-	
-	<parameterset name="variant_set">
-	    <parameter name="variant_v">0</parameter>
-	    <parameter name="variant_name" mode="python">
-		["Full_MPI"][$variant_v]
-	    </parameter>
-	    
- 	    <parameter name="variant_NB">
-		192
-	    </parameter>
-	    
-	    <parameter name="memory_proportion">
-		0.1
-	    </parameter>
+        <comment>HPCC benchmarks</comment>
 
-	    <!-- Choose N to avoid exceeding memory_proportion of available memory -->
-	    <parameter name="variant_Ntemp" mode="python" type="float" separator="??" >
-		(${memory_proportion}*${nodes}*(${GB_per_node})*1e9/8) ** 0.5		
-	    </parameter>
-	    
- 	    <parameter name="variant_N" mode="python" type="int" separator="??" >
-		int( round( ${variant_Ntemp} / ${variant_NB} ) * ${variant_NB})
-	    </parameter>
-	    
-	</parameterset>
+        <fileset name="source">
+            <link>hpccinf.txt.in</link>
+            <link>Make.gnu</link>
+            <link>Make.intel</link>
+            <link>io.c</link>
+            <prepare>tar -xzf ${hpcc_archive}</prepare>
+        </fileset>
 
-	<parameterset name="compiler_opts">
-	  <parameter name="arch" tpye="string">
-	    ${comp_version}
-	  </parameter>
-	</parameterset>
-	
-	<!-- =====================  Compile  ===================== -->
-	<step name="compile" export="true">
-	    	    
-	    <!-- Choose compiler and MPI versions -->
-	    <use from="platform.xml"> compiler_set </use>
-	    <use from="platform.xml"> mpi_set </use>
-	    <use> compiler_opts </use>
-	    
-	    <!-- substitute compiler in makefile -->
-	    <use>source</use>
-	    
-	    <!-- Load environment -->
-	    <do> module purge </do>
-	    <do> module load $module_compile $module_mpi $module_blas </do>
+        <parameterset name="container_parameters">
+            <parameter name="container_image">0</parameter>
+            <parameter name="container_exec_command" mode="python">
+                ["",
+                "singularity exec ${container_image}"][0 if '$container_image'=='0' else 1]
+            </parameter>
+        </parameterset>
 
-	    <do work_dir="hpcc-1.4.3">
-	        if [[ $MKLROOT ]]; then
-	          cp -rf ${blas_root}/mkl/interfaces/fftw2x_cdft .
-	      	  cp -rf ${blas_root}/mkl/interfaces/fftw2xc .
-	          mkdir fftwmkl
-		  cd fftw2x_cdft
-		  if [$I_MPI_ROOT]; then
-	            make -s libintel64 MKLROOT=${blas_root}/mkl mpi=intelmpi PRECISION=MKL_DOUBLE interface=ilp64 INSTALL_DIR=../fftwmkl;
-		  else
-		    make -s libintel64 MKLROOT=${blas_root}/mkl mpi=openmpi PRECISION=MKL_DOUBLE interface=ilp64 INSTALL_DIR=../fftwmkl;
-		  fi
-		  cd ..
-		  cd fftw2xc
-		  if [[ $I_MPI_ROOT ]]; then
-	            make -s libintel64 MKLROOT=${blas_root}/mkl mpi=intelmpi PRECISION=MKL_DOUBLE interface=ilp64 INSTALL_DIR=../fftwmkl;
-		  else
-		    make -s libintel64 MKLROOT=${blas_root}/mkl mpi=openmpi PRECISION=MKL_DOUBLE interface=ilp64 INSTALL_DIR=../fftwmkl;
-		  fi
-		  cd ..
-		  export LD_LIBRARY_PATH=$${PWD}/fftwmkl:$LD_LIBRARY_PATH;
-		fi
 
-		export LD_LIBRARY_PATH=${blas_root}/lib:$LD_LIBRARY_PATH;
-		
-		cp ../Make.* hpl/.
-		cp ../io.c src/.
-		make arch=${arch} FFTWROOT="$${PWD}/fftwmkl" CC=${mpi_cc} BLAS_ROOT=${blas_root} MPdir=${mpi_root}
-	    </do>
+        <parameterset name="variant_set">
+            <parameter name="variant_v">0</parameter>
+            <parameter name="variant_name" mode="python">
+                ["Full_MPI"][$variant_v]
+            </parameter>
 
-	</step>
+            <parameter name="variant_NB">
+                192
+            </parameter>
 
-	<!-- ====================  Execute  ===================== -->
-	
-	<fileset name="binaries">
-	    <link rel_path_ref="internal" directory="compile/hpcc-1.4.3">
-		hpcc
-	    </link>
-	    <link>pq_script.py</link>
-	</fileset>
+            <parameter name="memory_proportion">
+                0.1
+            </parameter>
 
-	<substituteset name="sub_hpcc_parameters">
-	  <iofile in="compile/hpccinf.txt.in" out="hpccinf.txt"/>
-	  <sub source="#PBSIZE#" dest="1"/>
-	  <sub source="#NNS#" dest="$variant_N"/>
-	  <sub source="#NNBS#" dest="1"/>
-	  <sub source="#NBS#" dest="$variant_NB"/>
-	</substituteset> 
+            <!-- Choose N to avoid exceeding memory_proportion of available memory -->
+            <parameter name="variant_Ntemp" mode="python" type="float" separator="??" >
+                (${memory_proportion}*${nodes}*(${GB_per_node})*1e9/8) ** 0.5
+            </parameter>
 
-	<parameterset name="system_parameters" init_with="platform.xml">
-	    <parameter name="nodes" type="int">1</parameter>
-	    <parameter name="taskspernode" mode="python" type="int">$NUMA_regions*$cores_per_NUMA_region</parameter>
-	    <parameter name="threadspertask" type="int">1</parameter>
-	    <parameter name="executable">./hpcc</parameter>
-	    <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
-	    <parameter name="timelimit">08:00:00</parameter>
-	</parameterset>
+            <parameter name="variant_N" mode="python" type="int" separator="??" >
+                int( round( ${variant_Ntemp} / ${variant_NB} ) * ${variant_NB})
+            </parameter>
 
-	<parameterset name="execute_set" init_with="platform.xml">
+        </parameterset>
 
-	    <parameter name="args_starter" separator="??">
-		${binding_full_node}
-	    </parameter>
-	    
-	</parameterset>
-	
-	<step name="execute" depend="compile">
-	  
-	  <use from="platform.xml">cluster_specs</use>
-	  <use>binaries</use>
-	  <use>sub_hpcc_parameters</use>
+        <parameterset name="compiler_opts">
+            <parameter name="arch" tpye="string">
+                ${comp_version}
+            </parameter>
+        </parameterset>
 
-	  <use>execute_set</use>
-	  <use>system_parameters</use>
-	  <use>variant_set</use>
+        <!-- =====================  Compile  ===================== -->
+        <step name="compile" export="true">
 
-	 
+	    <use>container_parameters</use>
+            <!-- Choose compiler and MPI versions -->
+            <use from="platform.xml"> compiler_set </use>
+            <use from="platform.xml"> mpi_set </use>
+            <use> compiler_opts </use>
 
-	  <use from="platform.xml">jobfiles</use>
-	  <use from="platform.xml">execute_sub</use>
+            <!-- substitute compiler in makefile -->
+            <use>source</use>
 
-	  <do> ./pq_script.py $tasks </do>
-	  
-	  <do done_file="$done_file">$submit $submit_script</do>
-	 	  
-	</step>
-	
-	<!-- =====================  Analyze  ===================== -->
-	
-	<patternset name="pattern">
-	    <pattern name="MPIRandAcc" type="float" unit="GUP/s">
-	      ^MPIRandomAccess_GUPs=$jube_pat_fp
-	    </pattern>
-	    
-	    <pattern name="MPIFFT" type="float" unit="Gflop/s">
-	      ^MPIFFT_Gflops=$jube_pat_fp
-	    </pattern>
-	    
-	    <pattern name="PTRANS" type="float" unit="GB/s">
-	      ^PTRANS_GBs=$jube_pat_fp
-	    </pattern>
-	    
-	    <pattern name="StarDGEMM" type="float" unit="Gflop/s">
-	      ^StarDGEMM_Gflops=$jube_pat_fp
-	    </pattern>
+            <!-- Load environment -->
+            <do> module purge </do>
+            <do> module load $module_compile $module_mpi $module_blas </do>
 
-	    <pattern name="RORingBandwidth" type="float" unit="GByte/s">
-	      ^RandomlyOrderedRingBandwidth_GBytes=$jube_pat_fp
-	    </pattern>
+            <do work_dir="hpcc-1.4.3">
+                if [[ $MKLROOT ]]; then
+                    cp -rf ${blas_root}/mkl/interfaces/fftw2x_cdft .
+                    cp -rf ${blas_root}/mkl/interfaces/fftw2xc .
+                    mkdir fftwmkl
+                    cd fftw2x_cdft
+                    if [$I_MPI_ROOT]; then
+                        ${container_exec_command} make -s libintel64 MKLROOT=${blas_root}/mkl mpi=intelmpi PRECISION=MKL_DOUBLE interface=ilp64 INSTALL_DIR=../fftwmkl;
+                    else
+                        ${container_exec_command} make -s libintel64 MKLROOT=${blas_root}/mkl mpi=openmpi PRECISION=MKL_DOUBLE interface=ilp64 INSTALL_DIR=../fftwmkl;
+                    fi
+                    cd ../fftw2xc
+                    if [[ $I_MPI_ROOT ]]; then
+                        ${container_exec_command} make -s libintel64 MKLROOT=${blas_root}/mkl mpi=intelmpi PRECISION=MKL_DOUBLE interface=ilp64 INSTALL_DIR=../fftwmkl;
+                    else
+                        ${container_exec_command} make -s libintel64 MKLROOT=${blas_root}/mkl mpi=openmpi PRECISION=MKL_DOUBLE interface=ilp64 INSTALL_DIR=../fftwmkl;
+                    fi
+                    cd ..
+                    export LD_LIBRARY_PATH=$${PWD}/fftwmkl:$LD_LIBRARY_PATH;
+                fi
 
-	    <pattern name="RORingLatency" type="float" unit="usec">
-	      ^RandomlyOrderedRingLatency_usec=$jube_pat_fp
-	    </pattern>
+                export LD_LIBRARY_PATH=${blas_root}/lib:$LD_LIBRARY_PATH;
 
-	    <pattern name="StarSTREAM_Triad" type="float" unit="GB/s">
-	      ^StarSTREAM_Triad=$jube_pat_fp
-	    </pattern>
+                cp ../Make.* hpl/.
+                cp ../io.c src/.
+                ${container_exec_command} make arch=${arch} FFTWROOT="$${PWD}/fftwmkl" CC=${mpi_cc} BLAS_ROOT=${blas_root}
+		cp hpcc hpcc_exe
+            </do>
 
-	</patternset>
-	
+        </step>
 
-	<analyzer name="analyse">
-	  <use>pattern</use>
-	  <analyse step="execute"><file>hpccoutf.txt</file></analyse>
-	</analyzer>
+        <!-- ====================  Execute  ===================== -->
 
-	<!-- =====================  Result  ===================== -->
+        <fileset name="binaries">
+            <link rel_path_ref="internal" directory="compile/hpcc-1.4.3">
+                hpcc_exe
+            </link>
+            <link>pq_script.py</link>
+        </fileset>
 
-	<result>
-	    <use>analyse</use>
-	    <table name="result" style="csv" sort="nodes">
-		<column>nodes</column>
-		<column>MPIRandAcc</column>
-		<column>MPIFFT</column>
-		<column>PTRANS</column>
-		<column>StarDGEMM</column>
-		<column>RORingBandwidth</column>
-		<column>RORingLatency</column>
-		<column>StarSTREAM_Triad</column>
-		<column>modules</column>
-	    </table>
-	</result>
-		
+        <substituteset name="sub_hpcc_parameters">
+            <iofile in="compile/hpccinf.txt.in" out="hpccinf.txt"/>
+            <sub source="#PBSIZE#" dest="1"/>
+            <sub source="#NNS#" dest="$variant_N"/>
+            <sub source="#NNBS#" dest="1"/>
+            <sub source="#NBS#" dest="$variant_NB"/>
+        </substituteset>
+
+        <parameterset name="system_parameters" init_with="platform.xml">
+            <parameter name="nodes" type="int">1</parameter>
+            <parameter name="taskspernode" mode="python" type="int">
+                $NUMA_regions*$cores_per_NUMA_region
+            </parameter>
+            <parameter name="threadspertask" type="int">1</parameter>
+            <parameter name="executable">${container_exec_command} ./hpcc_exe</parameter>
+            <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
+            <parameter name="timelimit">08:00:00</parameter>
+        </parameterset>
+
+        <parameterset name="execute_set" init_with="platform.xml">
+
+            <parameter name="args_starter" separator="??">
+                ${binding_full_node}
+            </parameter>
+
+        </parameterset>
+
+        <step name="execute" depend="compile">
+
+	    <use>container_parameters</use>
+            <use from="platform.xml">cluster_specs</use>
+            <use>binaries</use>
+            <use>sub_hpcc_parameters</use>
+
+            <use>execute_set</use>
+            <use>system_parameters</use>
+            <use>variant_set</use>
+
+
+
+            <use from="platform.xml">jobfiles</use>
+            <use from="platform.xml">execute_sub</use>
+
+            <do> ./pq_script.py $tasks </do>
+
+            <do done_file="$done_file">$submit $submit_script</do>
+
+        </step>
+
+        <!-- =====================  Analyze  ===================== -->
+
+        <patternset name="pattern">
+            <pattern name="MPIRandAcc" type="float" unit="GUP/s">
+                ^MPIRandomAccess_GUPs=$jube_pat_fp
+            </pattern>
+
+            <pattern name="MPIFFT" type="float" unit="Gflop/s">
+                ^MPIFFT_Gflops=$jube_pat_fp
+            </pattern>
+
+            <pattern name="PTRANS" type="float" unit="GB/s">
+                ^PTRANS_GBs=$jube_pat_fp
+            </pattern>
+
+            <pattern name="StarDGEMM" type="float" unit="Gflop/s">
+                ^StarDGEMM_Gflops=$jube_pat_fp
+            </pattern>
+
+            <pattern name="RORingBandwidth" type="float" unit="GByte/s">
+                ^RandomlyOrderedRingBandwidth_GBytes=$jube_pat_fp
+            </pattern>
+
+            <pattern name="RORingLatency" type="float" unit="usec">
+                ^RandomlyOrderedRingLatency_usec=$jube_pat_fp
+            </pattern>
+
+            <pattern name="StarSTREAM_Triad" type="float" unit="GB/s">
+                ^StarSTREAM_Triad=$jube_pat_fp
+            </pattern>
+
+        </patternset>
+
+
+        <analyzer name="analyse">
+            <use>pattern</use>
+            <analyse step="execute"><file>hpccoutf.txt</file></analyse>
+        </analyzer>
+
+        <!-- =====================  Result  ===================== -->
+
+        <result>
+            <use>analyse</use>
+            <table name="result" style="csv" sort="nodes">
+                <column>nodes</column>
+                <column>MPIRandAcc</column>
+                <column>MPIFFT</column>
+                <column>PTRANS</column>
+                <column>StarDGEMM</column>
+                <column>RORingBandwidth</column>
+                <column>RORingLatency</column>
+                <column>StarSTREAM_Triad</column>
+                <column>modules</column>
+            </table>
+        </result>
+
     </benchmark>
 </jube>
