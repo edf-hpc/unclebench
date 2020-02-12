@@ -534,9 +534,9 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                 break
 
         if popen_obj.returncode:
-            print('Jube parsing might have gone wrong, please check ' +
-                  self.benchmark_path + '/jube-parse.log file')
-            raise RuntimeError("Error when executing command: {}".format(input_str))
+            stdout, stderr = popen_obj.communicate()
+            raise RuntimeError("""Error when executing command: {}\nstdout:\n--------\n {}\n
+stderr:\n--------\n {}\n""".format(input_str,stdout,stderr))
 
         benchmark_results_path = os.path.join(output_dir, numdir)
 
