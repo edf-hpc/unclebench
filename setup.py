@@ -40,8 +40,13 @@ setup(name='ubench',
                    ' parameters on the fly without having to modify the'
                    ' benchmark or platform description files'),
       install_requires=[
-          'clustershell>=1.6'
-          'seaborn>=0.9.0'],
+          'clustershell>=1.6',
+          'seaborn>=0.9.0',
+          'matplotlib',
+          'jinja2',
+          'pyyaml',
+          'lxml',
+          'pandas'],
       url='https://github.com/edf-hpc/unclebench',
       author=__author__,
       author_email='dsp-cspito-ccn-hpc@edf.fr',
