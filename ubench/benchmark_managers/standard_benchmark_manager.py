@@ -109,22 +109,22 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         """
 
         parent_run_dir = os.path.abspath(os.path.join(self.benchmark_path, os.pardir))
-        if not os.path.exists(parent_run_dir):
-            try:
-                os.makedirs(parent_run_dir)
-            except Exception as e:  # pylint: disable=broad-except
-                print('Error while making directory {0} : {1}'.format(parent_run_dir, str(e)))
-
         src_dir = self.benchmark_src_path
         dest_dir = self.benchmark_path
 
+        if not os.path.exists(parent_run_dir):
+            try:
+                os.makedirs(parent_run_dir)
+            except (FileExistsError, OSError) as e:
+                print('Error while making directory {0} : {1}'.format(parent_run_dir, str(e)))
+
         try:
             copytree(src_dir, dest_dir, symlinks=True)
-        except OSError as oserror:   # pylint: disable=unused-variable
-            print('---- ' + self.benchmark_name +
-                  ' description files are already present in'
-                  'run directory and will be overwritten.')
-        print('---- Copying ' + self.benchmark_src_path + ' to ' + self.benchmark_path)
+        except OSError:
+            print('''---- {} description files are already present in
+            run directory and will be overwritten.'''.format(self.benchmark_name))
+
+        print("---- Copying {} to {}".format(src_dir, dest_dir))
 
         for f in os.listdir(src_dir):
             copy(os.path.join(src_dir, f), dest_dir)
@@ -190,8 +190,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             if 'raw_cli' in opt_dict:
                 logfile.write('cmdline         : {0} \n'.format(' '.join(opt_dict['raw_cli'])))
 
-        print('---- Use the following command to follow benchmark progress :',
-              '    "ubench log -p {0} -b {1} -i {2}"'.format(self.platform_name,
+        print('''---- Use the following command to follow benchmark progress :
+                  "ubench log -p {0} -b {1} -i {2}"'''.format(self.platform_name,
                                                               self.benchmark_name, ID))
         if opt_dict['foreground']:
             print('---- Waiting benchmark to finish running')
@@ -212,7 +212,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             print("\n")
             if default_values:
                 print("DEFAULT PARAMETER VALUES\n")
-            print(type_param + " parameters")
+            print("{} parameters".format(type_param))
             print("-----------------------------------------------")
             for parameter, value in all_parameters[type_param]:
                 print(parameter.rjust(20)+' : '+value)
@@ -268,7 +268,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         except OSError as ose:
             print('    No run was found for {0} benchmark :'.\
                   format(self.benchmark_name))
-            print('    '+str(ose))
+            print("    {}".format(ose))
 
         for fd in os.listdir(result_root_dir):
             for filename in os.listdir(os.path.join(result_root_dir, fd)):
