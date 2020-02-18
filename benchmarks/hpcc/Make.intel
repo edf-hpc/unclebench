@@ -177,7 +177,7 @@ HPL_LIBS     = $(HPLlib) $(LAlib) -lm
 #    *) call the BLAS Fortran 77 interface,
 #    *) not display detailed timing information.
 #
-HPL_OPTS     = -ip -ansi-alias -fno-alias -opt-subscript-in-range -DUSING_FFTW -DHPL_CALL_CBLAS -DRA_SANDIA_OPT2 -DHPCC_FFT_235 -DMKL_INT=long -DLONG_IS_64BITS
+HPL_OPTS     = -ip -ansi-alias -fno-alias -qopt-subscript-in-range -DUSING_FFTW -DHPL_CALL_CBLAS -DRA_SANDIA_OPT2 -DHPCC_FFT_235 -DMKL_INT=long -DLONG_IS_64BITS
 # -DUSING_FFTW
 #
 # ----------------------------------------------------------------------
