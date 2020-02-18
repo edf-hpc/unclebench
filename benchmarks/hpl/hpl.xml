@@ -24,10 +24,10 @@
 	</fileset>
 
 	<parameterset name="container_parameters">
-            <parameter name="container_image">0</parameter>
+            <parameter name="container_image">none</parameter>
             <parameter name="container_exec_command" mode="python">
 		["",
-		"singularity exec ${container_image}"][0 if '$container_image'=='0' else 1]
+		"singularity exec ${container_image}"][0 if '$container_image'=='host' else 1]
 	    </parameter>
 	</parameterset>
 
@@ -161,6 +161,7 @@
 		<column>nodes</column>
 		<column>HPL</column>
 		<column>modules</column>
+		<column>container_image</column>
             </table>
 	</result>
 
