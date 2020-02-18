@@ -50,6 +50,4 @@ def run_cmd_bg(cmd_string, cwd, env=None):
                 stderr=PIPE,
                 universal_newlines=True)
 
-    time.sleep(1)
-    cmd.poll()
     return cmd

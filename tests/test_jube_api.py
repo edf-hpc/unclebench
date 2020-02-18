@@ -25,6 +25,7 @@ import pytest
 import pytest_mock
 import mock
 import ubench.benchmarking_tools_interfaces.jube_benchmarking_api as jba
+import ubench.core.ubench_config as uconfig
 import fake_data
 
 #jubebenchmarkingAPI uses the values set in test_bench_api
@@ -37,8 +38,7 @@ MOCK_JAPI = ["ubench",
              "benchmarking_tools_interfaces",
              "jube_benchmarking_api"]
 
-MOCK_UTILS = ["ubench",
-              "utils"]
+MOCK_UTILS = ["ubench", "utils"]
 
 @pytest.fixture
 def mock_os_methods(mocker):
@@ -46,6 +46,11 @@ def mock_os_methods(mocker):
     mock_isdir = mocker.patch("os.path.isdir")
     mock_chdir = mocker.patch("os.chdir")
     mock_rmdir = mocker.patch("shutil.rmtree")
+
+
+def mockxmlparser(*args):
+    """Mock xmlparser"""
+    return fake_data.FakeXML()
 
 def mockpopen(args, shell, cwd, env, stdout=None, stderr=None, universal_newlines=False):
     """Mock Popen"""
@@ -58,10 +63,12 @@ def mock_b_dir():
     return "benchmark_runs"
 
 def test_analyse(mocker, mock_os_methods):
-    jube_api = jba.JubeBenchmarkingAPI('simple', 'platform')
 
-    mock_xml = mocker.patch(".".join(MOCK_XML+["get_bench_outputdir"]),
-                            side_effect=mock_b_dir)
+    mock_xml = mocker.patch("ubench.benchmarking_tools_interfaces.jube_xml_parser.JubeXMLParser",
+                            side_effect=mockxmlparser)
+
+    uconf = uconfig.UbenchConfig()
+    jube_api = jba.JubeBenchmarkingAPI('simple', 'platform', uconf)
 
     mock_popen = mocker.patch(".".join(MOCK_UTILS+["Popen"]),
                               side_effect=mockpopen)
@@ -70,15 +77,17 @@ def test_analyse(mocker, mock_os_methods):
 
 def test_run(mocker, mock_os_methods):
 
-    jube_api = jba.JubeBenchmarkingAPI('test', 'platform')
+    mock_xml = mocker.patch("ubench.benchmarking_tools_interfaces.jube_xml_parser.JubeXMLParser",
+                            side_effect=mockxmlparser)
+
+    uconf = uconfig.UbenchConfig()
+    jube_api = jba.JubeBenchmarkingAPI('test', 'platform', uconf)
 
     def mockanalyse(bench_id):
         rand = str(time.time())
         fake_id = int(rand[9])
         return fake_id, '000001'
 
-    mock_xml = mocker.patch(".".join(MOCK_XML+["get_bench_outputdir"]),
-                            side_effect=mock_b_dir)
 
     mock_popen = mocker.patch(".".join(MOCK_UTILS+["Popen"]),
                               side_effect=mockpopen)
