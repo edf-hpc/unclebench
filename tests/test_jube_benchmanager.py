@@ -29,25 +29,41 @@ import fake_data
 
 TEST_CONF = fake_data.UConf(resource_dir='/tmp/',
                             run_dir='/tmp/',
-                            benchmark_dir='/tmp/')
+                            benchmark_dir='/tmp/',
+                            platform_dir='/tmp/')
 
+MOCK_XML = ["ubench",
+            "benchmarking_tools_interfaces",
+            "jube_xml_parser",
+            "JubeXMLParser"]
 
-def test_std_manager():
+MOCK_MANAGER = ["ubench",
+                "benchmark_managers",
+                "standard_benchmark_manager",
+                "StandardBenchmarkManager"]
+
+def mockxmlparser(*args):
+    """Mock xmlparser"""
+    return fake_data.FakeXML()
+
+@pytest.fixture
+def mocks_custom(mocker):
+    mock_listdir = mocker.patch("os.listdir")
+    mock_xml = mocker.patch(".".join(MOCK_XML),
+                            side_effect=mockxmlparser)
+    mock_jbm = mocker.patch(".".join(MOCK_MANAGER + ["_init_run_dir"]))
+
+def test_std_manager(mocker, mocks_custom):
     std_bm = jbm.JubeBenchmarkManager('bench', 'platform', TEST_CONF)
 
-def test_run_empty(mocker):
+def test_run_empty(mocker, mocks_custom):
     std_bm = jbm.JubeBenchmarkManager('bench', 'platform', TEST_CONF)
-    mock_jbm = mocker.patch(
-        "ubench.benchmark_managers.standard_benchmark_manager.StandardBenchmarkManager.init_run_dir")
 
     std_bm.benchmarking_api = fake_data.FakeAPI()
     std_bm.run({'w':[], 'execute': False, 'foreground' : False})
 
 
-def test_w_option(mocker):
-    mock_jbm = mocker.patch(
-        "ubench.benchmark_managers.standard_benchmark_manager.StandardBenchmarkManager.init_run_dir")
-
+def test_w_option(mocker, mocks_custom):
     mock_set_w = mocker.patch(
         "fake_data.FakeAPI.set_custom_nodes")
 

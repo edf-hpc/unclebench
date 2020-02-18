@@ -21,7 +21,7 @@
 
 import collections
 
-UConf = collections.namedtuple('Uconf', 'resource_dir run_dir benchmark_dir')
+UConf = collections.namedtuple('Uconf', 'resource_dir run_dir benchmark_dir platform_dir')
 
 
 class MockPopen(object):
@@ -97,4 +97,31 @@ class FakeAPI:
         return '/tmp/', 0
 
     def set_custom_nodes(self, nnodes, nodes):
+        return True
+
+
+class FakeXML:
+
+    def load_platform_xml(self, platform):
+        return True
+
+    def get_bench_outputdir(self):
+        return "benchmark_runs"
+
+    def add_bench_input(self):
+        return True
+
+    def remove_multisource(self):
+        return True
+
+    def write_bench_xml(self):
+        return True
+
+    def write_platform_xml(self):
+        return True
+
+    def get_platform_dir(self):
+        return ""
+
+    def delete_platform_dir(self):
         return True

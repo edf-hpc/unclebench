@@ -66,7 +66,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             uconf (UbenchConfig): ubench configuration
         """
         # pylint: disable=super-init-not-called
-
         self.result_array = []
         self.transposed_result_array = []
         self.benchmark_results_path = ''
@@ -84,6 +83,9 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         self.print_transposed_array = False
         self.print_plot = False
         self.plot_list = []
+        # Initialize directory first
+        self._init_run_dir(platform)
+        self.benchmarking_api = self.get_benchmarking_api()
 
 
     @abc.abstractmethod
@@ -98,7 +100,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         #                               #
 
 
-    def init_run_dir(self, platform):  # pylint: disable=unused-argument
+    def _init_run_dir(self, platform):  # pylint: disable=unused-argument
         """ Create and initialize run directory
 
         Args:
@@ -127,9 +129,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         for f in os.listdir(src_dir):
             copy(os.path.join(src_dir, f), dest_dir)
 
-        if not self.benchmarking_api:
-            self.benchmarking_api = self.get_benchmarking_api()
-
 
     def run(self, opt_dict={}): # pylint: disable=arguments-differ
         """ Run benchmark on a given platform and write a ubench.log file in
@@ -139,8 +138,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             opt_dict (dict): dictionary with the options sent to unclebench
         """
         # pylint: disable=dangerous-default-value, too-many-locals, too-many-branches
-
-        self.init_run_dir(self.platform_name)
 
         # Set custom node configuration
         if opt_dict['w']:
@@ -194,9 +191,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                 logfile.write('cmdline         : {0} \n'.format(' '.join(opt_dict['raw_cli'])))
 
         print('---- Use the following command to follow benchmark progress :',
-              '    " ubench log -p {0} -b {1} -i {2}"'.format(self.platform_name,
+              '    "ubench log -p {0} -b {1} -i {2}"'.format(self.platform_name,
                                                               self.benchmark_name, ID))
-
         if opt_dict['foreground']:
             print('---- Waiting benchmark to finish running')
             self.benchmarking_api.wait_run(ID, run_dir)
@@ -211,8 +207,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         """
 
         print(self.benchmark_src_path)
-        if not self.benchmarking_api:
-            self.benchmarking_api = self.get_benchmarking_api()
         all_parameters = self.benchmarking_api.list_parameters(default_values)
         for type_param in all_parameters:
             print("\n")
@@ -229,9 +223,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         Args:
             dict_options: dictionary with old value as key and new value as value.
         """
-
-        if not self.benchmarking_api:
-            self.benchmarking_api = self.get_benchmarking_api()
         modified_params = self.benchmarking_api.set_parameter(dict_options)
         for elem in modified_params:
             print('---- {0} parameter was modified from {1} to {2} for this run'.format(*elem))
@@ -253,13 +244,11 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         """
 
         try:
-            if not self.benchmarking_api:
-                self.benchmarking_api = self.get_benchmarking_api()
             print(self.benchmarking_api.get_log(idb))
-        except IOError as io_error:
+        except (IOError, OSError) as io_error:
             print('---- Error: cannot find benchmark logs :')
             print(str(io_error))
-            return
+            raise
 
     def list_runs(self):
         """ List benchmark runs with their IDs and status """
@@ -273,9 +262,14 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         # Retrieve informations from ubench.log files found in the benchmark directory.
         # Informations are organized in a dictionnary.
         logfile_paths = []
-        if not self.benchmarking_api:
-            self.benchmarking_api = self.get_benchmarking_api()
-        result_root_dir = self.benchmarking_api.get_results_root_directory()
+
+        try:
+            result_root_dir = self.benchmarking_api.get_results_root_directory()
+        except OSError as ose:
+            print('    No run was found for {0} benchmark :'.\
+                  format(self.benchmark_name))
+            print('    '+str(ose))
+
         for fd in os.listdir(result_root_dir):
             for filename in os.listdir(os.path.join(result_root_dir, fd)):
                 if filename == 'ubench.log':
@@ -341,9 +335,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             benchmark_id (int): id of the benchmark to analyze
         """
 
-        if not self.benchmarking_api:
-            self.benchmarking_api = self.get_benchmarking_api()
         self.benchmark_results_path = self.benchmarking_api.analyse(benchmark_id)
+
 
     def extract_results(self, benchmark_id):
         """ Get result from a jube benchmark with its id and build a python result array
@@ -352,8 +345,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             benchmark_id (int): id of the benchmark to analyze
         """
 
-        if not self.benchmarking_api:
-            self.benchmarking_api = self.get_benchmarking_api()
         self.result_array = self.benchmarking_api.extract_results(benchmark_id)
         self.benchmarking_api.write_bench_data(benchmark_id)
         self.transposed_result_array = [list(x) for x in zip(*self.result_array)]
