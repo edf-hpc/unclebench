@@ -185,7 +185,7 @@ class UbenchCmd(object):
 
                 elif source['protocol'] == 'svn' or source['protocol'] == 'git':
                     if 'revision' not in source:
-                        source['revision'] = None
+                        source['revision'] = [None]
                     if 'branch' not in source:
                         source['branch'] = None
                     fetch_bench.scm_fetch(source['url'], source['files'],
