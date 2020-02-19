@@ -121,8 +121,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         try:
             copytree(src_dir, dest_dir, symlinks=True)
         except OSError:
-            print('''---- {} description files are already present in
-            run directory and will be overwritten.'''.format(self.benchmark_name))
+            print("---- {} description files are already present in " \
+                  "run directory and will be overwritten.".format(self.benchmark_name))
 
         print("---- Copying {} to {}".format(src_dir, dest_dir))
 
@@ -167,7 +167,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             print(str(rerror))
             raise
 
-        print('---- benchmark run directory :', run_dir)
+        print("---- benchmark run directory: {}".format(run_dir))
         logfile_path = os.path.join(run_dir, 'ubench.log')
         date = time.strftime("%c")
         flattened_w_list = ''
@@ -190,9 +190,9 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             if 'raw_cli' in opt_dict:
                 logfile.write('cmdline         : {0} \n'.format(' '.join(opt_dict['raw_cli'])))
 
-        print('''---- Use the following command to follow benchmark progress :
-                  "ubench log -p {0} -b {1} -i {2}"'''.format(self.platform_name,
-                                                              self.benchmark_name, ID))
+        print("---- Use the following command to follow benchmark progress: "\
+              "ubench log -p {0} -b {1} -i {2}".format(self.platform_name,
+                                                       self.benchmark_name, ID))
         if opt_dict['foreground']:
             print('---- Waiting benchmark to finish running')
             self.benchmarking_api.wait_run(ID, run_dir)
