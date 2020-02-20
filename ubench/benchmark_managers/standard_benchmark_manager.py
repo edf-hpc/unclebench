@@ -73,8 +73,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         self.resource_dir = os.path.join(uconf.resource_dir, benchmark_name)
         self.benchmark_path = os.path.join(uconf.run_dir, platform, benchmark_name)
         self.benchmark_src_path = os.path.join(uconf.benchmark_dir, benchmark_name)
-        self.benchmarking_api = None
-        self.platform_name = platform
+        self.platform = platform
 
         # Default report parameters
         self.title = benchmark_name
@@ -84,7 +83,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         self.print_plot = False
         self.plot_list = []
         # Initialize directory first
-        self._init_run_dir(platform)
         self.benchmarking_api = self.get_benchmarking_api()
 
 
@@ -138,7 +136,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             opt_dict (dict): dictionary with the options sent to unclebench
         """
         # pylint: disable=dangerous-default-value, too-many-locals, too-many-branches
-
+        self._init_run_dir(self.platform)
         # Set custom node configuration
         if opt_dict['w']:
             w_list = opt_dict['w']
@@ -182,7 +180,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
         with open(logfile_path, 'w') as logfile:
             logfile.write('Benchmark_name  : {0} \n'.format(self.benchmark_name))
-            logfile.write('Platform        : {0} \n'.format(self.platform_name))
+            logfile.write('Platform        : {0} \n'.format(self.platform))
             logfile.write('ID              : {0} \n'.format(ID))
             logfile.write('Date            : {0} \n'.format(date))
             logfile.write('Run_directory   : {0} \n'.format(run_dir))
@@ -191,7 +189,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                 logfile.write('cmdline         : {0} \n'.format(' '.join(opt_dict['raw_cli'])))
 
         print("---- Use the following command to follow benchmark progress: "\
-              "ubench log -p {0} -b {1} -i {2}".format(self.platform_name,
+              "ubench log -p {0} -b {1} -i {2}".format(self.platform,
                                                        self.benchmark_name, ID))
         if opt_dict['foreground']:
             print('---- Waiting benchmark to finish running')
@@ -264,7 +262,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         logfile_paths = []
 
         try:
-            result_root_dir = self.benchmarking_api.get_results_root_directory()
+            result_root_dir = os.path.join(self.benchmark_path,
+                                           self.benchmarking_api.get_bench_outpath())
         except OSError as ose:
             print('    No run was found for {0} benchmark :'.\
                   format(self.benchmark_name))

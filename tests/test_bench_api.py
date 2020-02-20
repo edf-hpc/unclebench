@@ -65,7 +65,7 @@ def test_init():
     uconf = uconfig.UbenchConfig()
     benchmarking_api = jba.JubeBenchmarkingAPI("", "", uconf)
     assert isinstance(benchmarking_api.benchmark_path, str)
-    assert benchmarking_api.benchmark_name == ""
+    assert benchmarking_api.benchmark == ""
 
 
 def test_bench_m():
@@ -77,13 +77,13 @@ def test_bench_m():
     bench = jbm.JubeBenchmarkManager("simple", "", uconf)
 
 
-def test_benchmark_no_exist(init_env):
-    """ docstring """
+# def test_benchmark_no_exist(init_env):
+#     """ docstring """
 
-    # pylint: disable=redefined-outer-name, unused-argument, unused-variable
-    uconf = uconfig.UbenchConfig()
-    with pytest.raises(OSError):
-        benchmarking_api = jba.JubeBenchmarkingAPI("bench_name", "", uconf)
+#     # pylint: disable=redefined-outer-name, unused-argument, unused-variable
+#     uconf = uconfig.UbenchConfig()
+#     with pytest.raises(OSError):
+#         benchmarking_api = jba.JubeBenchmarkingAPI("bench_name", "", uconf)
 
 
 # def test_benchmark_empty(init_env):
@@ -104,116 +104,117 @@ def test_load_bench_file():
     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
 
 
-def test_out_xml_path(init_env):
-    """ docstring """
+# def test_out_xml_path(init_env):
+#     """ docstring """
 
-    # pylint: disable=superfluous-parens, redefined-outer-name
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
-    print(init_env.config['run_path'])
-    assert benchmarking_api.jube_xml_files.bench_xml_path_out == os.path.join(
-        init_env.config['run_path'], "simple")
-
-
-def test_xml_get_result_file(init_env):
-    """ docstring """
-
-    # pylint: disable=redefined-outer-name, unused-argument
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
-    assert benchmarking_api.jube_xml_files.get_bench_resultfile(
-    ) == "result.dat"
+#     # pylint: disable=superfluous-parens, redefined-outer-name
+#     uconf = uconfig.UbenchConfig()
+#     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+#     print(init_env.config['run_path'])
+#     # assert benchmarking_api.jube_xml_files.bench_xml_path_out == os.path.join(
+#     assert benchmarking_api.get_bench_outpath() == os.path.join(
+#         init_env.config['run_path'], "simple")
 
 
-def test_write_bench_xml(init_env):
-    """ docstring """
+# def test_xml_get_result_file(init_env):
+#     """ docstring """
 
-    # pylint: disable=redefined-outer-name, singleton-comparison
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
-    init_env.create_run_dir("simple")
-    benchmarking_api.jube_xml_files.write_bench_xml()
-    assert os.path.exists(os.path.join(init_env.config['run_path'],
-                                       "simple")) == True
+#     # pylint: disable=redefined-outer-name, unused-argument
+#     uconf = uconfig.UbenchConfig()
+#     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+#     assert benchmarking_api.jube_xml_files.get_bench_resultfile(
+#     ) == "result.dat"
 
 
-def test_custom_nodes(init_env):
-    """ docstring """
+# def test_write_bench_xml(init_env):
+#     """ docstring """
 
-    # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
-    benchmarking_api.set_custom_nodes([1, 2], ['cn050', 'cn[103-107,145]'])
-    benchmarking_api.jube_xml_files.write_bench_xml()
-    xml_file = ET.parse(
-        os.path.join(init_env.config['run_path'], "simple/simple.xml"))
-    benchmark = xml_file.find('benchmark')
-    assert benchmark.findall("parameterset[@name='custom_parameter']")
+#     # pylint: disable=redefined-outer-name, singleton-comparison
+#     uconf = uconfig.UbenchConfig()
+#     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+#     init_env.create_run_dir("simple")
+#     benchmarking_api.jube_xml_files.write_bench_xml()
+#     assert os.path.exists(os.path.join(init_env.config['run_path'],
+#                                        "simple")) == True
 
 
-def test_result_custom_nodes(init_env):
-    """ docstring """
+# def test_custom_nodes(init_env):
+#     """ docstring """
 
-    # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
-    benchmarking_api.set_custom_nodes([1, 2], ['cn050', 'cn[103-107,145]'])
-    benchmarking_api.jube_xml_files.write_bench_xml()
-    xml_file = ET.parse(
-        os.path.join(init_env.config['run_path'], "simple/simple.xml"))
-    benchmark = xml_file.find('benchmark')
-    table = benchmark.find('result').find('table')
-    result = [
-        column for column in table.findall('column')
-        if column.text == 'custom_nodes_id'
-    ]
-    assert result
+#     # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
+#     uconf = uconfig.UbenchConfig()
+#     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+#     benchmarking_api.set_custom_nodes([1, 2], ['cn050', 'cn[103-107,145]'])
+#     benchmarking_api.jube_xml_files.write_bench_xml()
+#     xml_file = ET.parse(
+#         os.path.join(init_env.config['run_path'], "simple/simple.xml"))
+#     benchmark = xml_file.find('benchmark')
+#     assert benchmark.findall("parameterset[@name='custom_parameter']")
 
 
-def test_custom_nodes_not_in_result(init_env):
-    """ docstring """
+# def test_result_custom_nodes(init_env):
+#     """ docstring """
 
-    # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
-    benchmarking_api.set_custom_nodes([1, 2], None)
-    benchmarking_api.jube_xml_files.write_bench_xml()
-    xml_file = ET.parse(
-        os.path.join(init_env.config['run_path'], "simple/simple.xml"))
-    benchmark = xml_file.find('benchmark')
-    table = benchmark.find('result').find('table')
-    for column in table.findall('column'):
-        assert column.text != 'custom_nodes_id'
+#     # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
+#     uconf = uconfig.UbenchConfig()
+#     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+#     benchmarking_api.set_custom_nodes([1, 2], ['cn050', 'cn[103-107,145]'])
+#     benchmarking_api.jube_xml_files.write_bench_xml()
+#     xml_file = ET.parse(
+#         os.path.join(init_env.config['run_path'], "simple/simple.xml"))
+#     benchmark = xml_file.find('benchmark')
+#     table = benchmark.find('result').find('table')
+#     result = [
+#         column for column in table.findall('column')
+#         if column.text == 'custom_nodes_id'
+#     ]
+#     assert result
 
 
-def test_add_bench_input():
-    """ docstring """
+# def test_custom_nodes_not_in_result(init_env):
+#     """ docstring """
 
-    # pylint: disable=unused-variable
+#     # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
+#     uconf = uconfig.UbenchConfig()
+#     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+#     benchmarking_api.set_custom_nodes([1, 2], None)
+#     benchmarking_api.jube_xml_files.write_bench_xml()
+#     xml_file = ET.parse(
+#         os.path.join(init_env.config['run_path'], "simple/simple.xml"))
+#     benchmark = xml_file.find('benchmark')
+#     table = benchmark.find('result').find('table')
+#     for column in table.findall('column'):
+#         assert column.text != 'custom_nodes_id'
 
-    #check _revision prefix are coherent
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
-    bench_input = benchmarking_api.jube_xml_files.add_bench_input()
-    multisource = benchmarking_api.jube_xml_files.get_bench_multisource()
-    max_files = max([len(source['files']) for source in multisource])
-    bench_xml = benchmarking_api.jube_xml_files.bench_xml['simple.xml']
-    benchmark = bench_xml.find('benchmark')
-    assert benchmark.findall("parameterset[@name='ubench_config']")
-    bench_config = benchmark.find("parameterset[@name='ubench_config']")
-    assert bench_config.findall("parameter[@name='stretch']")
-    assert bench_config.findall("parameter[@name='stretch_id']")
-    # assert len(bench_config.findall("parameter[@name='input']")) > 0
-    # assert len(bench_config.findall("parameter[@name='input_id']")) > 0
-    simple_code_count = 0
-    input_count = 0
-    for param in bench_config.findall("parameter"):
-        if "simple_code_revision" in param.text:
-            simple_code_count += 1
-        if "input_revision" in param.text:
-            input_count += 1
-    assert simple_code_count < max_files
-    assert input_count < max_files
+
+# def test_add_bench_input():
+#     """ docstring """
+
+#     # pylint: disable=unused-variable
+
+#     #check _revision prefix are coherent
+#     uconf = uconfig.UbenchConfig()
+#     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+#     bench_input = benchmarking_api.jube_xml_files.add_bench_input()
+#     multisource = benchmarking_api.jube_xml_files.get_bench_multisource()
+#     max_files = max([len(source['files']) for source in multisource])
+#     bench_xml = benchmarking_api.jube_xml_files.bench_xml['simple.xml']
+#     benchmark = bench_xml.find('benchmark')
+#     assert benchmark.findall("parameterset[@name='ubench_config']")
+#     bench_config = benchmark.find("parameterset[@name='ubench_config']")
+#     assert bench_config.findall("parameter[@name='stretch']")
+#     assert bench_config.findall("parameter[@name='stretch_id']")
+#     # assert len(bench_config.findall("parameter[@name='input']")) > 0
+#     # assert len(bench_config.findall("parameter[@name='input_id']")) > 0
+#     simple_code_count = 0
+#     input_count = 0
+#     for param in bench_config.findall("parameter"):
+#         if "simple_code_revision" in param.text:
+#             simple_code_count += 1
+#         if "input_revision" in param.text:
+#             input_count += 1
+#     assert simple_code_count < max_files
+#     assert input_count < max_files
 
 
 def test_fetcher_dir_rev(mocker, init_env):
@@ -368,11 +369,11 @@ def test_run_customp(monkeypatch, init_env):
 def test_extract_job_id(init_env):
     """ docstring """
     uconf = uconfig.UbenchConfig()
+    init_env.create_run_dir("simple")
     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
     id_dir = os.path.join(init_env.config['run_path'],
                           'simple',
                           'benchmark_runs',
                           '0000000')
-
 
     assert benchmarking_api.extract_job_ids(id_dir) == ['617222', '617221']

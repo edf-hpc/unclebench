@@ -763,42 +763,6 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
                         el.text = re.sub(pattern, new_text, el.text)
 
 
-    def get_job_logfiles(self):
-        """ docstring """
-
-        config_xml_file = self.config_xml
-        log_files = []
-        for node in config_xml_file.getiterator('parameter'):
-            if (node.get('name') == 'outlogfile') or (
-                    node.get('name') == 'errlogfile'):
-                if node.text:
-                    log_files.append(node.text.strip())
-        return log_files
-
-
-    def get_analyse_files(self):
-        """ docstring """
-
-        config_xml_file = self.config_xml
-        analyse_files = []
-        for node in config_xml_file.getiterator('analyse'):
-            for subnode in node.getiterator('file'):
-                if subnode.text:
-                    analyse_files.append(subnode.text.strip())
-        return analyse_files
-
-
-    def get_result_cvsfile(self):
-        """ docstring """
-
-        config_xml_file = self.config_xml
-        cvs_file_name = None
-        for node in config_xml_file.getiterator('table'):
-            if node.get('style') == "csv":
-                cvs_file_name = node.get("name")
-                return cvs_file_name
-
-
     def get_dirs(self, dir_path):  # pylint: disable=no-self-use
         """ docstring """
 
@@ -889,3 +853,44 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
                                             parameter_node.text.strip()))
 
         return parameters_list
+
+
+class JubeXMLConfig(object):
+
+    def __init__(self,path):
+
+        self.config_xml = parse_xml(path).getroot()
+
+
+    def get_job_logfiles(self):
+
+        config_xml_file = self.config_xml
+        log_files = []
+        for node in config_xml_file.getiterator('parameter'):
+            if (node.get('name') == 'outlogfile') or (
+                    node.get('name') == 'errlogfile'):
+                if node.text:
+                    log_files.append(node.text.strip())
+        return log_files
+
+    def get_analyse_files(self):
+        """ docstring """
+
+        config_xml_file = self.config_xml
+        analyse_files = []
+        for node in config_xml_file.getiterator('analyse'):
+            for subnode in node.getiterator('file'):
+                if subnode.text:
+                    analyse_files.append(subnode.text.strip())
+        return analyse_files
+
+
+    def get_result_cvsfile(self):
+        """ docstring """
+
+        config_xml_file = self.config_xml
+        cvs_file_name = None
+        for node in config_xml_file.getiterator('table'):
+            if node.get('style') == "csv":
+                cvs_file_name = node.get("name")
+                return cvs_file_name
