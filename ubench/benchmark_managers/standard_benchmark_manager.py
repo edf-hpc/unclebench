@@ -348,13 +348,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         self.transposed_result_array = [list(x) for x in zip(*self.result_array)]
 
 
-    def extract_results_last(self):
-        """ Get last result from a jube benchmark """
-
-        self.result_array = self.benchmarking_api.extract_results_last()
-        self.transposed_result_array = [list(x) for x in zip(*self.result_array)]
-
-
     # # # # #       REPORT      # # # # #
      # # # #                     # # # #
       # # #                       # # #

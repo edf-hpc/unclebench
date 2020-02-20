@@ -428,18 +428,6 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         return result_array
 
 
-    def extract_results_last(self):
-        """ Get result from the last execution of a benchmark
-
-        Returns:
-            (str) result array
-        """
-
-        try:
-            return self.extract_result('last')
-        except IOError:
-            raise
-
     def extract_job_ids(self, id_dir): #pylint: disable=no-self-use
         """ Get jobs' ids from directory"""
         ## we have to get the id directory elsewhere

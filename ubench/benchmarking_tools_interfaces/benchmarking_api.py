@@ -82,15 +82,6 @@ class BenchmarkingAPI(object):
         pass
 
 
-    def extract_result_last(self):
-        """ Get result from the last execution of a benchmark
-
-        Returns:
-            (str) Array with the benchmark results
-        """
-        pass
-
-
     def run(self):
         """ Runs benchmark.
 

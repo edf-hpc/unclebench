@@ -154,7 +154,6 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
         Args:
             benchmark_id (int): id of the benchmark to analyze
         """
-
         for bench_m in self.benchmark_manager_list:
             print('----extracting results')
             print('----benchmark results path: {0}'.format(bench_m.benchmark_results_path))
@@ -163,13 +162,6 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
             except IOError:
                 print('----no result analyzer found, only'+\
                     ' raw results will be copied to the report directory')
-
-
-    def extract_results_last(self):
-        """ Get results from benchmarks last runs"""
-
-        for bench_m in self.benchmark_manager_list:
-            bench_m.extract_results_last()
 
 
     def print_result_array(self, output_file=None):

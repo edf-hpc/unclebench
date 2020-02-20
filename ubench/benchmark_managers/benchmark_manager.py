@@ -112,11 +112,6 @@ class BenchmarkManager():
         """
 
     @abc.abstractmethod
-    def extract_results_last(self):
-        """ Get last result from a  benchmark """
-
-
-    @abc.abstractmethod
     def print_result_array(self, output_file=None):
         """ Asciidoc printing result array
 
