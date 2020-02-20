@@ -147,13 +147,6 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
                 print('----no {0} run found'.format(bench_m.benchmark_name))
 
 
-    def analyse_last(self):
-        """ Analyse last benchmark results """
-
-        for bench_m in self.benchmark_manager_list:
-            bench_m.analyse_last()
-
-
     def extract_results(self, benchmark_id):
         """ Get results from benchmark runs corresponding to benchmark_id
         and build python results array

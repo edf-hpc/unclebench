@@ -111,12 +111,6 @@ class BenchmarkManager():
             benchmark_id: (int) id of the benchmark to analyze
         """
 
-
-    @abc.abstractmethod
-    def analyse_last(self):
-        """ Analyse last benchmark results """
-
-
     @abc.abstractmethod
     def extract_results_last(self):
         """ Get last result from a  benchmark """

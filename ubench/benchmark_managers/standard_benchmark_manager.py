@@ -333,7 +333,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         Args:
             benchmark_id (int): id of the benchmark to analyze
         """
-
         self.benchmark_results_path = self.benchmarking_api.analyse(benchmark_id)
 
 
@@ -348,10 +347,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         self.benchmarking_api.write_bench_data(benchmark_id)
         self.transposed_result_array = [list(x) for x in zip(*self.result_array)]
 
-    def analyse_last(self):
-        """ Get last result from a jube benchmark """
-
-        self.benchmark_results_path = self.benchmarking_api.analyse_last()
 
     def extract_results_last(self):
         """ Get last result from a jube benchmark """

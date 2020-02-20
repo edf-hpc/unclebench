@@ -93,7 +93,6 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         Raises:
             IOError
         """
-
         if not os.path.isdir(self.benchmark_path):
             raise IOError
 
@@ -132,19 +131,6 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             raise IOError
 
         return benchmark_results_path
-
-
-    def analyse_last(self):
-        """ Get last result from a jube benchmark.
-
-        Returns:
-            (str) result directory absolute path, None if analysis failed.
-        """
-
-        try:
-            return self.analyse('last')
-        except Exception:
-            raise
 
 
     def get_log(self, idb=-1):  # pylint: disable=too-many-locals

@@ -49,15 +49,6 @@ class BenchmarkingAPI(object):
         pass
 
 
-    def analyse_last(self):
-        """ Get last result from a jube benchmark.
-
-        Returns:
-            (str) result directory absolute path, None if analysis failed.
-        """
-        pass
-
-
     def get_results_root_directory(self):
         """ Returns benchmark results root directory
 
