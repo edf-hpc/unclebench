@@ -79,6 +79,21 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                                            benchmark)
 
         self.jube_const_params = {}
+        self._jube_files = None
+
+
+    @property
+    def jube_files(self):
+
+        if not self._jube_files:
+            benchmark_files = [file_b for file_b in os.listdir(self.benchmark_dir)
+                               if file_b.endswith('.xml')]
+            self._jube_files = jube_xml_parser.JubeXMLParser(self.benchmark_dir,
+                                                            benchmark_files,
+                                                            self.benchmark_path,
+                                                            self.uconf.platform_dir)
+
+        return self._jube_files
 
 
     def analyse(self, benchmark_id):
@@ -96,7 +111,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         if not os.path.isdir(self.benchmark_path):
             raise IOError
 
-        outpath = self.get_bench_outpath()
+        outpath = self.jube_files.get_bench_outputdir()
 
         # Continue benchmark steps that were not already executed.
         # This is often mandatory to execute postprocessing steps.
@@ -142,7 +157,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         Returns:
             (str) log
         """
-        out_path = os.path.join(self.benchmark_path,self.get_bench_outpath())
+        out_path = os.path.join(self.benchmark_path,self.jube_files.get_bench_outputdir())
         # If idb equals -1 get highest id directory found in out_dir
         if idb == -1:
             dir_list = []
@@ -207,7 +222,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             (dict) global_status
         """
 
-        outpath = self.get_bench_outpath()
+        outpath = self.jube_files.get_bench_outputdir()
 
         if not os.path.isdir(self.benchmark_path):
             raise IOError
@@ -256,7 +271,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             print('Warning!! Unable to load Slurm module')  # pylint: disable=superfluous-parens
             scheduler_interface = None
 
-        outpath = self.get_bench_outpath()
+        outpath = self.jube_files.get_bench_outputdir()
         os.chdir(self.benchmark_path)
         benchmark_rundir = self.get_bench_rundir(benchmark_id, outpath)
         jube_cmd = 'jube info ./{0} --id {1} --step execute'.format(outpath, benchmark_id)
@@ -378,7 +393,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         Returns:
             (str) result array
         """
-        outpath = self.get_bench_outpath()
+        outpath = self.jube_files.get_bench_outputdir()
         old_path = os.getcwd()
         os.chdir(self.benchmark_path)
         benchmark_rundir = self.get_bench_rundir(benchmark_id, outpath)
@@ -456,22 +471,22 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         """
 
         # Modify bench xml
-        jube_xml_files = self.get_jube_xml()
 
-        jube_xml_files.load_platform_xml(self.platform)
-        jube_xml_files.add_bench_input()
-        jube_xml_files.remove_multisource()
-        jube_xml_files.write_bench_xml()
-        jube_xml_files.write_platform_xml()
 
-        outpath = jube_xml_files.get_bench_outputdir()
+        self.jube_files.load_platform_xml(self.platform)
+        self.jube_files.add_bench_input()
+        self.jube_files.remove_multisource()
+        self.jube_files.write_bench_xml()
+        self.jube_files.write_platform_xml()
+
+        outpath = self.jube_files.get_bench_outputdir()
         abs_output_path = os.path.join(self.benchmark_path, outpath)
         max_id = None
 
         if os.path.isdir(abs_output_path):
             max_id, _ = self._get_max_id(os.listdir(abs_output_path))
 
-        platform_dir = jube_xml_files.get_platform_dir()
+        platform_dir = self.jube_files.get_platform_dir()
 
         my_env = os.environ
         my_env['UBENCH_PLATFORM_DIR'] = platform_dir
@@ -506,7 +521,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             raise RuntimeError('Error getting the directory number')
 
 
-        jube_xml_files.delete_platform_dir()
+        self.jube_files.delete_platform_dir()
 
         return (benchmark_results_path, new_id)
 
@@ -514,7 +529,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     def wait_run(self, run_id, benchmark_results_path):
         """ Wait for benchmark to finish"""
 
-        outpath = self.get_bench_outpath()
+        outpath = self.jube_files.get_bench_outputdir()
         output_dir = os.path.join(self.benchmark_path, outpath)
 
         cmd_str = 'jube continue --hide-animation {} --id {}'.format(output_dir, run_id)
@@ -539,8 +554,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         """ TBD """
 
         # Transform the benchmark file to utilise only the execution part of the benchmark
-        jube_xml_files = self.get_jube_xml()
-        jube_xml_files.set_bench_execution()
+        self.jube_files.set_bench_execution()
 
 
     def set_custom_nodes(self, nnodes_list, nodes_id_list):
@@ -550,16 +564,15 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             nnodes_list (list): list of number of nodes ex: [1,6]
             nodes_id_list (list): list of corresonding nodes ids  ex: ['cn050','cn[103-107,145]']
         """
-        jube_xml_files = self.get_jube_xml()
-        jube_xml_files.substitute_element_text('parameter', 'nodes', '.*', '$custom_nodes')
+        self.jube_files.substitute_element_text('parameter', 'nodes', '.*', '$custom_nodes')
         if nodes_id_list:
             for subcmd in ['submit', '{submit}', 'submit_singleton', '{submit_singleton}']:
-                jube_xml_files.substitute_element_text('do', None,
+                self.jube_files.substitute_element_text('do', None,
                                                        re.escape('$' + subcmd + ' '),
                                                        '$custom_' + subcmd + ' ')
 
         # Add an xml section describing custom nodes configurations
-        jube_xml_files.add_custom_nodes_stub(nnodes_list, nodes_id_list)
+        self.jube_files.add_custom_nodes_stub(nnodes_list, nodes_id_list)
 
 
     def list_parameters(self, default_values):
@@ -571,10 +584,9 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         Returns:
             (list) List of tuples [(param1,value),(param2,value),....]
         """
-        jube_xml_files = self.get_jube_xml()
 
-        platform_params = jube_xml_files.get_params_platform(self.platform)
-        benchmark_params = jube_xml_files.get_params_bench()
+        platform_params = self.jube_files.get_params_platform(self.platform)
+        benchmark_params = self.jube_files.get_params_bench()
 
         if default_values:
             eval_platform_params = self.parse_jube_parameter(platform_params)
@@ -599,9 +611,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                                     (filename,param2,old_value,new_value),
                                      ...]
         """
-        jube_xml_files = self.get_jube_xml()
-        return (jube_xml_files.set_params_bench(dict_options)
-                + jube_xml_files.set_params_platform(dict_options))
+        return (self.jube_files.set_params_bench(dict_options)
+                + self.jube_files.set_params_platform(dict_options))
 
 
     def get_bench_rundir(self, benchmark_id, outpath):
@@ -698,18 +709,3 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             ids_dict = {int(id_str): id_str for id_str in file_list if id_str.isdigit()}
             max_id = max(ids_dict.keys())
         return max_id, ids_dict[max_id]
-
-    def get_jube_xml(self):
-        benchmark_files = [file_b for file_b in os.listdir(self.benchmark_dir)
-                           if file_b.endswith('.xml')]
-        jube_xml_files = jube_xml_parser.JubeXMLParser(self.benchmark_dir,
-                                                       benchmark_files,
-                                                       self.benchmark_path,
-                                                       self.uconf.platform_dir)
-        return jube_xml_files
-
-    def get_bench_outpath(self):
-
-        jube_xml_files = self.get_jube_xml()
-
-        return jube_xml_files.get_bench_outputdir()

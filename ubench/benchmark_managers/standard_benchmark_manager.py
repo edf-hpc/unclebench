@@ -263,7 +263,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
         try:
             result_root_dir = os.path.join(self.benchmark_path,
-                                           self.benchmarking_api.get_bench_outpath())
+                                           self.benchmarking_api.jube_files.get_bench_outputdir())
         except OSError as ose:
             print('    No run was found for {0} benchmark :'.\
                   format(self.benchmark_name))
