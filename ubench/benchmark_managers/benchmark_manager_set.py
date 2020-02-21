@@ -23,7 +23,7 @@
 
 import ubench.benchmark_managers.benchmark_manager as benm
 import ubench.benchmark_managers.jube_benchmark_manager as jbm
-
+from ubench.core.ubench_config import UbenchConfig
 
 class BenchmarkManagerSet(benm.BenchmarkManager):
     """ Composite class that manages multiple BenchmarkManager.
@@ -43,13 +43,12 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
     """
 
 
-    def __init__(self, benchmark_names, platform_name, uconf):
+    def __init__(self, benchmark_names, platform_name):
         """ Class constructor
 
         Arg:
             benchmark_names (list): with benchmark names
             platform_name (str): name of the platform
-            uconf (UbenchConfig): ubench configuration
         """
         # pylint: disable=super-init-not-called
 
@@ -57,11 +56,11 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
         self.platform = platform_name
 
         for benchmark_name in benchmark_names:
-            if benchmark_name in uconf.get_benchmark_list():
+            if benchmark_name in UbenchConfig().get_benchmark_list():
                 # Benchmark type should be checked and BenchmarkManager instance
                 # should be chosen accordingly.
                 self.benchmark_manager_list.append(
-                    jbm.JubeBenchmarkManager(benchmark_name, platform_name, uconf))
+                    jbm.JubeBenchmarkManager(benchmark_name, platform_name))
 
 
     def run(self, opt_dict={}):  # pylint: disable=dangerous-default-value,arguments-differ
@@ -140,11 +139,11 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
         """
 
         for bench_m in self.benchmark_manager_list:
-            print('----analysing {0} results'.format(bench_m.benchmark_name))
+            print('----analysing {0} results'.format(bench_m.benchmark))
             try:
                 bench_m.analyse(benchmark_id)
             except IOError:
-                print('----no {0} run found'.format(bench_m.benchmark_name))
+                print('----no {0} run found'.format(bench_m.benchmark))
 
 
     def extract_results(self, benchmark_id):

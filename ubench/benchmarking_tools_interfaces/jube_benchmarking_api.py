@@ -29,6 +29,7 @@ import ubench.utils as utils
 import ubench.data_management.data_store_yaml as data_store_yaml
 from . import benchmarking_api as bapi
 from . import jube_xml_parser
+from ubench.core.ubench_config import UbenchConfig
 
 try:
     import ubench.scheduler_interfaces.slurm_interface as slurmi
@@ -60,21 +61,19 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
     """
 
 
-    def __init__(self, benchmark, platform, uconf):
+    def __init__(self, benchmark, platform):
         """ Class constructor
 
         Args:
             benchmark (str): name of the benchmark
             platform (str): name of the platform
         """
-
-        self.uconf = uconf
         self.benchmark = benchmark
         self.platform = platform
-        self.benchmark_dir = os.path.join(self.uconf.benchmark_dir,
+        self.benchmark_dir = os.path.join(UbenchConfig().benchmark_dir,
                                           benchmark)
 
-        self.benchmark_path = os.path.join(self.uconf.run_dir,
+        self.benchmark_path = os.path.join(UbenchConfig().run_dir,
                                            platform,
                                            benchmark)
 
@@ -91,7 +90,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             self._jube_files = jube_xml_parser.JubeXMLParser(self.benchmark_dir,
                                                             benchmark_files,
                                                             self.benchmark_path,
-                                                            self.uconf.platform_dir)
+                                                            UbenchConfig().platform_dir)
 
         return self._jube_files
 

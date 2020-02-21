@@ -67,9 +67,7 @@ def test_analyse(mocker, mock_os_methods):
     mock_xml = mocker.patch("ubench.benchmarking_tools_interfaces.jube_xml_parser.JubeXMLParser",
                             side_effect=mockxmlparser)
 
-    uconf = uconfig.UbenchConfig()
-    jube_api = jba.JubeBenchmarkingAPI('simple', 'platform', uconf)
-
+    jube_api = jba.JubeBenchmarkingAPI('simple', 'platform')
     mock_popen = mocker.patch(".".join(MOCK_UTILS+["Popen"]),
                               side_effect=mockpopen)
 
@@ -80,8 +78,7 @@ def test_run(mocker, mock_os_methods):
     mock_xml = mocker.patch("ubench.benchmarking_tools_interfaces.jube_xml_parser.JubeXMLParser",
                             side_effect=mockxmlparser)
 
-    uconf = uconfig.UbenchConfig()
-    jube_api = jba.JubeBenchmarkingAPI('test', 'platform', uconf)
+    jube_api = jba.JubeBenchmarkingAPI('test', 'platform')
 
     def mockanalyse(bench_id):
         rand = str(time.time())

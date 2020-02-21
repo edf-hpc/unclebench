@@ -30,7 +30,7 @@ class BenchmarkManager():
 
 
     @abc.abstractmethod
-    def __init__(self, benchmark_names, platform_name, uconf):
+    def __init__(self, benchmark_names, platform_name):
         """ Class constructor
 
         Args:

@@ -32,7 +32,7 @@ from shutil import copy, copytree
 
 import six
 import ubench.benchmark_managers.benchmark_manager as benm
-
+from ubench.core.ubench_config import UbenchConfig
 
 @six.add_metaclass(abc.ABCMeta)  # pylint: disable=too-many-instance-attributes
 class StandardBenchmarkManager(benm.BenchmarkManager):
@@ -44,7 +44,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         result_array (list)
         transposed_result_array (list)
         benchmark_results_path (str)
-        benchmark_name (str)
+        benchmark (str)
         resource_dir (str)
         benchmark_path (str)
         benchmark_src_path (str)
@@ -57,7 +57,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         plot_list (list)
     """
 
-    def __init__(self, benchmark_name, platform, uconf):
+    def __init__(self, benchmark, platform):
         """ Class constructor
 
         Args:
@@ -69,15 +69,12 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         self.result_array = []
         self.transposed_result_array = []
         self.benchmark_results_path = ''
-        self.benchmark_name = benchmark_name
-        self.resource_dir = os.path.join(uconf.resource_dir, benchmark_name)
-        self.benchmark_path = os.path.join(uconf.run_dir, platform, benchmark_name)
-        self.benchmark_src_path = os.path.join(uconf.benchmark_dir, benchmark_name)
+        # self.benchmark_name = benchmark_name
+        self.benchmark_path = os.path.join(UbenchConfig().run_dir, platform, benchmark)
+        self.benchmark_src_path = os.path.join(UbenchConfig().benchmark_dir, benchmark)
         self.platform = platform
 
         # Default report parameters
-        self.title = benchmark_name
-        self.description = ''
         self.print_array = True
         self.print_transposed_array = False
         self.print_plot = False
@@ -120,7 +117,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             copytree(src_dir, dest_dir, symlinks=True)
         except OSError:
             print("---- {} description files are already present in " \
-                  "run directory and will be overwritten.".format(self.benchmark_name))
+                  "run directory and will be overwritten.".format(self.benchmark))
 
         print("---- Copying {} to {}".format(src_dir, dest_dir))
 
@@ -179,7 +176,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             flattened_w_list = 'default'
 
         with open(logfile_path, 'w') as logfile:
-            logfile.write('Benchmark_name  : {0} \n'.format(self.benchmark_name))
+            logfile.write('Benchmark_name  : {0} \n'.format(self.benchmark))
             logfile.write('Platform        : {0} \n'.format(self.platform))
             logfile.write('ID              : {0} \n'.format(ID))
             logfile.write('Date            : {0} \n'.format(date))
@@ -190,7 +187,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
         print("---- Use the following command to follow benchmark progress: "\
               "ubench log -p {0} -b {1} -i {2}".format(self.platform,
-                                                       self.benchmark_name, ID))
+                                                       self.benchmark, ID))
         if opt_dict['foreground']:
             print('---- Waiting benchmark to finish running')
             self.benchmarking_api.wait_run(ID, run_dir)
@@ -266,7 +263,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                                            self.benchmarking_api.jube_files.get_bench_outputdir())
         except OSError as ose:
             print('    No run was found for {0} benchmark :'.\
-                  format(self.benchmark_name))
+                  format(self.benchmark))
             print("    {}".format(ose))
 
         for fd in os.listdir(result_root_dir):
@@ -288,7 +285,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                         list_data[nbenchs][field[0]] = field[1].strip()
 
         if not list_data:
-            print('----no benchmark run found for : {0}'.format(self.benchmark_name))
+            print('----no benchmark run found for : {0}'.format(self.benchmark))
 
         # Print dictionnary with a table layout.
         separating_line = ''

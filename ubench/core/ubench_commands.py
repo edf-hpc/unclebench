@@ -26,7 +26,7 @@ import re
 from subprocess import Popen
 import yaml
 
-import ubench.core.ubench_config as uconfig
+from ubench.core.ubench_config import UbenchConfig
 import ubench.benchmark_managers.benchmark_manager_set as bms
 import ubench.benchmarking_tools_interfaces.jube_xml_parser as jube_xml_parser
 import ubench.core.fetcher as fetcher
@@ -58,13 +58,12 @@ class UbenchCmd(object):
     def __init__(self, platform, benchmark_list=None):
         """ Class constructor """
 
-        self.uconf = uconfig.UbenchConfig()
-        self.run_dir = os.path.join(self.uconf.run_dir, platform)
+        self.run_dir = os.path.join(UbenchConfig().run_dir, platform)
         self.platform = platform
 
         # Add benchmark managers for each benchmark in directory
         self.benchmark_list = benchmark_list
-        self.bm_set = bms.BenchmarkManagerSet(benchmark_list, platform, self.uconf)
+        self.bm_set = bms.BenchmarkManagerSet(benchmark_list, platform)
 
 
     def log(self, id_list): # pylint: disable=dangerous-default-value
@@ -126,9 +125,9 @@ class UbenchCmd(object):
         print('')
         print('-- Ubench platform name set to : {0}'.format(self.platform))
 
-        if not os.path.isdir(self.uconf.resource_dir):
+        if not os.path.isdir(UbenchConfig().resource_dir):
             print('---- The resource directory {0} does not exist.'.
-                  format(self.uconf.resource_dir) +
+                  format(UbenchConfig().resource_dir) +
                   'Please run ubench fetch to retrieve sources and test cases.')
             return False
 
@@ -163,7 +162,7 @@ class UbenchCmd(object):
         """ Fetches benchmarks sources """
 
         for benchmark_name in self.benchmark_list:
-            benchmark_dir = os.path.join(self.uconf.benchmark_dir, benchmark_name)
+            benchmark_dir = os.path.join(UbenchConfig().benchmark_dir, benchmark_name)
             benchmark_files = [file_b for file_b in os.listdir(benchmark_dir)
                                if file_b.endswith(".xml")]
             jube_xml_files = jube_xml_parser.JubeXMLParser(benchmark_dir, benchmark_files)
@@ -173,7 +172,7 @@ class UbenchCmd(object):
                 print("ERROR !! : Multisource information for benchmark not found")
                 exit(1)
 
-            fetch_bench = fetcher.Fetcher(resource_dir=self.uconf.resource_dir,
+            fetch_bench = fetcher.Fetcher(resource_dir=UbenchConfig().resource_dir,
                                           benchmark_name=benchmark_name)
             for source in multisource:
 
@@ -221,9 +220,9 @@ class UbenchCmd(object):
             metadata_file: file containing parameters for report build
             outpit_dir: where to store the report
         """
-        bench_template = os.path.join(self.uconf.templates_path, "bench.html")
-        compare_template = os.path.join(self.uconf.templates_path, "compare.html")
-        report_template = os.path.join(self.uconf.templates_path, "report.html")
+        bench_template = os.path.join(UbenchConfig().templates_path, "bench.html")
+        compare_template = os.path.join(UbenchConfig().templates_path, "compare.html")
+        report_template = os.path.join(UbenchConfig().templates_path, "report.html")
         perf_report = report.Report(metadata_file, bench_template,
                                     compare_template, report_template)
         report_name = "ubench_performance_report"
@@ -231,7 +230,7 @@ class UbenchCmd(object):
         print(("    Writing report {} in {} directory".format(report_name+".html", output_dir)))
         perf_report.write(output_dir, report_name)
 
-        asciidoctor_cmd = ('asciidoctor -a stylesheet=' + self.uconf.stylesheet_path
+        asciidoctor_cmd = ('asciidoctor -a stylesheet=' + UbenchConfig().stylesheet_path
                            + " " + os.path.join(os.getcwd(), output_dir, report_name + ".asc"))
 
         Popen(asciidoctor_cmd, cwd=os.getcwd(), shell=True, universal_newlines=True)

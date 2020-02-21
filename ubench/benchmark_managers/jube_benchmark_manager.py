@@ -29,16 +29,15 @@ class JubeBenchmarkManager(stdbm.StandardBenchmarkManager):
     manage their results.
     """
 
-    def __init__(self, benchmark_name, platform, uconf):
+    def __init__(self, benchmark, platform):
         """ Class constructor """
 
         self.platform = platform
-        self.benchmark_name = benchmark_name
-        self.uconf = uconf
-        stdbm.StandardBenchmarkManager.__init__(self, benchmark_name, platform, uconf)
+        self.benchmark = benchmark
+        stdbm.StandardBenchmarkManager.__init__(self, benchmark, platform)
 
 
     def get_benchmarking_api(self):
         """ Factory method to get a new JubeBenchmarkingAPI """
 
-        return jba.JubeBenchmarkingAPI(self.benchmark_name, self.platform, self.uconf)
+        return jba.JubeBenchmarkingAPI(self.benchmark, self.platform)

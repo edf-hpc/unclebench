@@ -62,8 +62,7 @@ def init_env(pytestconfig):
 
 def test_init():
     """ docstring """
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("", "", uconf)
+    benchmarking_api = jba.JubeBenchmarkingAPI("", "")
     assert isinstance(benchmarking_api.benchmark_path, str)
     assert benchmarking_api.benchmark == ""
 
@@ -72,9 +71,7 @@ def test_bench_m():
     """ docstring """
 
     # pylint: disable=unused-variable
-
-    uconf = uconfig.UbenchConfig()
-    bench = jbm.JubeBenchmarkManager("simple", "", uconf)
+    bench = jbm.JubeBenchmarkManager("simple", "")
 
 
 # def test_benchmark_no_exist(init_env):
@@ -100,16 +97,14 @@ def test_load_bench_file():
     """ docstring """
 
     # pylint: disable=unused-variable
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
 
 
 def test_out_xml_path(init_env):
     """ docstring """
 
     # pylint: disable=superfluous-parens, redefined-outer-name
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
     assert benchmarking_api.jube_files.bench_xml_path_out == os.path.join(
         init_env.config['run_path'], "simple")
 
@@ -118,8 +113,7 @@ def test_xml_get_result_file(init_env):
     """ docstring """
 
     # pylint: disable=redefined-outer-name, unused-argument
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
     assert benchmarking_api.jube_files.get_bench_resultfile(
     ) == "result.dat"
 
@@ -128,8 +122,7 @@ def test_write_bench_xml(init_env):
     """ docstring """
 
     # pylint: disable=redefined-outer-name, singleton-comparison
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
     init_env.create_run_dir("simple")
     benchmarking_api.jube_files.write_bench_xml()
     assert os.path.exists(os.path.join(init_env.config['run_path'],
@@ -140,8 +133,7 @@ def test_custom_nodes(init_env):
     """ docstring """
 
     # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
     benchmarking_api.set_custom_nodes([1, 2], ['cn050', 'cn[103-107,145]'])
     benchmarking_api.jube_files.write_bench_xml()
     xml_file = ET.parse(
@@ -154,8 +146,7 @@ def test_result_custom_nodes(init_env):
     """ docstring """
 
     # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
     benchmarking_api.set_custom_nodes([1, 2], ['cn050', 'cn[103-107,145]'])
     benchmarking_api.jube_files.write_bench_xml()
     xml_file = ET.parse(
@@ -173,8 +164,7 @@ def test_custom_nodes_not_in_result(init_env):
     """ docstring """
 
     # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
     benchmarking_api.set_custom_nodes([1, 2], None)
     benchmarking_api.jube_files.write_bench_xml()
     xml_file = ET.parse(
@@ -191,8 +181,7 @@ def test_add_bench_input():
     # pylint: disable=unused-variable
 
     #check _revision prefix are coherent
-    uconf = uconfig.UbenchConfig()
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
     bench_input = benchmarking_api.jube_files.add_bench_input()
     multisource = benchmarking_api.jube_files.get_bench_multisource()
     max_files = max([len(source['files']) for source in multisource])
@@ -366,9 +355,8 @@ def test_run_customp(monkeypatch, init_env):
 
 def test_extract_job_id(init_env):
     """ docstring """
-    uconf = uconfig.UbenchConfig()
     # init_env.create_run_dir("simple")
-    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "", uconf)
+    benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
     id_dir = os.path.join(init_env.config['run_path'],
                           'simple',
                           'benchmark_runs',
