@@ -82,7 +82,7 @@ class BenchmarkingAPI(object):
         pass
 
 
-    def run(self):
+    def run(self, opts):
         """ Runs benchmark.
 
         Run benchmark on a given platform and return the benchmark run directory path
@@ -126,19 +126,5 @@ class BenchmarkingAPI(object):
 
         Returns:
             List of tuples [(param1, value), (param2, value), ...]
-        """
-        pass
-
-
-    def set_parameter(self, doc_options):
-        """ Set custom parameter from its name and a new value.
-
-        Args:
-            doc_options (dict): TODO
-
-        Returns:
-            List of tuples [(filename,param1,old_value,new_value),
-                            (filename,param2,old_value,new_value),
-                             ...]
         """
         pass

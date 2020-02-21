@@ -133,22 +133,23 @@ class UbenchCmd(object):
 
         # Set custom parameters
         dict_options = {}
-        if opt_dict['file_params']:
-            with open(opt_dict['file_params'], 'r') as params_file:
-                dict_options = yaml.load(params_file)
-
-            self.bm_set.set_parameter(dict_options)
-            # we read a file which contains a dictionary with the options
 
         if opt_dict['custom_params']:
             for elem in opt_dict['custom_params']:
                 try:
-                    splitted_param = re.split(':', elem, 1)
-                    dict_options[splitted_param[0]] = splitted_param[1]
-                except Exception as exc:  # pylint: disable=broad-except
+                    param, value = elem.split(':', 1)
+                    dict_options[param] = value
+                except ValueError:
                     print('---- {0} is not formated correctly'.format(elem) +
                           ', please consider using : -c param:new_value')
-                self.bm_set.set_parameter(dict_options)
+
+        # we read a file which contains a dictionary with the options
+        if opt_dict['file_params']:
+            with open(opt_dict['file_params'], 'r') as params_file:
+                dict_options = yaml.load(params_file)
+
+        # we redefine custom params
+        opt_dict['custom_params'] = dict_options
 
         # Run each benchmarks
         try:
@@ -246,7 +247,7 @@ class UbenchCmd(object):
 
         try:
             scheduler_interface = slurmi.SlurmInterface()
-        except:  # pylint:disable=bare-except
+        except ImportError:
             print("Error!! Unable to load slurm module")
             scheduler_interface = None
             return None
@@ -255,9 +256,8 @@ class UbenchCmd(object):
         for element in w_list_arg:
             if element.isdigit():
                 elem_tuple = (int(element), None)
-                w_list.append(elem_tuple)
             else:
                 elem_tuple = (scheduler_interface.get_nnodes_from_string(element), element)
-                w_list.append(elem_tuple)
+            w_list.append(elem_tuple)
 
         return w_list

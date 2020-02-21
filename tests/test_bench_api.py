@@ -134,7 +134,8 @@ def test_custom_nodes(init_env):
 
     # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
-    benchmarking_api.set_custom_nodes([1, 2], ['cn050', 'cn[103-107,145]'])
+
+    benchmarking_api._set_custom_nodes([(1,'cn050'),(2, 'cn[103-107,145]')])
     benchmarking_api.jube_files.write_bench_xml()
     xml_file = ET.parse(
         os.path.join(init_env.config['run_path'], "simple/simple.xml"))
@@ -147,7 +148,7 @@ def test_result_custom_nodes(init_env):
 
     # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
-    benchmarking_api.set_custom_nodes([1, 2], ['cn050', 'cn[103-107,145]'])
+    benchmarking_api._set_custom_nodes([(1,'cn050'),(2, 'cn[103-107,145]')])
     benchmarking_api.jube_files.write_bench_xml()
     xml_file = ET.parse(
         os.path.join(init_env.config['run_path'], "simple/simple.xml"))
@@ -327,18 +328,8 @@ def test_run_customp(monkeypatch, init_env):
     def mock_auto_bm_bench(self, name):
         return bm.BenchmarkManager("simple", "")
 
-    def mock_bm_set_param(self, params):
-        # if params['param'] != 'new_value':
-        if params['argexec'] != "'PingPong -npmin 56 msglog 1:18'":
-            raise NameError('param error')
-        return True
-
     def mock_bm_run_bench(self, opt_dict):
         return True
-
-    monkeypatch.setattr(
-        "ubench.benchmark_managers.standard_benchmark_manager." \
-        "StandardBenchmarkManager.set_parameter", mock_bm_set_param)
 
     monkeypatch.setattr(
         "ubench.benchmark_managers.standard_benchmark_manager.StandardBenchmarkManager.run",

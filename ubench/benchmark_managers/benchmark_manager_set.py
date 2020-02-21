@@ -90,17 +90,6 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
             bench_m.list_parameters(default_values)
 
 
-    def set_parameter(self, dic_options): # pylint: disable=arguments-differ
-        """ Set custom parameter from its name and a new value.
-
-        Args:
-            dic_options (dictionnary): dictionnary with old value as key and new value as value.
-        """
-
-        for bench_m in self.benchmark_manager_list:
-            bench_m.set_parameter(dic_options)
-
-
     def print_log(self, idb=-1):
         """ Print log from a benchmark run
 

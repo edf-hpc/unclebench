@@ -93,10 +93,10 @@ class MockPopen(object):
 class FakeAPI:
     """Fakes benchmark API"""
 
-    def run(self):
-        return '/tmp/', 0
+    def run(self, opts):
+        return '/tmp/', 0, []
 
-    def set_custom_nodes(self, nnodes, nodes):
+    def _set_custom_nodes(self, nnodes, nodes):
         return True
 
 

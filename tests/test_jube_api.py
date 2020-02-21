@@ -92,6 +92,6 @@ def test_run(mocker, mock_os_methods):
     mock_analyse = mocker.patch(".".join(MOCK_JAPI+["JubeBenchmarkingAPI", "_get_max_id"]),
                                 side_effect=mockanalyse)
 
-    dir_result, id_b = jube_api.run()
+    dir_result, id_b, updated_params = jube_api.run({'w' : "", 'execute' : False, 'custom_params': {}})
 
     assert isinstance(id_b, int)

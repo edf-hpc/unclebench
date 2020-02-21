@@ -51,7 +51,6 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         extract_results
         extract_results_last
         run
-        set_execution_only_mode
         set_custom_nodes
         list_parameters
         set_parameter
@@ -461,18 +460,31 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
 
 
-    def run(self):
+    def run(self, opts):
         """ Run benchmark on a given platform and return the benchmark run directory path
         and a benchmark ID.
+
+        Args:
+            opts (int): options for run the benchmark
 
         Returns:
             (str) return absolute path of the benchmark result directory
         """
 
         # Modify bench xml
-
-
         self.jube_files.load_platform_xml(self.platform)
+        updated_params = []
+        if opts['custom_params']:
+            updated_params = self.jube_files.set_params_bench(opts['custom_params'])
+            updated_params += self.jube_files.set_params_platform(opts['custom_params'])
+
+
+        if opts['execute']:
+            self.jube_files.set_bench_execution()
+
+        if opts['w']:
+            self._set_custom_nodes(opts['w'])
+
         self.jube_files.add_bench_input()
         self.jube_files.remove_multisource()
         self.jube_files.write_bench_xml()
@@ -522,7 +534,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         self.jube_files.delete_platform_dir()
 
-        return (benchmark_results_path, new_id)
+        return (benchmark_results_path, new_id, updated_params)
 
 
     def wait_run(self, run_id, benchmark_results_path):
@@ -549,20 +561,15 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                 time.sleep(60)
 
 
-    def set_execution_only_mode(self):
-        """ TBD """
-
-        # Transform the benchmark file to utilise only the execution part of the benchmark
-        self.jube_files.set_bench_execution()
-
-
-    def set_custom_nodes(self, nnodes_list, nodes_id_list):
+    def _set_custom_nodes(self, nodes_list):
         """  Modify benchmark xml file to set custom nodes configurations.
 
         Args:
-            nnodes_list (list): list of number of nodes ex: [1,6]
-            nodes_id_list (list): list of corresonding nodes ids  ex: ['cn050','cn[103-107,145]']
+            nodes_list (list): list of tuples ex: [(6, None), (1, 'cn184'), (4, 'cn[380,431-433]')]
         """
+        nodes_id_list = [name for num, name in nodes_list]
+        nnodes_list = [num for num, name in nodes_list]
+
         self.jube_files.substitute_element_text('parameter', 'nodes', '.*', '$custom_nodes')
         if nodes_id_list:
             for subcmd in ['submit', '{submit}', 'submit_singleton', '{submit_singleton}']:
@@ -599,19 +606,6 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         return  parameters_list
 
 
-    def set_parameter(self, dict_options): # pylint: disable=arguments-differ
-        """  Set custom parameter from its name and a new value.
-
-        Args:
-            dict_options:
-
-        Returns:
-            (list): List of tuples [(filename,param1,old_value,new_value),
-                                    (filename,param2,old_value,new_value),
-                                     ...]
-        """
-        return (self.jube_files.set_params_bench(dict_options)
-                + self.jube_files.set_params_platform(dict_options))
 
 
     def get_bench_rundir(self, benchmark_id, outpath):
@@ -701,7 +695,6 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         return matchobj.group(0)
 
     def _get_max_id(self, file_list): # pylint: disable=no-self-use
-
         max_id = -1
         ids_dict = {-1:'0000000'}
         if file_list:

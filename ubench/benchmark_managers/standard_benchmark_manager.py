@@ -125,7 +125,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             copy(os.path.join(src_dir, f), dest_dir)
 
 
-    def run(self, opt_dict={}): # pylint: disable=arguments-differ
+    def run(self, opts): # pylint: disable=arguments-differ
         """ Run benchmark on a given platform and write a ubench.log file in
         the benchmark run directory.
 
@@ -134,46 +134,25 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
         """
         # pylint: disable=dangerous-default-value, too-many-locals, too-many-branches
         self._init_run_dir(self.platform)
-        # Set custom node configuration
-        if opt_dict['w']:
-            w_list = opt_dict['w']
-            try:
-                nnodes_list = [list(t) for t in zip(*w_list)][0]
-                nodes_id_list = [list(t) for t in zip(*w_list)][1]
-                # unique values in list
-                if len(list(set(nodes_id_list))) == 1 and not nodes_id_list[0]:
-                    nodes_id_list = None
 
-                self.benchmarking_api.set_custom_nodes(nnodes_list, nodes_id_list)
-            except (ValueError, IndexError):
-                print('Custom node configuration is not valid.')
-                raise
-
-        if opt_dict['execute']:
-            self.benchmarking_api.set_execution_only_mode()
-
-        if not opt_dict['foreground']:
+        if not opts['foreground']:
             print('---- Launching benchmark in background')
 
         try:
-            run_dir, ID = self.benchmarking_api.run()
+            run_dir, ID, updated_params = self.benchmarking_api.run(opts)
         except (RuntimeError, OSError) as rerror:
             print('---- Error launching benchmark :')
             print(str(rerror))
             raise
 
+        for name, old_value,new_value in updated_params:
+            print('---- {0} parameter was modified from {1} to {2} for this run'.format(name,
+                                                                                        old_value,
+                                                                                        new_value))
+
         print("---- benchmark run directory: {}".format(run_dir))
         logfile_path = os.path.join(run_dir, 'ubench.log')
         date = time.strftime("%c")
-        flattened_w_list = ''
-        if 'w_list' in opt_dict:
-            for nnodes, nodes_id in w_list:
-                if nodes_id:
-                    flattened_w_list += str(nodes_id) + ' '
-                else:
-                    flattened_w_list += str(nnodes) + ' '
-        else:
-            flattened_w_list = 'default'
 
         with open(logfile_path, 'w') as logfile:
             logfile.write('Benchmark_name  : {0} \n'.format(self.benchmark))
@@ -181,14 +160,13 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             logfile.write('ID              : {0} \n'.format(ID))
             logfile.write('Date            : {0} \n'.format(date))
             logfile.write('Run_directory   : {0} \n'.format(run_dir))
-            logfile.write('Nodes           : {0} \n'.format(flattened_w_list))
-            if 'raw_cli' in opt_dict:
-                logfile.write('cmdline         : {0} \n'.format(' '.join(opt_dict['raw_cli'])))
+            if 'raw_cli' in opts:
+                logfile.write('cmdline         : {0} \n'.format(' '.join(opts['raw_cli'])))
 
         print("---- Use the following command to follow benchmark progress: "\
               "ubench log -p {0} -b {1} -i {2}".format(self.platform,
                                                        self.benchmark, ID))
-        if opt_dict['foreground']:
+        if opts['foreground']:
             print('---- Waiting benchmark to finish running')
             self.benchmarking_api.wait_run(ID, run_dir)
             print('---- All jobs or processes in background have finished')
@@ -211,17 +189,6 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             print("-----------------------------------------------")
             for parameter, value in all_parameters[type_param]:
                 print(parameter.rjust(20)+' : '+value)
-
-    def set_parameter(self, dict_options):
-        """ Set custom parameter from its name and a new value.
-
-        Args:
-            dict_options: dictionary with old value as key and new value as value.
-        """
-        modified_params = self.benchmarking_api.set_parameter(dict_options)
-        for elem in modified_params:
-            print('---- {0} parameter was modified from {1} to {2} for this run'.format(*elem))
-        return
 
 
     # # # # #       ANALYZE       # # # # #

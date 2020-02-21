@@ -61,18 +61,6 @@ class BenchmarkManager():
         """
 
 
-    @abc.abstractmethod
-    def set_parameter(self, dict_options):
-        """ Set custom parameter from its name and a new value.
-
-        Args:
-
-        Returns:
-            list of tuples [(filename,param1,old_value,new_value),
-                            (filename,param2,old_value,new_value), ...]
-        """
-
-
     # # # # #      Analyze part      # # # # #
      # # # #                          # # # #
       # # #                            # # #
