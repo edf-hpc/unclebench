@@ -66,14 +66,13 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             uconf (UbenchConfig): ubench configuration
         """
         # pylint: disable=super-init-not-called
+        self.platform = platform
+        self.benchmark = benchmark
         self.result_array = []
         self.transposed_result_array = []
         self.benchmark_results_path = ''
-        # self.benchmark_name = benchmark_name
         self.benchmark_path = os.path.join(UbenchConfig().run_dir, platform, benchmark)
         self.benchmark_src_path = os.path.join(UbenchConfig().benchmark_dir, benchmark)
-        self.platform = platform
-
         # Default report parameters
         self.print_array = True
         self.print_transposed_array = False
@@ -145,7 +144,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             print(str(rerror))
             raise
 
-        for name, old_value,new_value in updated_params:
+        for name, old_value, new_value in updated_params:
             print('---- {0} parameter was modified from {1} to {2} for this run'.format(name,
                                                                                         old_value,
                                                                                         new_value))

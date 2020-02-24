@@ -31,10 +31,7 @@ class JubeBenchmarkManager(stdbm.StandardBenchmarkManager):
 
     def __init__(self, benchmark, platform):
         """ Class constructor """
-
-        self.platform = platform
-        self.benchmark = benchmark
-        stdbm.StandardBenchmarkManager.__init__(self, benchmark, platform)
+        super(JubeBenchmarkManager, self).__init__(benchmark, platform)
 
 
     def get_benchmarking_api(self):

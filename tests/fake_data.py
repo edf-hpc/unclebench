@@ -16,7 +16,7 @@
 #  along with UncleBench. If not, see <http://www.gnu.org/licenses/>.        #
 #                                                                            #
 ##############################################################################
-# pylint: disable=no-self-use,unused-argument,no-init,old-style-class,missing-docstring
+# pylint: disable=no-self-use,unused-argument,no-init,old-style-class,missing-docstring,too-few-public-methods
 """ Provides fake data and clases for test purposes """
 
 import collections

@@ -132,10 +132,10 @@ def test_write_bench_xml(init_env):
 def test_custom_nodes(init_env):
     """ docstring """
 
-    # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
+    # pylint: disable=redefined-outer-name, no-member,c-extension-no-member,protected-access
     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
 
-    benchmarking_api._set_custom_nodes([(1,'cn050'),(2, 'cn[103-107,145]')])
+    benchmarking_api._set_custom_nodes([(1, 'cn050'), (2, 'cn[103-107,145]')])
     benchmarking_api.jube_files.write_bench_xml()
     xml_file = ET.parse(
         os.path.join(init_env.config['run_path'], "simple/simple.xml"))
@@ -146,9 +146,9 @@ def test_custom_nodes(init_env):
 def test_result_custom_nodes(init_env):
     """ docstring """
 
-    # pylint: disable=redefined-outer-name, no-member,c-extension-no-member
+    # pylint: disable=redefined-outer-name, no-member,c-extension-no-member,protected-access
     benchmarking_api = jba.JubeBenchmarkingAPI("simple", "")
-    benchmarking_api._set_custom_nodes([(1,'cn050'),(2, 'cn[103-107,145]')])
+    benchmarking_api._set_custom_nodes([(1, 'cn050'), (2, 'cn[103-107,145]')])
     benchmarking_api.jube_files.write_bench_xml()
     xml_file = ET.parse(
         os.path.join(init_env.config['run_path'], "simple/simple.xml"))

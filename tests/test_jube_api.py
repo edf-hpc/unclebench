@@ -71,7 +71,7 @@ def test_analyse(mocker, mock_os_methods):
     mock_popen = mocker.patch(".".join(MOCK_UTILS+["Popen"]),
                               side_effect=mockpopen)
 
-    assert jube_api.analyse(0) == "/tmp/ubench_pytest//run/platform/simple/benchmark_runs/000001"
+    assert jube_api.analyse(0) == "/tmp/ubench_pytest//run/platform/simple/benchmark_runs/000000"
 
 def test_run(mocker, mock_os_methods):
 

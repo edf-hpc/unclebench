@@ -130,18 +130,10 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             msg = "Error when executing command: {}".format(cmd_str)
             raise RuntimeError(msg)
 
-        benchmark_results_path = ''
-        regex_numdir = re.compile(r'^.*/(\d+)/.*$')
-        for line in stdout:
-            match = regex_numdir.match(line)
-            if match:
-                numdir = match.groups()[0]
-                benchmark_results_path = os.path.join(self.benchmark_path,
-                                                      outpath,
-                                                      numdir)
 
-        if benchmark_results_path == '':
-            raise IOError
+        benchmark_results_path = os.path.join(self.benchmark_path, outpath,
+                                              self.get_bench_rundir(benchmark_id,
+                                                                    outpath))
 
         return benchmark_results_path
 
@@ -270,12 +262,12 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             scheduler_interface = None
 
         outpath = self.jube_files.get_bench_outputdir()
-        os.chdir(self.benchmark_path)
         benchmark_rundir = self.get_bench_rundir(benchmark_id, outpath)
         jube_cmd = 'jube info ./{0} --id {1} --step execute'.format(outpath, benchmark_id)
 
         cmd_output = tempfile.TemporaryFile()
-        result_from_jube = Popen(jube_cmd, cwd=os.getcwd(), shell=True, stdout=cmd_output,
+        result_from_jube = Popen(jube_cmd, cwd=self.benchmark_path,
+                                 shell=True, stdout=cmd_output,
                                  universal_newlines=True)
         ret_code = result_from_jube.wait()  # pylint: disable=unused-variable
 
@@ -392,10 +384,8 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             (str) result array
         """
         outpath = self.jube_files.get_bench_outputdir()
-        old_path = os.getcwd()
-        os.chdir(self.benchmark_path)
         benchmark_rundir = self.get_bench_rundir(benchmark_id, outpath)
-        benchmark_runpath = os.path.join(old_path, outpath, benchmark_rundir)
+        benchmark_runpath = os.path.join(self.benchmark_path, outpath, benchmark_rundir)
         configuration_file_path = os.path.join(benchmark_runpath, 'configuration.xml')
 
         try:
@@ -405,24 +395,17 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         # Get job errlog and outlog filenames from configuration.xml file
         cvsfile = jube_xml_files.get_result_cvsfile()
-        debugfile = "paths"
 
-        input_str = 'jube result {} --id {} -o {} {}'.format(outpath,
-                                                             benchmark_id,
-                                                             cvsfile,
-                                                             debugfile)
-        jube_command = Popen(input_str,
-                             cwd=os.getcwd(),
-                             shell=True,
-                             stdout=PIPE,
-                             universal_newlines=True)
+        cmd_str = 'jube result {} --id {} -o {}'.format(outpath,
+                                                        benchmark_id,
+                                                        cvsfile)
 
-        jube_stdout, _ = jube_command.communicate()
+        ret_code, stdout, stderr = utils.run_cmd(cmd_str, self.benchmark_path)
         result_array = []
 
         with open(os.path.join(benchmark_rundir, 'result/ubench_results.dat'), 'w') as result_file:
 
-            for line in jube_stdout.split('\\n'):
+            for line in stdout:
                 result_file.write(line)
 
         jubecvsfile_path = os.path.join(benchmark_runpath, 'result', '{}.dat'.format(cvsfile))
@@ -439,6 +422,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             return []
 
         return result_array
+
 
 
     def extract_job_ids(self, id_dir): #pylint: disable=no-self-use
