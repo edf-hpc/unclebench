@@ -81,25 +81,10 @@ class BenchmarkManager():
     def list_runs(self):
         """ List benchmark runs with their IDs and status """
 
-
     @abc.abstractmethod
-    def analyse(self, benchmark_id):
-        """ Analyse benchmark results
+    def result(self, benchmark_id):
+        """ Generate and print results """
 
-        Args:
-            benchmark_id: (int) id of the benchmark to analyze
-        """
-
-
-    @abc.abstractmethod
-    def extract_results(self, benchmark_id):
-        """ Get result from a benchmark with its id and build a python result array
-
-        Args:
-            benchmark_id: (int) id of the benchmark to analyze
-        """
-
-    @abc.abstractmethod
     def print_result_array(self, output_file=None):
         """ Asciidoc printing result array
 

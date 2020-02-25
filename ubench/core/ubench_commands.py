@@ -93,8 +93,9 @@ class UbenchCmd(object):
             id_list = ['last']
 
         for idb in id_list:
-            self.bm_set.analyse(idb)
-            self.bm_set.extract_results(idb)
+            self.bm_set.result(idb)
+            # self.bm_set.analyse(idb)
+            # self.bm_set.extract_results(idb)
             self.bm_set.print_result_array()
 
 

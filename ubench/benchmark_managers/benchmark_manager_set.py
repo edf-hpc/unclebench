@@ -119,37 +119,12 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
                 print('    '+str(ose))
             print('')
 
-
-    def analyse(self, benchmark_id):
-        """ Analyse benchmark results
-
-        Arguments
-            benchmark_id (int): id of the benchmark to analyze
-        """
-
+    def result(self, benchmark_id):
         for bench_m in self.benchmark_manager_list:
-            print('----analysing {0} results'.format(bench_m.benchmark))
             try:
-                bench_m.analyse(benchmark_id)
+                bench_m.result(benchmark_id)
             except IOError:
                 print('----no {0} run found'.format(bench_m.benchmark))
-
-
-    def extract_results(self, benchmark_id):
-        """ Get results from benchmark runs corresponding to benchmark_id
-        and build python results array
-
-        Args:
-            benchmark_id (int): id of the benchmark to analyze
-        """
-        for bench_m in self.benchmark_manager_list:
-            print('----extracting results')
-            print('----benchmark results path: {0}'.format(bench_m.benchmark_results_path))
-            try:
-                bench_m.extract_results(benchmark_id)
-            except IOError:
-                print('----no result analyzer found, only'+\
-                    ' raw results will be copied to the report directory')
 
 
     def print_result_array(self, output_file=None):

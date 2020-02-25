@@ -34,20 +34,15 @@ class BenchmarkingAPI(object):
         pass
 
 
-    def analyse(self, benchmark_id):
-        """ Analyze benchmark results
-
+    def result(self, idb):
+        """ Generate and print results
         Args:
-            benchmark_id (int): id of the benchmark to be analyzed
+             (int) idb: id of the benchmark
 
         Returns:
-            (str) result directory absolute path
-
-        Raises:
-            IOError
+            (list) numeric results
         """
         pass
-
 
     def get_results_root_directory(self):
         """ Returns benchmark results root directory

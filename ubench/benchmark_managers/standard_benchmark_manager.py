@@ -93,8 +93,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
        # #                             # #
         #                               #
 
-
-    def _init_run_dir(self, platform):  # pylint: disable=unused-argument
+# pylint: disable=unused-argument,undefined-variable
+    def _init_run_dir(self, platform):
         """ Create and initialize run directory
 
         Args:
@@ -290,24 +290,10 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             print('')
 
 
-    def analyse(self, benchmark_id):
-        """ Analyse benchmark results
+    def result(self, benchmark_id):
+        """ Generate and print execution results"""
 
-        Args:
-            benchmark_id (int): id of the benchmark to analyze
-        """
-        self.benchmark_results_path = self.benchmarking_api.analyse(benchmark_id)
-
-
-    def extract_results(self, benchmark_id):
-        """ Get result from a jube benchmark with its id and build a python result array
-
-        Args:
-            benchmark_id (int): id of the benchmark to analyze
-        """
-
-        self.result_array = self.benchmarking_api.extract_results(benchmark_id)
-        self.benchmarking_api.write_bench_data(benchmark_id)
+        self.result_array = self.benchmarking_api.result(benchmark_id)
         self.transposed_result_array = [list(x) for x in zip(*self.result_array)]
 
 

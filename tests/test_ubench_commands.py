@@ -51,6 +51,7 @@ XML_MOCK = ["ubench",
             "jube_xml_parser",
             "JubeXMLParser"]
 
+# pylint: disable=unused-argument
 def mockxmlparser(*args):
     """Mock xmlparser"""
     return fake_data.FakeXML()
@@ -90,8 +91,9 @@ def test_run_withresourcedir(mocker):
                                  'file_params' :[],
                                  'custom_params' : {}})
 
+# pylint: disable=missing-docstring
 def test_run_wlist_parameter(mocker):
-
+    """ Test parameter wlist"""
     def mock_benchmark_list():
         return ["simple"]
 
@@ -105,7 +107,7 @@ def test_run_wlist_parameter(mocker):
     mock_bm = mocker.patch(".".join(SBM_MOCK+["_init_run_dir"]))
 
     mock_isdir = mocker.patch("os.path.isdir")
-    mock_isdir = mocker.patch("os.listdir",side_effect=mock_listdir)
+    mock_isdir = mocker.patch("os.listdir", side_effect=mock_listdir)
     cmd = ubench_commands.UbenchCmd("platform", ["simple"])
     cmd.run({'w':['160', 'cn184', 'cn[380,431-433]'],
              'file_params' :[], 'custom_params' : [],
@@ -123,19 +125,19 @@ def test_log(mocker):
     cmd.log([2, 3])
     mock_bms.assert_called_with(3)
 
-def test_result(mocker):
-    """ Test log command"""
-    cmd = ubench_commands.UbenchCmd("platform", [])
-    mock_bms = mocker.patch(".".join(BMS_MOCK+["analyse"]))
-    cmd.result(['last'])
-    mock_bms.assert_called_with('last')
-    cmd.result([2])
-    mock_bms.assert_called_with(2)
-    cmd.result([2, 3])
-    mock_bms.assert_called_with(3)
+# def test_result(mocker):
+#     """ Test log command"""
+#     cmd = ubench_commands.UbenchCmd("platform", [])
+#     mock_bms = mocker.patch(".".join(BMS_MOCK+["analyse"]))
+#     cmd.result(['last'])
+#     mock_bms.assert_called_with('last')
+#     cmd.result([2])
+#     mock_bms.assert_called_with(2)
+#     cmd.result([2, 3])
+#     mock_bms.assert_called_with(3)
 
-def test_result_none(mocker):
-    """Test result with None value """
-    cmd = ubench_commands.UbenchCmd("platform", [])
-    mock_bms = mocker.patch(".".join(BMS_MOCK+["analyse"]))
-    cmd.result(None)
+# def test_result_none(mocker):
+#     """Test result with None value """
+#     cmd = ubench_commands.UbenchCmd("platform", [])
+#     mock_bms = mocker.patch(".".join(BMS_MOCK+["analyse"]))
+#     cmd.result(None)

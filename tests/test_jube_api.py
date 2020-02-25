@@ -62,16 +62,16 @@ def mockpopen(args, shell, cwd, env, stdout=None, stderr=None, universal_newline
 def mock_b_dir():
     return "benchmark_runs"
 
-def test_analyse(mocker, mock_os_methods):
+# def test_analyse(mocker, mock_os_methods):
 
-    mock_xml = mocker.patch("ubench.benchmarking_tools_interfaces.jube_xml_parser.JubeXMLParser",
-                            side_effect=mockxmlparser)
+#     mock_xml = mocker.patch("ubench.benchmarking_tools_interfaces.jube_xml_parser.JubeXMLParser",
+#                             side_effect=mockxmlparser)
 
-    jube_api = jba.JubeBenchmarkingAPI('simple', 'platform')
-    mock_popen = mocker.patch(".".join(MOCK_UTILS+["Popen"]),
-                              side_effect=mockpopen)
+#     jube_api = jba.JubeBenchmarkingAPI('simple', 'platform')
+#     mock_popen = mocker.patch(".".join(MOCK_UTILS+["Popen"]),
+#                               side_effect=mockpopen)
 
-    assert jube_api.analyse(0) == "/tmp/ubench_pytest//run/platform/simple/benchmark_runs/000000"
+#     assert jube_api.analyse(0) == "/tmp/ubench_pytest//run/platform/simple/benchmark_runs/000000"
 
 def test_run(mocker, mock_os_methods):
 
