@@ -27,7 +27,7 @@
             <parameter name="container_image">none</parameter>
             <parameter name="container_exec_command" mode="python">
 		["",
-		"singularity exec ${container_image}"][0 if '$container_image'=='host' else 1]
+		"singularity exec ${container_image}"][0 if '$container_image'=='none' else 1]
 	    </parameter>
 	</parameterset>
 
