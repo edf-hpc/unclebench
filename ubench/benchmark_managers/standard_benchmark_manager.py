@@ -138,7 +138,8 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             print('---- Launching benchmark in background')
 
         try:
-            run_dir, ID, updated_params = self.benchmarking_api.run(opts)
+            # run_dir, ID, updated_params = self.benchmarking_api.run(opts)
+            j_job, updated_params = self.benchmarking_api.run(opts)
         except (RuntimeError, OSError) as rerror:
             print('---- Error launching benchmark :')
             print(str(rerror))
@@ -149,25 +150,25 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                                                                                         old_value,
                                                                                         new_value))
 
-        print("---- benchmark run directory: {}".format(run_dir))
-        logfile_path = os.path.join(run_dir, 'ubench.log')
+        print("---- benchmark run directory: {}".format(j_job.result_path))
+        logfile_path = os.path.join(j_job.result_path, 'ubench.log')
         date = time.strftime("%c")
 
         with open(logfile_path, 'w') as logfile:
             logfile.write('Benchmark_name  : {0} \n'.format(self.benchmark))
             logfile.write('Platform        : {0} \n'.format(self.platform))
-            logfile.write('ID              : {0} \n'.format(ID))
+            logfile.write('ID              : {0} \n'.format(j_job.jubeid))
             logfile.write('Date            : {0} \n'.format(date))
-            logfile.write('Run_directory   : {0} \n'.format(run_dir))
+            logfile.write('Run_directory   : {0} \n'.format(j_job.result_path))
             if 'raw_cli' in opts:
                 logfile.write('cmdline         : {0} \n'.format(' '.join(opts['raw_cli'])))
 
         print("---- Use the following command to follow benchmark progress: "\
               "ubench log -p {0} -b {1} -i {2}".format(self.platform,
-                                                       self.benchmark, ID))
+                                                       self.benchmark, j_job.jubeid))
         if opts['foreground']:
             print('---- Waiting benchmark to finish running')
-            self.benchmarking_api.wait_run(ID, run_dir)
+            self.benchmarking_api.wait_run(j_job.jubeid, j_job.result_path)
             print('---- All jobs or processes in background have finished')
 
 

@@ -27,9 +27,9 @@ import time
 from subprocess import Popen, PIPE
 import ubench.utils as utils
 import ubench.data_management.data_store_yaml as data_store_yaml
+from ubench.core.ubench_config import UbenchConfig
 from . import benchmarking_api as bapi
 from . import jube_xml_parser
-from ubench.core.ubench_config import UbenchConfig
 
 try:
     import ubench.scheduler_interfaces.slurm_interface as slurmi
@@ -146,7 +146,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         # This is often mandatory to execute postprocessing steps.
         cmd_str = 'jube continue --hide-animation {} --id {}'.format(outpath,
                                                                      benchmark_id)
-        ret_code, stdout, stderr = utils.run_cmd(cmd_str, self.benchmark_path)
+        ret_code, _, stderr = utils.run_cmd(cmd_str, self.benchmark_path)
 
         if ret_code:
             print(stderr)
@@ -154,7 +154,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             raise RuntimeError(msg)
 
         cmd_str = 'jube analyse {} --id {}'.format(outpath, benchmark_id)
-        ret_code, stdout, stderr = utils.run_cmd(cmd_str, self.benchmark_path)
+        ret_code, _, stderr = utils.run_cmd(cmd_str, self.benchmark_path)
 
         if ret_code:
             print(stderr)
@@ -415,7 +415,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                                                         benchmark_id,
                                                         cvsfile)
 
-        ret_code, stdout, stderr = utils.run_cmd(cmd_str, self.benchmark_path)
+        _, stdout, _ = utils.run_cmd(cmd_str, self.benchmark_path)
         result_array = []
         cvs_data = csv.reader(stdout)
 
@@ -436,26 +436,6 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             print('JUBE cvs file not found')  # pylint: disable=superfluous-parens
 
         return result_array
-
-
-
-    def extract_job_ids(self, id_dir): #pylint: disable=no-self-use
-        """ Get jobs' ids from directory"""
-        ## we have to get the id directory elsewhere
-        job_ids = []
-        dir_exec_rex = re.compile(r'^\d{6}_execute$')
-        job_id_rex = re.compile(r'^\w+\s\w+\s\w+\s(\d+)$')
-        for files in os.listdir(id_dir):
-            mat = dir_exec_rex.match(files)
-            if mat:
-                job_file_name = os.path.join(id_dir, mat.group(), "work", "stdout")
-                with  open(job_file_name, 'r') as job_file:
-                    for line in job_file:
-                        job_mat = job_id_rex.match(line)
-                        if job_mat:
-                            job_ids.append(job_mat.group(1))
-        return job_ids
-
 
 
     def run(self, opts):
@@ -490,49 +470,19 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         outpath = self.jube_files.get_bench_outputdir()
         abs_output_path = os.path.join(self.benchmark_path, outpath)
-        max_id = None
-
-        if os.path.isdir(abs_output_path):
-            max_id, _ = self._get_max_id(os.listdir(abs_output_path))
 
         platform_dir = self.jube_files.get_platform_dir()
 
-        my_env = os.environ
-        my_env['UBENCH_PLATFORM_DIR'] = platform_dir
-        input_str = 'jube run --hide-animation {}.xml --tag {}'.format(self.benchmark,
-                                                                       self.platform)
-        popen_obj = utils.run_cmd_bg(input_str, self.benchmark_path, my_env)
+        j_job = JubeRun(self.benchmark, self.platform)
+        j_job.run(abs_output_path, self.benchmark_path, platform_dir)
 
-        numdir = None
-        while popen_obj.returncode is None:
-            time.sleep(1)
-            popen_obj.poll()
-            new_id, numdir = self._get_max_id(os.listdir(abs_output_path))
-            if new_id != max_id:
-                break
-
-        if popen_obj.returncode:
-            stdout, stderr = popen_obj.communicate()
-            msg = '''Error when executing command: {}
-            stdout:
-            --------
-            {}
-            stderr:
-            --------
-            {}'''.format(input_str, stdout, stderr)
-            raise RuntimeError(msg)
-
-
-        benchmark_results_path = os.path.join(abs_output_path, numdir)
-
-
-        if benchmark_results_path == '':
+        if not j_job.result_path:
             raise RuntimeError('Error getting the directory number')
-
 
         self.jube_files.delete_platform_dir()
 
-        return (benchmark_results_path, new_id, updated_params)
+        return (j_job, updated_params)
+
 
 
     def wait_run(self, run_id, benchmark_results_path):
@@ -614,7 +564,7 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         if os.path.isdir(abs_output_path):
             if benchmark_id == 'last':
-                path_id, _ = self._get_max_id(os.listdir(abs_output_path))
+                path_id, _ = self.get_max_id(os.listdir(abs_output_path))
             else:
                 path_id = benchmark_id
 
@@ -692,15 +642,6 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
 
         return matchobj.group(0)
 
-    def _get_max_id(self, file_list): # pylint: disable=no-self-use
-        max_id = -1
-        ids_dict = {-1:'0000000'}
-        if file_list:
-            ids_dict = {int(id_str): id_str for id_str in file_list if id_str.isdigit()}
-            max_id = max(ids_dict.keys())
-        return max_id, ids_dict[max_id]
-
-
     def _get_jubexmlconfig(self, benchmark_id):
         outpath = self.jube_files.get_bench_outputdir()
         benchmark_runpath = os.path.join(self.benchmark_path,
@@ -715,3 +656,97 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
             raise IOError('Cannot find: '+configuration_file_path+' file.')
 
         return jube_xml_config
+
+
+    @staticmethod
+    def get_max_id(file_list): # pylint: disable=no-self-use
+        """ Return max id directory"""
+        max_id = -1
+        ids_dict = {-1:'0000000'}
+        if file_list:
+            ids_dict = {int(id_str): id_str for id_str in file_list if id_str.isdigit()}
+            max_id = max(ids_dict.keys())
+        return max_id, ids_dict[max_id]
+
+
+class JubeRun(object):
+    """This class handles jube execution"""
+    def __init__(self, benchmark, platform):
+        self.benchmark = benchmark
+        self.platform = platform
+        self.jube_process = None
+        self.result_path = None
+        self.jubeid = None
+        self._job_ids = []
+
+
+    @property
+    def job_ids(self):
+        """ Returns the jobs id associated to a JubeRun"""
+        if not self._job_ids:
+            if not self.poll():
+                self._job_ids = self.extract_job_ids(self.result_path)
+        return self._job_ids
+
+    def run(self, output_dir, benchmark_path, platform_dir):
+        """ Execute benchmark"""
+        if os.path.isdir(output_dir):
+            max_id, _ = JubeBenchmarkingAPI.get_max_id(os.listdir(output_dir))
+
+        my_env = os.environ
+        my_env['UBENCH_PLATFORM_DIR'] = platform_dir
+        input_str = 'jube run --hide-animation {}.xml --tag {}'.format(self.benchmark,
+                                                                       self.platform)
+        popen_obj = utils.run_cmd_bg(input_str, benchmark_path, my_env)
+
+        numdir = None
+
+        while popen_obj.returncode is None:
+            time.sleep(1)
+            popen_obj.poll()
+            new_id, numdir = JubeBenchmarkingAPI.get_max_id(os.listdir(output_dir))
+            if new_id != max_id:
+                break
+
+        if popen_obj.returncode:
+            stdout, stderr = popen_obj.communicate()
+            msg = '''Error when executing command: {}
+            stdout:
+            --------
+            {}
+            stderr:
+            --------
+            {}'''.format(input_str, stdout, stderr)
+            raise RuntimeError(msg)
+
+        self.jubeid = new_id
+        self.jube_process = popen_obj
+        self.result_path = os.path.join(output_dir, numdir)
+
+
+    def kill(self):
+        """Kill jube process"""
+        self.jube_process.kill()
+
+    def poll(self):
+        """Get status of jube process"""
+        self.jube_process.poll()
+        return not bool(self.jube_process.returncode)
+
+    @staticmethod
+    def extract_job_ids(id_dir):
+        """ Get jobs' ids from directory"""
+        ## we have to get the id directory elsewhere
+        job_ids = []
+        dir_exec_rex = re.compile(r'^\d{6}_execute$')
+        job_id_rex = re.compile(r'^\w+\s\w+\s\w+\s(\d+)$')
+        for files in os.listdir(id_dir):
+            mat = dir_exec_rex.match(files)
+            if mat:
+                job_file_name = os.path.join(id_dir, mat.group(), "work", "stdout")
+                with  open(job_file_name, 'r') as job_file:
+                    for line in job_file:
+                        job_mat = job_id_rex.match(line)
+                        if job_mat:
+                            job_ids.append(job_mat.group(1))
+        return job_ids
