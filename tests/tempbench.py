@@ -32,7 +32,7 @@ class Tempbench(object):
         self.config = config
         self.config['bench_path'] = config['main_path'] + '/benchmarks'
         # self.config['plugin_path'] = config['main_path'] + '/plugin'
-        self.config['run_path'] = config['main_path'] + '/run'
+        self.config['run_path'] = config['main_path'] + '/run/l470'
         self.config['resources_path'] = config['main_path'] + '/resources'
         self.config['bench_input'] = os.path.join(repository_root, 'benchmarks/simple')
 

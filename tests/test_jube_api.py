@@ -89,9 +89,10 @@ def test_run(mocker, mock_os_methods):
     mock_popen = mocker.patch(".".join(MOCK_UTILS+["Popen"]),
                               side_effect=mockpopen)
 
-    mock_analyse = mocker.patch(".".join(MOCK_JAPI+["JubeBenchmarkingAPI", "_get_max_id"]),
+    mock_analyse = mocker.patch(".".join(MOCK_JAPI+["JubeBenchmarkingAPI", "get_max_id"]),
                                 side_effect=mockanalyse)
 
-    dir_result, id_b, updated_params = jube_api.run({'w' : "", 'execute' : False, 'custom_params': {}})
 
-    assert isinstance(id_b, int)
+    j_job, updated_params = jube_api.run({'w' : "", 'execute' : False, 'custom_params': {}})
+
+    assert isinstance(j_job.jubeid, int)

@@ -22,7 +22,7 @@
 import collections
 
 UConf = collections.namedtuple('Uconf', 'resource_dir run_dir benchmark_dir platform_dir')
-
+JubeRun = collections.namedtuple('JubeRun', 'result_path jubeid')
 
 class MockPopen(object):
     """Fakes slurm commands """
@@ -94,7 +94,7 @@ class FakeAPI:
     """Fakes benchmark API"""
 
     def run(self, opts):
-        return '/tmp/', 0, []
+        return JubeRun('/tmp', 0), {}
 
     def _set_custom_nodes(self, nnodes, nodes):
         return True
