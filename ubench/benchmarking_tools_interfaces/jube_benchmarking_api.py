@@ -28,7 +28,8 @@ from subprocess import Popen, PIPE
 import ubench.utils as utils
 import ubench.data_management.data_store_yaml as data_store_yaml
 from ubench.core.ubench_config import UbenchConfig
-from . import benchmarking_api as bapi
+from ubench.benchmarking_tools_interfaces.benchmarking_api import BenchmarkingAPI
+# from ubench.benchmark_interface.benchmark_api import BenchmarkAPI
 from . import jube_xml_parser
 
 try:
@@ -37,7 +38,7 @@ except:  # pylint: disable=bare-except
     pass
 
 #pylint: disable=superfluous-parens
-class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
+class JubeBenchmarkingAPI(BenchmarkingAPI):
     """ Jube benchmarking API class implements abstract class benchmarkingAPI
     to use Jube backend.
 
@@ -479,8 +480,6 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
         if not j_job.result_path:
             raise RuntimeError('Error getting the directory number')
 
-        self.jube_files.delete_platform_dir()
-
         return (j_job, updated_params)
 
 
@@ -552,8 +551,6 @@ class JubeBenchmarkingAPI(bapi.BenchmarkingAPI):
                                'benchmark' : benchmark_params}
 
         return  parameters_list
-
-
 
 
     def get_bench_rundir(self, benchmark_id, outpath):
@@ -690,6 +687,9 @@ class JubeRun(object):
 
     def run(self, output_dir, benchmark_path, platform_dir):
         """ Execute benchmark"""
+        max_id = None
+        numdir = None
+
         if os.path.isdir(output_dir):
             max_id, _ = JubeBenchmarkingAPI.get_max_id(os.listdir(output_dir))
 
@@ -698,8 +698,6 @@ class JubeRun(object):
         input_str = 'jube run --hide-animation {}.xml --tag {}'.format(self.benchmark,
                                                                        self.platform)
         popen_obj = utils.run_cmd_bg(input_str, benchmark_path, my_env)
-
-        numdir = None
 
         while popen_obj.returncode is None:
             time.sleep(1)

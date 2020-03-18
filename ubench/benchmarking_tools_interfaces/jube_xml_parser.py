@@ -90,6 +90,9 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
         self.config_xml = ''
 
 
+    def __del__(self):
+        self.delete_platform_dir()
+
     def write_bench_xml(self):
         """ docstring """
 
