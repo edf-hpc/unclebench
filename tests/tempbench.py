@@ -64,26 +64,29 @@ class Tempbench(object):
     def create_resource_bench(self, name):
         if name == "simple":
             resource_path = os.path.join(self.config['resources_path'], name)
-            os.makedirs(os.path.join(resource_path, 'git', 'unclebench'))
+            dir_to_create = os.path.join(resource_path, 'git', 'unclebench')
+            if not os.path.isdir(dir_to_create):
+                os.makedirs(os.path.join(resource_path, 'git', 'unclebench'))
 
     def create_run_dir(self, bench, platform):
         """ docstring """
 
         path_bench = os.path.join(self.config['run_path'], platform, bench)
-        os.makedirs(path_bench)
-        os.makedirs(os.path.join(path_bench, 'benchmark_runs'))
-        os.makedirs(os.path.join(path_bench, 'benchmark_runs', '0000000'))
-        os.makedirs(os.path.join(path_bench, 'benchmark_runs', '0000000', '000000_prepare'))
-        for i in range(1, 3):
-            path_execute = os.path.join(path_bench,
-                                        'benchmark_runs',
-                                        '0000000',
-                                        '00000{}_execute'.format(i),
-                                        'work')
-            os.makedirs(path_execute)
-            path_file = os.path.join(path_execute, 'stdout')
-            with open(path_file, 'w') as stdout_f:
-                stdout_f.write("Submitted batch job 61722{}\n".format(i))
+        if not os.path.isdir(path_bench):
+            os.makedirs(path_bench)
+            os.makedirs(os.path.join(path_bench, 'benchmark_runs'))
+            os.makedirs(os.path.join(path_bench, 'benchmark_runs', '0000000'))
+            os.makedirs(os.path.join(path_bench, 'benchmark_runs', '0000000', '000000_prepare'))
+            for i in range(1, 3):
+                path_execute = os.path.join(path_bench,
+                                            'benchmark_runs',
+                                            '0000000',
+                                            '00000{}_execute'.format(i),
+                                            'work')
+                os.makedirs(path_execute)
+                path_file = os.path.join(path_execute, 'stdout')
+                with open(path_file, 'w') as stdout_f:
+                    stdout_f.write("Submitted batch job 61722{}\n".format(i))
 
 
     def destroy_dir_structure(self):

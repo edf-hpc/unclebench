@@ -365,3 +365,34 @@ def tests_run_parallel(init_env):
                    'execute' : False,
                    'w' : [],
                    'test' : True})
+
+def tests_run_wait(init_env):
+    init_env.create_run_dir("simple", "l470")
+    init_env.create_resource_bench("simple")
+    bench_api = JubeBenchmarkingAPI("simple", "l470")
+    jube_job, _ = bench_api.run({'custom_params' : None,
+                                 'execute' : False,
+                                 'w' : [],
+                                 'test' : True})
+
+    while jube_job.jube_returncode is None:
+        time.sleep(1)
+
+    assert jube_job.jube_returncode == 0
+
+# def tests_run_kill(init_env):
+#     init_env.create_run_dir("simple", "l470")
+#     init_env.create_resource_bench("simple")
+#     bench_api = JubeBenchmarkingAPI("simple", "l470")
+
+#     jube_job, _ = bench_api.run({'custom_params' : None,
+#                                  'execute' : False,
+#                                  'w' : [],
+#                                  'test' : True})
+#     # import pdb;pdb.set_trace()
+
+
+#     time.sleep(1)
+#     jube_job.kill()
+
+#     assert jube_job.jube_returncode == None

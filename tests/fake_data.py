@@ -125,3 +125,6 @@ class FakeXML:
 
     def delete_platform_dir(self):
         return True
+
+    def set_platform_path(self, platform_path):
+        return True
