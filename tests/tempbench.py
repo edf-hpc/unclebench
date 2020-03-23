@@ -31,8 +31,7 @@ class Tempbench(object):
 
         self.config = config
         self.config['bench_path'] = config['main_path'] + '/benchmarks'
-        # self.config['plugin_path'] = config['main_path'] + '/plugin'
-        self.config['run_path'] = config['main_path'] + '/run/l470'
+        self.config['run_path'] = config['main_path'] + '/run'
         self.config['resources_path'] = config['main_path'] + '/resources'
         self.config['bench_input'] = os.path.join(repository_root, 'benchmarks/simple')
 
@@ -62,11 +61,15 @@ class Tempbench(object):
         os.makedirs(bench_path)
         open(os.path.join(bench_path, 'test_bench.xml'), 'a').close()
 
+    def create_resource_bench(self, name):
+        if name == "simple":
+            resource_path = os.path.join(self.config['resources_path'], name)
+            os.makedirs(os.path.join(resource_path, 'git', 'unclebench'))
 
-    def create_run_dir(self, bench):
+    def create_run_dir(self, bench, platform):
         """ docstring """
 
-        path_bench = os.path.join(self.config['run_path'], bench)
+        path_bench = os.path.join(self.config['run_path'], platform, bench)
         os.makedirs(path_bench)
         os.makedirs(os.path.join(path_bench, 'benchmark_runs'))
         os.makedirs(os.path.join(path_bench, 'benchmark_runs', '0000000'))
@@ -81,7 +84,6 @@ class Tempbench(object):
             path_file = os.path.join(path_execute, 'stdout')
             with open(path_file, 'w') as stdout_f:
                 stdout_f.write("Submitted batch job 61722{}\n".format(i))
-
 
 
     def destroy_dir_structure(self):

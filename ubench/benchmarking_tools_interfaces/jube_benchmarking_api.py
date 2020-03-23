@@ -484,28 +484,29 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
 
 
 
-    def wait_run(self, run_id, benchmark_results_path):
-        """ Wait for benchmark to finish"""
+    # to modify to adapt to new changes
+    # def wait_run(self, run_id, benchmark_results_path):
+    #     """ Wait for benchmark to finish"""
 
-        outpath = self.jube_files.get_bench_outputdir()
-        output_dir = os.path.join(self.benchmark_path, outpath)
+    #     outpath = self.jube_files.get_bench_outputdir()
+    #     output_dir = os.path.join(self.benchmark_path, outpath)
 
-        cmd_str = 'jube continue --hide-animation {} --id {}'.format(output_dir, run_id)
-        ret_code, _, stderr = utils.run_cmd(cmd_str, self.benchmark_path)
+    #     cmd_str = 'jube continue --hide-animation {} --id {}'.format(output_dir, run_id)
+    #     ret_code, _, stderr = utils.run_cmd(cmd_str, self.benchmark_path)
 
-        if ret_code:
-            print(stderr)
-            raise RuntimeError("Error when executing command: {}".format(cmd_str))
+    #     if ret_code:
+    #         print(stderr)
+    #         raise RuntimeError("Error when executing command: {}".format(cmd_str))
 
-        job_ids = self.extract_job_ids(benchmark_results_path)
-        scheduler_interface = slurmi.SlurmInterface()
-        job_states = ['RUNNING']
-        while job_states:
-            job_req = scheduler_interface.get_jobs_state(job_ids)
-            job_states = [job_s for job_s in job_req.values() if job_s != 'COMPLETED']
-            if job_states:
-                print("Wating for jobs id: {}".format(",".join(job_req.keys())))
-                time.sleep(60)
+    #     job_ids = self.extract_job_ids(benchmark_results_path)
+    #     scheduler_interface = slurmi.SlurmInterface()
+    #     job_states = ['RUNNING']
+    #     while job_states:
+    #         job_req = scheduler_interface.get_jobs_state(job_ids)
+    #         job_states = [job_s for job_s in job_req.values() if job_s != 'COMPLETED']
+    #         if job_states:
+    #             print("Wating for jobs id: {}".format(",".join(job_req.keys())))
+    #             time.sleep(60)
 
 
     def _set_custom_nodes(self, nodes_list):

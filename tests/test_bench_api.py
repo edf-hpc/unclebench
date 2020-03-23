@@ -111,7 +111,6 @@ def test_out_xml_path(init_env):
 
 def test_xml_get_result_file(init_env):
     """ docstring """
-
     # pylint: disable=redefined-outer-name, unused-argument
     benchmarking_api = JubeBenchmarkingAPI("simple", "")
     assert benchmarking_api.jube_files.get_bench_resultfile(
@@ -123,7 +122,7 @@ def test_write_bench_xml(init_env):
 
     # pylint: disable=redefined-outer-name, singleton-comparison
     benchmarking_api = JubeBenchmarkingAPI("simple", "")
-    init_env.create_run_dir("simple")
+    init_env.create_run_dir("simple", "")
     benchmarking_api.jube_files.write_bench_xml()
     assert os.path.exists(os.path.join(init_env.config['run_path'],
                                        "simple")) == True
@@ -207,7 +206,6 @@ def test_add_bench_input():
 
 def test_fetcher_dir_rev(mocker, init_env):
     """ docstring """
-
     # pylint: disable=redefined-outer-name, unused-argument, unused-variable
 
     scms = [{
@@ -259,7 +257,6 @@ def test_fetcher_dir_rev(mocker, init_env):
 
 def test_fetcher_cmd(mocker, init_env):
     """ docstring """
-
     # pylint: disable=redefined-outer-name, unused-variable
 
     scm = {
@@ -319,7 +316,6 @@ def test_fetcher_cmd_no_revision(mocker, init_env):
 
 def test_run_customp(monkeypatch, init_env):
     """ docstring """
-
     # pylint: disable=missing-docstring, unused-argument, unused-variable, redefined-outer-name, undefined-variable
 
     def mock_auto_bm_init(self, bench_dir, run_dir, benchmark_list):
@@ -354,3 +350,18 @@ def test_run_customp(monkeypatch, init_env):
 #                           '0000000')
 
 #     assert benchmarking_api.extract_job_ids(id_dir) == ['617222', '617221']
+
+def tests_run_parallel(init_env):
+    init_env.create_run_dir("simple", "l470")
+    init_env.create_resource_bench("simple")
+    bench_api = JubeBenchmarkingAPI("simple", "l470")
+
+    bench_api.run({'custom_params' : None,
+                   'execute' : False,
+                   'w' : [],
+                   'test' : True})
+
+    bench_api.run({'custom_params' : None,
+                   'execute' : False,
+                   'w' : [],
+                   'test' : True})
