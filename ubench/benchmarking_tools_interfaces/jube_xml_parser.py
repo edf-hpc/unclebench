@@ -407,6 +407,17 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
 
         return parameters_list
 
+    def set_platform_path(self, platform_path):
+        for b_xml in self.bench_xml_root:
+            include_path = b_xml.find('include-path')
+
+            if include_path is None:
+                include_path = b_xml
+
+            for path in include_path.findall('path'):
+                path.text = platform_path
+
+
 
     def set_params_platform(self, dict_options):
         """ docstring """

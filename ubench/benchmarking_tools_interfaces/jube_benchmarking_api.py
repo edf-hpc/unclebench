@@ -464,18 +464,18 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         if opts['w']:
             self._set_custom_nodes(opts['w'])
 
+        platform_dir = self.jube_files.get_platform_dir()
         self.jube_files.add_bench_input()
         self.jube_files.remove_multisource()
+        self.jube_files.set_platform_path(platform_dir)
         self.jube_files.write_bench_xml()
         self.jube_files.write_platform_xml()
 
         outpath = self.jube_files.get_bench_outputdir()
         abs_output_path = os.path.join(self.benchmark_path, outpath)
 
-        platform_dir = self.jube_files.get_platform_dir()
-
         j_job = JubeRun(self.benchmark, self.platform)
-        j_job.run(abs_output_path, self.benchmark_path, platform_dir)
+        j_job.run(abs_output_path, self.benchmark_path)
 
         if not j_job.result_path:
             raise RuntimeError('Error getting the directory number')
@@ -676,17 +676,28 @@ class JubeRun(object):
         self.result_path = None
         self.jubeid = None
         self._job_ids = []
+        self._jube_returncode = None
 
 
     @property
     def job_ids(self):
         """ Returns the jobs id associated to a JubeRun"""
         if not self._job_ids:
-            if not self.poll():
+            if self.jube_returncode():
                 self._job_ids = self.extract_job_ids(self.result_path)
         return self._job_ids
 
-    def run(self, output_dir, benchmark_path, platform_dir):
+    @property
+    def jube_returncode(self):
+        """Returns returned code of jube:
+        if the process is running the value is None"""
+
+        if not self._jube_returncode:
+            self._jube_returncode = self.jube_process.poll()
+
+        return self._jube_returncode
+
+    def run(self, output_dir, benchmark_path):
         """ Execute benchmark"""
         max_id = None
         numdir = None
@@ -694,11 +705,10 @@ class JubeRun(object):
         if os.path.isdir(output_dir):
             max_id, _ = JubeBenchmarkingAPI.get_max_id(os.listdir(output_dir))
 
-        my_env = os.environ
-        my_env['UBENCH_PLATFORM_DIR'] = platform_dir
         input_str = 'jube run --hide-animation {}.xml --tag {}'.format(self.benchmark,
                                                                        self.platform)
-        popen_obj = utils.run_cmd_bg(input_str, benchmark_path, my_env)
+
+        popen_obj = utils.run_cmd_bg(input_str, benchmark_path)
 
         while popen_obj.returncode is None:
             time.sleep(1)
@@ -725,12 +735,9 @@ class JubeRun(object):
 
     def kill(self):
         """Kill jube process"""
+        #Warning! by killing jube process we dont kill all child process
         self.jube_process.kill()
 
-    def poll(self):
-        """Get status of jube process"""
-        self.jube_process.poll()
-        return not bool(self.jube_process.returncode)
 
     @staticmethod
     def extract_job_ids(id_dir):
