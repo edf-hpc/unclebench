@@ -284,7 +284,6 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
         platform_list = []
         jube_xml = jube_xml_parser.JubeXMLParser('', [], '', self.platform_dir)
         root = jube_xml.load_platforms_xml()
-        jube_xml.delete_platform_dir()
         for node in root.getiterator('path'):
             tags = node.get('tag')
             if tags:
