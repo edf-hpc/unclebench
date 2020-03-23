@@ -65,18 +65,6 @@ class BenchmarkingAPI(object):
         pass
 
 
-    def extract_result(self, benchmark_id):
-        """ Get result from a jube benchmark with its id and build a python result array
-
-        Args:
-            benchmark_id (int): id of the benchmark
-
-        Returns:
-            (str) Array with the benchmark results
-        """
-        pass
-
-
     def run(self, opts):
         """ Runs benchmark.
 
