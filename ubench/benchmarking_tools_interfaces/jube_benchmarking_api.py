@@ -557,7 +557,7 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
     def get_bench_rundir(self, benchmark_id, outpath):
         """ Internal method  """
 
-        path_id = None
+        path_id = 0
         abs_output_path = os.path.join(self.benchmark_path, outpath)
 
         if os.path.isdir(abs_output_path):
@@ -683,7 +683,7 @@ class JubeRun(object):
     def job_ids(self):
         """ Returns the jobs id associated to a JubeRun"""
         if not self._job_ids:
-            if self.jube_returncode():
+            if self.jube_returncode:
                 self._job_ids = self.extract_job_ids(self.result_path)
         return self._job_ids
 
