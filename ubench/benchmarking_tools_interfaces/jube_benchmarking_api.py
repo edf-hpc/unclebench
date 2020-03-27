@@ -677,15 +677,24 @@ class JubeRun(object):
         self.jubeid = None
         self._job_ids = []
         self._jube_returncode = None
-
+        self._exec_dir = {}
 
     @property
     def job_ids(self):
         """ Returns the jobs id associated to a JubeRun"""
         if not self._job_ids:
             if self.jube_returncode:
-                self._job_ids = self.extract_job_ids(self.result_path)
+                self._job_ids = self.extract_job_ids(self.result_path).values()
         return self._job_ids
+
+
+    @property
+    def exec_dir(self):
+        if not self._exec_dir:
+            if self.jube_returncode:
+                self._exec_dir = self.extract_job_ids(self.result_path)
+        return self._exec_dir
+
 
     @property
     def jube_returncode(self):
@@ -739,20 +748,21 @@ class JubeRun(object):
         self.jube_process.kill()
 
 
-    @staticmethod
-    def extract_job_ids(id_dir):
+    def extract_job_ids(self):
         """ Get jobs' ids from directory"""
         ## we have to get the id directory elsewhere
-        job_ids = []
+        id_dir = self.result_path
+        dir_exec_info = {}
         dir_exec_rex = re.compile(r'^\d{6}_execute$')
         job_id_rex = re.compile(r'^\w+\s\w+\s\w+\s(\d+)$')
         for files in os.listdir(id_dir):
             mat = dir_exec_rex.match(files)
             if mat:
+                exec_dir = mat.group()
                 job_file_name = os.path.join(id_dir, mat.group(), "work", "stdout")
                 with  open(job_file_name, 'r') as job_file:
                     for line in job_file:
                         job_mat = job_id_rex.match(line)
                         if job_mat:
-                            job_ids.append(job_mat.group(1))
-        return job_ids
+                            dir_exec_info[exec_dir] = job_mat.group(1)
+        return dir_exec_info
