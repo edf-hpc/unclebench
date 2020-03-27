@@ -91,16 +91,6 @@ class BenchmarkingAPI(object):
         pass
 
 
-    def status(self, benchmark_id):
-        """
-            Args:
-                benchmark_id (int):
-
-            Returns:
-        """
-        pass
-
-
     def list_parameters(self, default_values):
         """ List benchmark customisable parameters
 
