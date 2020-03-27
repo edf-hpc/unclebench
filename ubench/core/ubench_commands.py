@@ -28,6 +28,7 @@ import yaml
 
 from ubench.core.ubench_config import UbenchConfig
 import ubench.benchmark_managers.benchmark_manager_set as bms
+from ubench.benchmark_managers.campaign_benchmark_manager import CampaignManager
 import ubench.benchmarking_tools_interfaces.jube_xml_parser as jube_xml_parser
 import ubench.core.fetcher as fetcher
 import ubench.data_management.comparison_writer as comparison_writer
@@ -159,6 +160,11 @@ class UbenchCmd(object):
             return False
 
         return True
+
+    def campaign(self, campaign_file):
+        campaign = CampaignManager(campaign_file)
+        campaign.init_campaign()
+        campaign.run()
 
     def fetch(self):
         """ Fetches benchmarks sources """

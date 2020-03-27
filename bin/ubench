@@ -39,7 +39,6 @@ benchmark_list = uconf.get_benchmark_list()
 default_platform = None
 platform_required = True
 
-
 for platform_name in platform_list:
     if platform_name in socket.gethostname().lower():
         default_platform = platform_name
@@ -127,6 +126,15 @@ parser_run.add_argument('--foreground',
                         help='Peforms only the execution step of a benchmark',
                         default=False,
                         action='store_true')
+
+
+## campaign command
+# ubench campaign -f
+parser_campaign = subparsers.add_parser('campaign', help=('Run benchmark campaigns'))
+parser_campaign.add_argument('-f',
+                             '--campaign_file',
+                             help='File which describes benchmark campaign',
+                             required=True)
 
 
 # Parser list
@@ -281,6 +289,8 @@ if args.subparser_name == 'run':
     options_dictionary = vars(args)
     options_dictionary['raw_cli'] = sys.argv
     sys.exit(not commands.run(options_dictionary))
+elif args.subparser_name == 'campaign':
+    commands.campaign(args.campaign_file)
 elif args.subparser_name == 'fetch':
     commands.fetch()
 elif args.subparser_name == 'result':
