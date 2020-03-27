@@ -20,9 +20,11 @@
 """ Provides fake data and clases for test purposes """
 
 import collections
+import random
 
 UConf = collections.namedtuple('Uconf', 'resource_dir run_dir benchmark_dir platform_dir')
 JubeRun = collections.namedtuple('JubeRun', 'result_path jubeid')
+
 
 class MockPopen(object):
     """Fakes slurm commands """
@@ -99,6 +101,65 @@ class FakeAPI:
     def _set_custom_nodes(self, nnodes, nodes):
         return True
 
+class FakeAPI2:
+
+    def __init__(self, benchmark, platform):
+        self.benchmark = benchmark
+    def run(self, opts):
+        return FakeJubeRun(self.benchmark), {}
+
+    def result(self):
+        return True
+
+class FakeJubeRun:
+    """Fakes JubeRun Class"""
+    def __init__(self, benchmark):
+        self.benchmark = benchmark
+        self._returncode = None
+        self._job_prefix = str(sum(ord(c) for c in benchmark))
+        self._job_ids = []
+        self._exec_dir = {}
+
+    @property
+    def jube_returncode(self):
+
+        if self._returncode is None:
+            self._returncode = [None, None, None, 0][random.randint(0, 100) % 4]
+        return self._returncode
+
+    @property
+    def job_ids(self):
+        """ Returns the jobs id associated to a JubeRun"""
+        if not self._job_ids:
+            num = random.randint(1, 4)
+            for _ in range(0, num):
+                fake_job_id = self._job_prefix + str(random.randint(0, 100))
+                self._job_ids.append(fake_job_id)
+
+        return self._job_ids
+
+    @property
+    def exec_dir(self):
+        if not self._exec_dir:
+            for index, value in enumerate(self.job_ids):
+                jube_exec_dir = "exec_{}".format(str(index).zfill(6))
+                self._exec_dir[jube_exec_dir] = value
+        return self._exec_dir
+
+
+class FakeSlurm:
+
+    def __init__(self):
+        self.jobs = {}
+
+    def get_jobs_state(self, job_ids):
+        for job in job_ids:
+            if job in job_ids:
+                state = self.jobs.get(job, "RUNNING")
+                if state != "COMPLETED":
+                    self.jobs[job] = ["COMPLETED", "RUNNING", "RUNNING", "RUNNING"][random.randint(0, 100) % 4]
+
+        return {job_n: job_s for job_n, job_s in self.jobs.items() if job_n in job_ids}
 
 class FakeXML:
 
