@@ -33,6 +33,7 @@ from shutil import copy, copytree
 import six
 import ubench.benchmark_managers.benchmark_manager as benm
 from ubench.core.ubench_config import UbenchConfig
+import ubench.scheduler_interfaces.slurm_interface as slurmi
 
 @six.add_metaclass(abc.ABCMeta)  # pylint: disable=too-many-instance-attributes
 class StandardBenchmarkManager(benm.BenchmarkManager):
@@ -167,8 +168,34 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
               "ubench log -p {0} -b {1} -i {2}".format(self.platform,
                                                        self.benchmark, j_job.jubeid))
         if opts['foreground']:
+
             print('---- Waiting benchmark to finish running')
-            self.benchmarking_api.wait_run(j_job.jubeid, j_job.result_path)
+            #waiting for compilation
+            while j_job.jube_returncode is None:
+                time.sleep(5)
+                print('---- Waiting benchmark compilation')
+
+            #waiting for jobs execution
+            job_ids = j_job.job_ids
+            if not job_ids:
+                print("Error: No job ids found")
+
+            scheduler_interface = slurmi.SlurmInterface()
+            job_states = ['RUNNING']
+            finish_states = ['COMPLETED', 'FAILED', 'CANCELLED']
+            while job_states:
+                job_req = scheduler_interface.get_jobs_state(job_ids)
+                # failing jobs
+                failed = [job_n for job_n, job_s in job_req.items() if job_s == 'FAILED']
+                if failed:
+                    for job_n in failed:
+                        print("Job {} has failed".format(job_n))
+
+                job_states = [job_s for job_s in job_req.values() if job_s not in finish_states]
+                if job_states:
+                    print("Wating for jobs id: {}".format(",".join(job_req.keys())))
+                    time.sleep(60)
+
             print('---- All jobs or processes in background have finished')
 
 
