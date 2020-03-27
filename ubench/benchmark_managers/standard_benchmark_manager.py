@@ -342,6 +342,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
         result_array = self.result_array
 
+
         self.result_array = result_array
         if output_file:
             output_file.write('[options="header"]\n')
@@ -364,15 +365,12 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
                     col += 1
 
             print('')
+            print_format = "{{:<{}}} "*len(max_width)
+            # we add 1 to each max width
+            print_format = print_format.format(*[w+1 for w in max_width])
             for row in self.result_array:
-                col = 0
-                for elem in row[:-1]:
-                    print(str(elem).ljust(max_width[col]+1), end=' ')
-                    col += 1
-                if row[-1]:
-                    print(str(row[-1]).strip())
-                else:
-                    print('')
+                print(print_format.format(*row))
+
             print('')
 
 
