@@ -1,0 +1,32 @@
+author: "Pepito"
+name: "Maintenance"
+platform: "l470"
+benchmarks:
+  bench_1:
+    order: 1
+    parameters:
+      comp_v: '6'
+      mpi_v: '0'
+      job_name: 'bench_1'
+      submit_cmd: 'sbatch --dependency=singleton --switches=1'
+  bench_2:
+    order: 0
+    parameters:
+      comp_v: '6'
+      mpi_v: '0'
+      job_name: 'bench_2'
+      submit_cmd: 'sbatch --dependency=singleton --switches=1'
+  bench_3:
+    order: 2
+    parameters:
+      comp_v: '6'
+      mpi_v: '0'
+      job_name: 'bench_3'
+      submit_cmd: 'sbatch --dependency=singleton --switches=1'
+  bench_4:
+    order: 3
+    parameters:
+      comp_v: '6'
+      mpi_v: '0'
+      job_name: 'bench_4'
+      submit_cmd: 'sbatch --dependency=singleton --switches=1'

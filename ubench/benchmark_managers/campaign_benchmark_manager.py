@@ -25,6 +25,7 @@ import os
 from datetime import datetime
 from shutil import copytree
 from pydoc import locate
+import collections
 import yaml
 import ubench.scheduler_interfaces.slurm_interface as slurmi
 from ubench.config import CAMPAIGN_DATE_FORMAT, BENCHMARK_API_CLASS
@@ -39,14 +40,15 @@ class CampaignManager(object):
         """ Initialize CampaignManager object"""
         self.campaign = yaml.load(open(campaign_file, 'r'), Loader=yaml.FullLoader)
         self.pre_results = pre_results_file
-        self.benchmarks = {}
-        self.exec_info = {}
-        self.campaign_status = {}
+        self.benchmarks = collections.OrderedDict()
+        self.exec_info = collections.OrderedDict()
+        self.campaign_status = collections.OrderedDict()
         self.scheduler_interface = slurmi.SlurmInterface()
         date_campaign = datetime.now().strftime(CAMPAIGN_DATE_FORMAT)
         self.campaign_dir = os.path.join(UbenchConfig().run_dir,
                                          "campaign-{}-{}".format(self.campaign['name'],
                                                                  date_campaign))
+
 
 
     def init_campaign(self):
@@ -60,9 +62,19 @@ class CampaignManager(object):
 
         # create benchmark objects
         benchmark_api = locate(BENCHMARK_API_CLASS)
-        c_benchmarks = self.campaign['benchmarks']
+
+        # we order the benchmark using order key
+        def bench_order(elem):
+            """ helper function to guarantee benchmark order"""
+            _, value = elem
+            return value['order']
+
+        c_benchmarks = sorted(self.campaign['benchmarks'].items(),
+                              key=bench_order)
+
         platform = self.campaign['platform']
-        for b_name in c_benchmarks.keys():
+        for b_name, _ in c_benchmarks:
+            print("Initializing benchmark {}".format(b_name))
             self._init_bench_dir(b_name)
             self.benchmarks[b_name] = benchmark_api(b_name, platform)
             self.campaign_status[b_name] = {}
@@ -132,7 +144,9 @@ class CampaignManager(object):
                                   "Status",
                                   "Job",
                                   "Bench status"))
-        print("-"*80)
+
+        print("-"*width*columns)
+
         for b_name, values in self.campaign_status.items():
             if 'jobs' in values:
                 for line in values['jobs']:
@@ -160,9 +174,10 @@ class CampaignManager(object):
         """Run campaign workflow"""
         # we launched all benchmarks
         c_benchmarks = self.campaign['benchmarks']
-        for b_name, values in c_benchmarks.items():
+        for b_name, b_obj in self.benchmarks.items():
             print("Executing benchmark: {}".format(b_name))
-            self.exec_info[b_name] = self.benchmarks[b_name].run(values['parameters'])
+            parameters = c_benchmarks[b_name]['parameters']
+            self.exec_info[b_name] = b_obj.run(parameters)
 
 
         while self.non_finished():
