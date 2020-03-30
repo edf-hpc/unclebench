@@ -25,6 +25,70 @@ import random
 UConf = collections.namedtuple('Uconf', 'resource_dir run_dir benchmark_dir platform_dir')
 JubeRun = collections.namedtuple('JubeRun', 'result_path jubeid')
 
+def gen_jubeinfo_output():
+    # generate jube info output
+    head, param = "", ""
+    mock_vars = []
+    for i in range(0, 10):
+        mock_v = {'id' : i,
+                  'host' : "host{}".format(i),
+                  'mpi_version': "OpenMPI-{}".format(i),
+                  'nodes': i % 5 + 1,
+                  'modules': "openmpi/{}".format(i),
+                  'p_pat_min': 10*i-i,
+                  'p_pat_avg': 10*i,
+                  'p_pat_max': 10*i+1}
+
+        mock_vars.append(mock_v)
+
+    order_ids = [4, 1, 3, 6, 5, 3, 2, 7, 0, 8, 9]
+
+    with open("data/jube_info_head.txt", 'r') as f:
+        head = f.read()
+
+    with open("data/jube_info_template.txt", 'r') as f:
+        param = f.read()
+
+    with open("data/mock_jube_info.txt", 'w') as f:
+        f.write(head)
+        for i in order_ids:
+            val = param.format(mock_vars[i]['id'],
+                               str(mock_vars[i]['id']).zfill(6),
+                               mock_vars[i]['host'],
+                               mock_vars[i]['mpi_version'],
+                               mock_vars[i]['nodes'],
+                               mock_vars[i]['modules'])
+            f.write(val)
+            f.write('\n')
+
+    # generate_results_data
+    with open("data/mock_data_results.dat", 'w') as f:
+        f.write("nodes,host_p,comp_version,mpi_version,p_pat_min,p_pat_avg,p_pat_max\n")
+        for i in sorted(order_ids):
+            f.write("{},{},{},{},{},{},{}\n".format(mock_vars[i]['nodes'],
+                                                    mock_vars[i]['host'],
+                                                    "gnu",
+                                                    mock_vars[i]['mpi_version'],
+                                                    mock_vars[i]['p_pat_min'],
+                                                    mock_vars[i]['p_pat_avg'],
+                                                    mock_vars[i]['p_pat_max']))
+
+
+
+def get_mock_jube_file():
+    return open("tests/data/mock_jube_info.txt", 'r')
+
+def get_results_file(f_name, mode=None):
+    if 'dat' in f_name:
+        return open("tests/data/mock_data_results.dat", 'r')
+    if 'stdout' in f_name:
+        #return empty file
+        open('/tmp/job_info', 'a').close()
+        return open("/tmp/job_info", 'r')
+    if 'ubench.log' in f_name:
+        return open("tests/data/ubench.log", 'r')
+
+    return open("/tmp/bench_results.yaml", mode)
 
 class MockPopen(object):
     """Fakes slurm commands """
@@ -131,10 +195,11 @@ class FakeJubeRun:
     def job_ids(self):
         """ Returns the jobs id associated to a JubeRun"""
         if not self._job_ids:
-            num = random.randint(1, 4)
-            for _ in range(0, num):
-                fake_job_id = self._job_prefix + str(random.randint(0, 100))
-                self._job_ids.append(fake_job_id)
+            if self._returncode == 0:
+                num = random.randint(1, 4)
+                for _ in range(0, num):
+                    fake_job_id = self._job_prefix + str(random.randint(0, 100))
+                    self._job_ids.append(fake_job_id)
 
         return self._job_ids
 

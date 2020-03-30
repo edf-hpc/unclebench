@@ -21,6 +21,7 @@
 
 import time
 import re
+import csv
 import pytest
 import pytest_mock
 import mock
@@ -34,6 +35,7 @@ MOCK_XML = ["ubench",
             "jube_xml_parser",
             "JubeXMLParser"]
 
+MOCK_DATA = ["ubench","data_management","data_store_yaml"]
 MOCK_JAPI = ["ubench",
              "benchmarking_tools_interfaces",
              "jube_benchmarking_api"]
@@ -96,3 +98,46 @@ def test_run(mocker, mock_os_methods):
     j_job, updated_params = jube_api.run({'w' : "", 'execute' : False, 'custom_params': {}})
 
     assert isinstance(j_job.jubeid, int)
+
+def test_bench_datagen():
+    with open('tests/bench_jube_data.csv','rb') as csvfile:
+        jubereader = csv.DictReader(csvfile, delimiter='~')
+        num_col = len(jubereader.fieldnames)
+        for row in jubereader:
+            assert num_col == len(row)
+
+# def test_bench_datagenbad():
+#     with open('tests/bench_jube_data_bad.csv','rb') as csvfile:
+#         jubereader = csv.DictReader(csvfile, delimiter='~')
+#         num_col = len(jubereader.fieldnames)
+#         for row in jubereader:
+#             assert num_col == len(row)
+
+def test_result(mocker, mock_os_methods):
+
+    mocker.patch("ubench.benchmarking_tools_interfaces.jube_xml_parser.JubeXMLParser",
+                            side_effect=mockxmlparser)
+
+    mocker.patch(".".join(MOCK_JAPI+["JubeBenchmarkingAPI", "_analyse"]))
+    mocker.patch(".".join(MOCK_JAPI+["JubeBenchmarkingAPI", "_extract_results"]))
+    mocker.patch("tempfile.TemporaryFile",side_effect=fake_data.get_mock_jube_file)
+    mocker.patch("subprocess.Popen")
+    mocker.patch(".".join(MOCK_JAPI+["Popen"]))
+    mocker.patch(".".join(MOCK_JAPI+["open"]),
+                              side_effect=fake_data.get_results_file)
+    # mock_data = mocker.patch(".".join(MOCK_DATA+["DataStoreYAML"]))
+    mock_data_write = mocker.patch(".".join(MOCK_DATA+["DataStoreYAML","write"]))
+
+    jube_api = jba.JubeBenchmarkingAPI('test', 'platform')
+
+    jube_api.result(0)
+
+    # mock_data.assert_called()
+    # mock_data.assert_called_with()
+    args = mock_data_write.call_args.args
+    results = args[1] # second argument
+    assert len(args) == 3
+    assert '1' in results
+    assert 'results_bench' in results['1']
+    assert results['1']['results_bench'] == {'p_pat_min': '9', 'p_pat_max' : '11', 'p_pat_avg' : '10'}
+    assert results['5']['results_bench'] == {'p_pat_min': '45', 'p_pat_max' : '51', 'p_pat_avg' : '50'}
