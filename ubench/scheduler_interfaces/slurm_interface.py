@@ -30,6 +30,24 @@ from ClusterShell.NodeSet import NodeSet
 import ubench.config
 import ubench.utils as utils
 
+def wlist_to_scheduler_wlist(w_list_arg):
+    """ Translate ubench custom node list format to scheduler custome node list format
+
+    Args:
+        w_list_arg:
+    """
+    scheduler_interface = SlurmInterface()
+
+    w_list = []
+    for element in w_list_arg:
+        if element.isdigit():
+            elem_tuple = (int(element), None)
+        else:
+            elem_tuple = (scheduler_interface.get_nnodes_from_string(element), element)
+        w_list.append(elem_tuple)
+
+    return w_list
+
 def memoize_disk(cache_file):
     """Memoize to disk with TTL value"""
 

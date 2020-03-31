@@ -27,10 +27,11 @@ from shutil import copytree
 from pydoc import locate
 import collections
 import yaml
-import ubench.scheduler_interfaces.slurm_interface as slurmi
+from ubench.scheduler_interfaces.slurm_interface import (wlist_to_scheduler_wlist,
+                                                         SlurmInterface)
+
 from ubench.config import CAMPAIGN_DATE_FORMAT, BENCHMARK_API_CLASS
 from ubench.core.ubench_config import UbenchConfig
-
 
 class CampaignManager(object):
     """Campaign Manager for unclebench"""
@@ -48,7 +49,7 @@ class CampaignManager(object):
         self.benchmarks = collections.OrderedDict()
         self.exec_info = collections.OrderedDict()
         self.campaign_status = collections.OrderedDict()
-        self.scheduler_interface = slurmi.SlurmInterface()
+        self.scheduler_interface = SlurmInterface()
         date_campaign = datetime.now().strftime(CAMPAIGN_DATE_FORMAT)
         self.campaign_dir = os.path.join(UbenchConfig().run_dir,
                                          "campaign-{}-{}".format(self.campaign['name'],
@@ -168,9 +169,9 @@ class CampaignManager(object):
         if len(results) > 1:
             if {k : v for k, v in results.items() if type(v) == list}:
                 return {'val' : 'print no implemented'}
-            else:
+
                 # we reduce the name of the field
-                return compact_names(results)
+            return compact_names(results)
 
         return results
 
@@ -223,6 +224,8 @@ class CampaignManager(object):
         for b_name, b_obj in self.benchmarks.items():
             print("Executing benchmark: {}".format(b_name))
             parameters = c_benchmarks[b_name]['parameters']
+            if 'w' in parameters:
+                parameters['w'] = wlist_to_scheduler_wlist(parameters['w'])
             self.exec_info[b_name] = b_obj.run(parameters)
 
         while self.non_finished():

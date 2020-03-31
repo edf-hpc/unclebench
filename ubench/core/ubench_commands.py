@@ -34,10 +34,9 @@ import ubench.core.fetcher as fetcher
 import ubench.data_management.comparison_writer as comparison_writer
 import ubench.data_management.report as report
 
-try:
-    import ubench.scheduler_interfaces.slurm_interface as slurmi
-except ImportError:
-    pass
+from ubench.scheduler_interfaces.slurm_interface import wlist_to_scheduler_wlist
+
+
 
 
 class UbenchCmd(object):
@@ -120,7 +119,7 @@ class UbenchCmd(object):
         if opt_dict['w']:
 
             try:
-                opt_dict['w'] = self.translate_wlist_to_scheduler_wlist(opt_dict['w'])
+                opt_dict['w'] = wlist_to_scheduler_wlist(opt_dict['w'])
             except Exception as exc:  # pylint: disable=broad-except
                 print('---- Custom node configuration is not valid : {0}'.format(str(exc)))
                 return False
@@ -245,26 +244,3 @@ class UbenchCmd(object):
 
 
     # pylint: disable=undefined-loop-variable,too-many-locals
-    def translate_wlist_to_scheduler_wlist(self, w_list_arg):
-        """ Translate ubench custom node list format to scheduler custome node list format
-
-        Args:
-            w_list_arg:
-        """
-
-        try:
-            scheduler_interface = slurmi.SlurmInterface()
-        except ImportError:
-            print("Error!! Unable to load slurm module")
-            scheduler_interface = None
-            return None
-
-        w_list = []
-        for element in w_list_arg:
-            if element.isdigit():
-                elem_tuple = (int(element), None)
-            else:
-                elem_tuple = (scheduler_interface.get_nnodes_from_string(element), element)
-            w_list.append(elem_tuple)
-
-        return w_list
