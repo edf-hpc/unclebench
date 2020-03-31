@@ -27,7 +27,7 @@ JubeRun = collections.namedtuple('JubeRun', 'result_path jubeid')
 
 def gen_jubeinfo_output():
     # generate jube info output
-    head, param = "", ""
+    head, param, field_names, line = "", "", "", ""
     mock_vars = []
     for i in range(0, 10):
         mock_v = {'id' : i,
@@ -43,6 +43,7 @@ def gen_jubeinfo_output():
 
     order_ids = [4, 1, 3, 6, 5, 3, 2, 7, 0, 8, 9]
 
+    # generates old version
     with open("data/jube_info_head.txt", 'r') as f:
         head = f.read()
 
@@ -61,6 +62,24 @@ def gen_jubeinfo_output():
             f.write(val)
             f.write('\n')
 
+    # generates new version
+    with open("data/jube_info_csv_fieldnames.csv", 'r') as f:
+        field_names = f.read()
+
+    with open("data/jube_info_csv_template.csv", 'r') as f:
+        line = f.read()
+
+    with open("data/mock_jube_info.cvs", 'w') as f:
+        f.write(field_names)
+        for i in order_ids:
+            val = line.format(mock_vars[i]['id'],
+                              str(mock_vars[i]['id']).zfill(6),
+                              mock_vars[i]['host'],
+                              mock_vars[i]['mpi_version'],
+                              mock_vars[i]['nodes'],
+                              mock_vars[i]['modules'])
+            f.write(val)
+
     # generate_results_data
     with open("data/mock_data_results.dat", 'w') as f:
         f.write("nodes,host_p,comp_version,mpi_version,p_pat_min,p_pat_avg,p_pat_max\n")
@@ -75,8 +94,11 @@ def gen_jubeinfo_output():
 
 
 
+
+
 def get_mock_jube_file():
-    return open("tests/data/mock_jube_info.txt", 'r')
+    # return open("tests/data/mock_jube_info.txt", 'r')
+    return open("tests/data/mock_jube_info.cvs", 'r')
 
 def get_results_file(f_name, mode=None):
     if 'dat' in f_name:

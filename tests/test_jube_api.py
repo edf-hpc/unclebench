@@ -100,7 +100,7 @@ def test_run(mocker, mock_os_methods):
     assert isinstance(j_job.jubeid, int)
 
 def test_bench_datagen():
-    with open('tests/bench_jube_data.csv','rb') as csvfile:
+    with open('tests/data/mock_jube_info.cvs','rb') as csvfile:
         jubereader = csv.DictReader(csvfile, delimiter='~')
         num_col = len(jubereader.fieldnames)
         for row in jubereader:
@@ -131,13 +131,13 @@ def test_result(mocker, mock_os_methods):
     jube_api = jba.JubeBenchmarkingAPI('test', 'platform')
 
     jube_api.result(0)
-
+    print(jube_api.results)
     # mock_data.assert_called()
     # mock_data.assert_called_with()
     args = mock_data_write.call_args.args
-    results = args[1] # second argument
+    data = args[1] # second argument
     assert len(args) == 3
-    assert '1' in results
-    assert 'results_bench' in results['1']
-    assert results['1']['results_bench'] == {'p_pat_min': '9', 'p_pat_max' : '11', 'p_pat_avg' : '10'}
-    assert results['5']['results_bench'] == {'p_pat_min': '45', 'p_pat_max' : '51', 'p_pat_avg' : '50'}
+    assert '1' in data
+    assert 'results_bench' in data['1']
+    assert data['1']['results_bench'] == {'p_pat_min': '9', 'p_pat_max' : '11', 'p_pat_avg' : '10'}
+    assert data['5']['results_bench'] == {'p_pat_min': '45', 'p_pat_max' : '51', 'p_pat_avg' : '50'}
