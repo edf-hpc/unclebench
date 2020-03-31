@@ -79,7 +79,7 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
 
         self.jube_const_params = {}
         self._jube_files = None
-        self.results = None
+        self.results = {}
 
 
     @property
@@ -288,7 +288,8 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
             key_results = hashlib.md5("".join([values[n] for n in common_fields]))
             context[exec_id]['results_bench'] = results[key_results.hexdigest()]
             context[exec_id]['context_fields'] = common_fields
-            map_dir[values['jube_wp_id']] = results[key_results.hexdigest()]
+            exec_dir = "{}_execute".format(values['jube_wp_id'].zfill(6))
+            map_dir[exec_dir] = results[key_results.hexdigest()]
             job_file_path = os.path.join(values['jube_wp_abspath'], 'stdout')
 
             with  open(job_file_path, 'r') as job_file:
@@ -305,19 +306,20 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
                         break
 
 
-        # Add metadata present on ubench.log
-        field_pattern = re.compile('(.*) : (.*)')
-
         try:
-            log_file = open(os.path.join(benchmark_rundir, 'ubench.log'), 'r')
+
+            with open(os.path.join(benchmark_rundir, 'ubench.log'), 'r') as logf:
+                field_pattern = re.compile('(.*) : (.*)')
+                fields = field_pattern.findall(logf.read())
+                metadata = {name.strip():val.strip() for name, val in fields}
+
         except IOError:
-            print('Warning!! file ubench log was not found.' +
-                  'Benchmark data result could not be created')
-            return map_dir
+            metadata = {'Benchmark_name': self.benchmark,
+                        'Date' : time.strftime("%c"),
+                        'Platform' : self.platform,
+                        'Run_directory' : benchmark_rundir,
+                        'cmdline' : 'Campaign'}
 
-        fields = field_pattern.findall(log_file.read())
-
-        metadata = {name.strip():val.strip() for name, val in fields}
 
         bench_data = data_store_yaml.DataStoreYAML()
         bench_data.write(metadata, context, os.path.join(benchmark_rundir, 'bench_results.yaml'))
@@ -460,6 +462,7 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         if 'w' in opts:
             if opts['w']:
                 self._set_custom_nodes(opts['w'])
+
 
         platform_dir = self.jube_files.get_platform_dir()
         self.jube_files.add_bench_input()
@@ -655,7 +658,8 @@ class JubeRun(object):
         """ Returns the jobs id associated to a JubeRun"""
         if not self._job_ids:
             if self.jube_returncode == 0:
-                self._job_ids = self.extract_job_ids().values()
+                job_ids = [j_id for j_id in self.extract_job_ids().values() if j_id.isdigit()]
+                self._job_ids = job_ids
         return self._job_ids
 
 
@@ -731,6 +735,7 @@ class JubeRun(object):
             mat = dir_exec_rex.match(files)
             if mat:
                 exec_dir = mat.group()
+                dir_exec_info[exec_dir] = ""
                 job_file_name = os.path.join(id_dir, mat.group(), "work", "stdout")
                 with  open(job_file_name, 'r') as job_file:
                     for line in job_file:

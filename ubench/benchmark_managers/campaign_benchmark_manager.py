@@ -32,14 +32,13 @@ from ubench.config import CAMPAIGN_DATE_FORMAT, BENCHMARK_API_CLASS
 from ubench.core.ubench_config import UbenchConfig
 
 
-
 class CampaignManager(object):
     """Campaign Manager for unclebench"""
 
     def __init__(self, campaign_file, pre_results_file=None):
         """ Initialize CampaignManager object"""
         # compatibility with old Pyyaml versions
-        yaml_attrs =  getattr(yaml,  '__dict__', {})
+        yaml_attrs = getattr(yaml, '__dict__', {})
         if 'FullLoader' in yaml_attrs:
             self.campaign = yaml.load(open(campaign_file, 'r'), Loader=yaml.FullLoader)
         else:
@@ -140,7 +139,7 @@ class CampaignManager(object):
                     total_jobs = self.campaign_status[b_name]['num_jobs']
                     r_jobs = self.campaign_status[b_name]['running_jobs']
 
-                    if total_jobs > len(r_jobs) or r_jobs:
+                    if total_jobs > len(r_jobs) or not r_jobs:
                         print("Generating result file")
                         self.benchmarks[b_name].result(0)
 
@@ -156,6 +155,24 @@ class CampaignManager(object):
                         self.campaign_status[b_name]['jobs'].append(status)
 
 
+    def print_results(self, results):
+        """ Handle the printing of long results"""
+        def compact_names(result):
+            """Helper function"""
+            n = 4
+            while(len(set([k[0:n] for k in result])) != len(result)):
+                n = n+1
+
+            return {k[0:n]:v for k, v in result.items()}
+
+        if len(results) > 1:
+            if {k : v for k, v in results.items() if type(v) == list}:
+                return {'val' : 'print no implemented'}
+            else:
+                # we reduce the name of the field
+                return compact_names(results)
+
+        return results
 
     def print_campaign_status(self):
         """Print campaign status"""
@@ -182,7 +199,7 @@ class CampaignManager(object):
                                               line['status'],
                                               line['job_id'],
                                               self.campaign_status[b_name]['status'],
-                                              line['result']))
+                                              self.print_results(line['result'])))
             else:
                 print(print_format.format(b_name,
                                           "",
@@ -212,6 +229,6 @@ class CampaignManager(object):
         # we loop over all benchmarks
             self.update_campaign_status()
             self.print_campaign_status()
-            time.sleep(2)
+            time.sleep(4)
 
         print("Campaign finished successfully")
