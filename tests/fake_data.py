@@ -191,6 +191,8 @@ class FakeAPI2:
 
     def __init__(self, benchmark, platform):
         self.benchmark = benchmark
+        self.results = {}
+
     def run(self, opts):
         return FakeJubeRun(self.benchmark), {}
 

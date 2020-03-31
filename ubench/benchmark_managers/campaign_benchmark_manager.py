@@ -38,7 +38,13 @@ class CampaignManager(object):
 
     def __init__(self, campaign_file, pre_results_file=None):
         """ Initialize CampaignManager object"""
-        self.campaign = yaml.load(open(campaign_file, 'r'), Loader=yaml.FullLoader)
+        # compatibility with old Pyyaml versions
+        yaml_attrs =  getattr(yaml,  '__dict__', {})
+        if 'FullLoader' in yaml_attrs:
+            self.campaign = yaml.load(open(campaign_file, 'r'), Loader=yaml.FullLoader)
+        else:
+            self.campaign = yaml.load(open(campaign_file, 'r'))
+
         self.pre_results = pre_results_file
         self.benchmarks = collections.OrderedDict()
         self.exec_info = collections.OrderedDict()
@@ -75,11 +81,12 @@ class CampaignManager(object):
         platform = self.campaign['platform']
         for b_name, _ in c_benchmarks:
             print("Initializing benchmark {}".format(b_name))
-            self._init_bench_dir(b_name)
+            benchmark_dir = self._init_bench_dir(b_name)
             self.benchmarks[b_name] = benchmark_api(b_name, platform)
+            self.benchmarks[b_name].benchmark_path = benchmark_dir
             self.campaign_status[b_name] = {}
             self.campaign_status[b_name]['status'] = 'INIT'
-
+            self.campaign_status[b_name]['jobs'] = []
 
     def _init_bench_dir(self, benchmark):
         """ Create and initialize run directory"""
@@ -93,6 +100,7 @@ class CampaignManager(object):
             print("---- {} description files are already present in " \
                   "run directory and will be overwritten.".format(benchmark))
 
+        return benchmark_dir
 
     def init_job_info(self, benchmark):
         """ Initialize campaign data structure"""
@@ -102,6 +110,7 @@ class CampaignManager(object):
             self.campaign_status[benchmark]['num_jobs'] = len(job_ids)
             self.campaign_status[benchmark]['running_jobs'] = set(job_ids)
             self.campaign_status[benchmark]['status'] = 'RUNNING'
+            self.campaign_status[benchmark]['results'] = {}
 
 
     def update_campaign_status(self):
@@ -114,9 +123,11 @@ class CampaignManager(object):
                 j_job, _ = values
 
                 if j_job.jube_returncode is None:
+
                     self.campaign_status[b_name]['status'] = 'COMPILING'
-                    # print("benchmark {} compiling".format(b_name))
+
                 elif j_job.jube_returncode == 0:
+
                     self.init_job_info(b_name)
                     job_req = self.scheduler_interface.get_jobs_state(j_job.job_ids)
                     print("benchmark {} has jobs {}".format(b_name, job_req))
@@ -126,41 +137,59 @@ class CampaignManager(object):
                     if not self.campaign_status[b_name]['running_jobs']:
                         self.campaign_status[b_name]['status'] = 'FINISHED'
 
+                    total_jobs = self.campaign_status[b_name]['num_jobs']
+                    r_jobs = self.campaign_status[b_name]['running_jobs']
+
+                    if total_jobs > len(r_jobs) or r_jobs:
+                        print("Generating result file")
+                        self.benchmarks[b_name].result(0)
+
                     self.campaign_status[b_name]['jobs'] = []
                     for exec_dir, job_id in j_job.exec_dir.items():
-                        self.campaign_status[b_name]['jobs'].append({'jube_dir' : exec_dir,
-                                                                     'status' : job_req[job_id],
-                                                                     'job_id' : job_id})
+                        bench_results = self.benchmarks[b_name].results
+
+                        result = bench_results.get(exec_dir, {})
+                        status = {'jube_dir' : exec_dir,
+                                  'status' : job_req.get(job_id, "UNKNOWN"),
+                                  'job_id' : job_id,
+                                  'result': result}
+                        self.campaign_status[b_name]['jobs'].append(status)
+
 
 
     def print_campaign_status(self):
         """Print campaign status"""
         width = 20
-        columns = 5
+        columns = 6
         print("-"*width*columns)
-        print_format = "{{:^{0}}} ".format(width)*columns
+        print_format = "{{:^{0}s}} ".format(width)*columns
         print(print_format.format("Benchmark",
                                   "Jube_dir",
                                   "Status",
                                   "Job",
-                                  "Bench status"))
+                                  "Bench status",
+                                  "Results"))
 
         print("-"*width*columns)
 
         for b_name, values in self.campaign_status.items():
-            if 'jobs' in values:
+
+            if values['jobs']:
                 for line in values['jobs']:
                 #benchmark, jube_dir, status, job, result
                     print(print_format.format(b_name,
                                               line['jube_dir'],
                                               line['status'],
                                               line['job_id'],
-                                              self.campaign_status[b_name]['status']))
+                                              self.campaign_status[b_name]['status'],
+                                              line['result']))
             else:
                 print(print_format.format(b_name,
                                           "",
-                                          "COMPILING",
-                                          "", ""))
+                                          "",
+                                          "",
+                                          self.campaign_status[b_name]['status'],
+                                          "",))
 
 
     def non_finished(self):
@@ -179,21 +208,10 @@ class CampaignManager(object):
             parameters = c_benchmarks[b_name]['parameters']
             self.exec_info[b_name] = b_obj.run(parameters)
 
-
         while self.non_finished():
         # we loop over all benchmarks
             self.update_campaign_status()
-            for b_name, values in self.exec_info.items():
-                if self.campaign_status[b_name]['status'] == 'RUNNING':
-                    total_jobs = self.campaign_status[b_name]['num_jobs']
-                    r_jobs = self.campaign_status[b_name]['running_jobs']
-                    #print("benchmark {} running jobs {}/{}".format(b_name,total_jobs, r_jobs))
-                    if total_jobs > len(r_jobs):
-                        print("Generating result file")
-                        self.benchmarks[b_name].result()
-
             self.print_campaign_status()
             time.sleep(2)
 
-        self.print_campaign_status()
         print("Campaign finished successfully")
