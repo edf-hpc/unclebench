@@ -21,7 +21,8 @@
 
 import yaml
 from . import data_store
-
+import collections
+from yaml.representer import Representer
 
 class DataStoreYAML(data_store.DataStore):
     """ Provides methods to load and write configuration from and to YAML files
@@ -35,7 +36,7 @@ class DataStoreYAML(data_store.DataStore):
     def __init__(self):
         """ Class constructor """
         data_store.DataStore.__init__(self)
-
+        yaml.add_representer(collections.defaultdict, Representer.represent_dict)
 
     def write(self, metadata, runs_info, output_file):
         """

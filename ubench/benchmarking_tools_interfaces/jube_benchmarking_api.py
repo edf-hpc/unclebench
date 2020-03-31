@@ -24,18 +24,18 @@ import re
 import csv
 import tempfile
 import time
+import hashlib
 from subprocess import Popen, PIPE
+from collections import defaultdict
 import ubench.utils as utils
 import ubench.data_management.data_store_yaml as data_store_yaml
 from ubench.core.ubench_config import UbenchConfig
 from ubench.benchmarking_tools_interfaces.benchmarking_api import BenchmarkingAPI
+
 # from ubench.benchmark_interface.benchmark_api import BenchmarkAPI
 from . import jube_xml_parser
 
-try:
-    import ubench.scheduler_interfaces.slurm_interface as slurmi
-except:  # pylint: disable=bare-except
-    pass
+import ubench.scheduler_interfaces.slurm_interface as slurmi
 
 #pylint: disable=superfluous-parens
 class JubeBenchmarkingAPI(BenchmarkingAPI):
@@ -79,6 +79,7 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
 
         self.jube_const_params = {}
         self._jube_files = None
+        self.results = None
 
 
     @property
@@ -124,7 +125,7 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         results_array = self._extract_results(benchmark_id)
         print("""---- writing benchmark data in:
          {0}/bench_results.yaml""".format(benchmark_results_path))
-        self._write_bench_data(benchmark_id)
+        self.results = self._write_bench_data(benchmark_id)
 
         return results_array
 
@@ -266,112 +267,41 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
 
         return global_status
 
-
-    def _write_bench_data(self, benchmark_id):
-        """ TBD
+    def _write_bench_data(self, benchmark_id): # pylint: disable=too-many-locals
+        """ Generates benchmarks results data
 
         Args:
-            benchmark_id (int): benchmark number
-        """
-        # pylint: disable=too-many-locals, too-many-branches, too-many-statements
+            benchmark_id (int): id of the benchmark
 
-        try:
-            scheduler_interface = slurmi.SlurmInterface()
-        except ImportError:
-            print('Warning!! Unable to load Slurm module')  # pylint: disable=superfluous-parens
-            scheduler_interface = None
+        Returns:
+            (dict) mapping between Jube execution directories and result values
+        """
 
         outpath = self.jube_files.get_bench_outputdir()
         benchmark_rundir = self.get_bench_rundir(benchmark_id, outpath)
-        jube_cmd = 'jube info ./{0} --id {1} --step execute'.format(outpath, benchmark_id)
-
-        cmd_output = tempfile.TemporaryFile()
-        result_from_jube = Popen(jube_cmd, cwd=self.benchmark_path,
-                                 shell=True, stdout=cmd_output,
-                                 universal_newlines=True)
-        ret_code = result_from_jube.wait()  # pylint: disable=unused-variable
-
-        cmd_output.flush()
-        cmd_output.seek(0)
-        results = {}
-        workpackages = re.findall(r'Workpackages(.*?)\n{2,}',
-                                  cmd_output.read().decode('utf-8'), re.DOTALL)[0]
-        workdirs = {}
-        regex_workdir = r'^\s+(\d+).*(' + re.escape(outpath) + r'.*work).*'
-
-        for package in workpackages.split('\n'):
-            temp_match = re.match(regex_workdir, package)
-            if temp_match:
-                id_workpackage = temp_match.group(1)
-                path_workpackage = temp_match.group(2)
-                workdirs[id_workpackage] = path_workpackage
-
-        cmd_output.seek(0)
-        parameterization = re.findall(r'ID:(.*?)(?=\n{3,}|\sID)',
-                                      cmd_output.read().decode('utf-8')+'\n', re.DOTALL)
-        for execution_step in parameterization:
-            id_step = [x.strip() for x in execution_step.split('\n')][0]
-            param_step = [x.strip() for x in execution_step.split('\n')][1:]
-            results[id_step] = {}
-
-            for parameter in param_step:
-                temp_match = re.match(r'^\S+:', parameter)
-                if temp_match:
-                    value = parameter.replace(temp_match.group(0), '')
-                    param = temp_match.group(0).replace(':', '')
-                    results[id_step][param] = value.strip()
-
-        cmd_output.close()
-
-        for key, value in list(results.items()):
-            result_file_path = os.path.join(benchmark_rundir, 'result/ubench_results.dat')
-
-            # We add the part of results which corresponds to a given execute
-            with open(result_file_path) as csvfile:
-                reader = csv.DictReader(csvfile)
-
-                field_names = reader.fieldnames
-                common_fields = list(set(value.keys()) & set(field_names))
-                result_fields = list(set(field_names) - set(common_fields))
-                temp_hash = {}
-
-                for field in result_fields:
-                    temp_hash[field] = []
-
-                for row in reader:
-                    add_to_results = True
-                    for field in common_fields:
-                        if value[field] != row[field]:
-                            add_to_results = False
-                            break
-                    if add_to_results:
-                        for field in result_fields:
-                            temp_hash[field].append(row[field])
-
-                # When there is just value we transform the array in one value
-                for field in result_fields:
-
-                    if len(temp_hash[field]) == 1:
-                        temp_hash[field] = temp_hash[field][0]
-
-                results[key]['results_bench'] = temp_hash
-                results[key]['context_fields'] = common_fields
-
-            # Add job information to step execute
-            job_file_path = os.path.join(self.benchmark_path, workdirs[key], 'stdout')
-            job_id = 0
+        context_names, context = self._get_execution_context(benchmark_id)
+        results, field_names = self._get_results(benchmark_rundir, context_names)
+        scheduler_interface = slurmi.SlurmInterface()
+        common_fields = [n for n in context_names if n in field_names]
+        map_dir = {}
+        for exec_id, values in context.items():
+            key_results = hashlib.md5("".join([values[n] for n in common_fields]))
+            context[exec_id]['results_bench'] = results[key_results.hexdigest()]
+            context[exec_id]['context_fields'] = common_fields
+            map_dir[values['jube_wp_id']] = results[key_results.hexdigest()]
+            job_file_path = os.path.join(values['jube_wp_abspath'], 'stdout')
 
             with  open(job_file_path, 'r') as job_file:
                 for line in job_file:
                     re_result = re.findall(r'\d+', line)
                     if re_result:
                         job_id = re_result[0]
-                        value['job_id_ubench'] = job_id
+                        values['job_id_ubench'] = job_id
                         if scheduler_interface:
                             job_info = scheduler_interface.get_job_info(job_id)
                             if job_info:
-                                value.update(job_info[-1])
-                                results[key].update(value)
+                                values.update(job_info[-1])
+                                context[exec_id].update(values)
                         break
 
 
@@ -383,16 +313,16 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         except IOError:
             print('Warning!! file ubench log was not found.' +
                   'Benchmark data result could not be created')
-            return
+            return map_dir
 
-        metadata = {}
         fields = field_pattern.findall(log_file.read())
 
-        for field in fields:
-            metadata[field[0].strip()] = field[1].strip()
+        metadata = {name.strip():val.strip() for name, val in fields}
 
         bench_data = data_store_yaml.DataStoreYAML()
-        bench_data.write(metadata, results, os.path.join(benchmark_rundir, 'bench_results.yaml'))
+        bench_data.write(metadata, context, os.path.join(benchmark_rundir, 'bench_results.yaml'))
+
+        return map_dir
 
 
     def _extract_results(self, benchmark_id):  # pylint: disable=too-many-locals
@@ -439,6 +369,70 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         return result_array
 
 
+    def _get_execution_context(self, benchmark_id): # pylint: disable=no-self-use
+
+        separator = "~"
+        context = {}
+        outpath = self.jube_files.get_bench_outputdir()
+        jube_cmd = 'jube info ./{0} --id {1} --step execute -p -c \"{2}\"'.format(outpath,
+                                                                                  benchmark_id,
+                                                                                  separator)
+        cmd_output = tempfile.TemporaryFile()
+        result_from_jube = Popen(jube_cmd, cwd=self.benchmark_path,
+                                 shell=True, stdout=cmd_output,
+                                 universal_newlines=True)
+        ret_code = result_from_jube.wait()  # pylint: disable=unused-variable
+
+        # with cmd_output as out:
+        cmd_output.flush()
+        cmd_output.seek(0)
+        jubereader = csv.DictReader(cmd_output, delimiter='~')
+        context_names = jubereader.fieldnames
+        for row in jubereader:
+            if len(context_names) == len(row):
+                context[row['id']] = row
+            else:
+                msg = """Error when reading jube info output
+                This error is probably due to the chosen separator"""
+                raise msg
+
+        cmd_output.close()
+
+        return (context_names, context)
+
+
+    def _get_results(self, benchmark_rundir, context_names): # pylint: disable=too-many-locals
+
+        result_file_path = os.path.join(benchmark_rundir, 'result/ubench_results.dat')
+        results = {}
+        field_names = []
+        temp_list = {}
+        with open(result_file_path) as csvfile:
+            reader = csv.DictReader(csvfile)
+            field_names = reader.fieldnames
+            # changing parameters for execution
+            result_fields = [k for k in field_names if k not in context_names]
+
+            for row in reader:
+
+                md5 = hashlib.md5("".join([row[n] for n in context_names if n in field_names]))
+                key = md5.hexdigest()
+                values = {k:v for k, v in row.items() if k in result_fields}
+                results[key] = values
+
+                if key not in temp_list:
+                    temp_list[key] = defaultdict(list)
+
+                for k, v in values.items():
+                    temp_list[key][k].append(v)
+
+            for key in results:
+                if len(temp_list[key][result_fields[0]]) > 1:
+                    results[key] = temp_list[key]
+
+        return (results, field_names)
+
+
     def run(self, opts):
         """ Run benchmark on a given platform and return the benchmark run directory path
         and a benchmark ID.
@@ -453,16 +447,19 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         # Modify bench xml
         self.jube_files.load_platform_xml(self.platform)
         updated_params = []
-        if opts['custom_params']:
-            updated_params = self.jube_files.set_params_bench(opts['custom_params'])
-            updated_params += self.jube_files.set_params_platform(opts['custom_params'])
+        if 'custom_params' in opts:
+            if opts['custom_params']:
+                updated_params = self.jube_files.set_params_bench(opts['custom_params'])
+                updated_params += self.jube_files.set_params_platform(opts['custom_params'])
 
 
-        if opts['execute']:
-            self.jube_files.set_bench_execution()
+        if 'execute' in opts:
+            if opts['execute']:
+                self.jube_files.set_bench_execution()
 
-        if opts['w']:
-            self._set_custom_nodes(opts['w'])
+        if 'w' in opts:
+            if opts['w']:
+                self._set_custom_nodes(opts['w'])
 
         platform_dir = self.jube_files.get_platform_dir()
         self.jube_files.add_bench_input()
@@ -481,32 +478,6 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
             raise RuntimeError('Error getting the directory number')
 
         return (j_job, updated_params)
-
-
-
-    # to modify to adapt to new changes
-    # def wait_run(self, run_id, benchmark_results_path):
-    #     """ Wait for benchmark to finish"""
-
-    #     outpath = self.jube_files.get_bench_outputdir()
-    #     output_dir = os.path.join(self.benchmark_path, outpath)
-
-    #     cmd_str = 'jube continue --hide-animation {} --id {}'.format(output_dir, run_id)
-    #     ret_code, _, stderr = utils.run_cmd(cmd_str, self.benchmark_path)
-
-    #     if ret_code:
-    #         print(stderr)
-    #         raise RuntimeError("Error when executing command: {}".format(cmd_str))
-
-    #     job_ids = self.extract_job_ids(benchmark_results_path)
-    #     scheduler_interface = slurmi.SlurmInterface()
-    #     job_states = ['RUNNING']
-    #     while job_states:
-    #         job_req = scheduler_interface.get_jobs_state(job_ids)
-    #         job_states = [job_s for job_s in job_req.values() if job_s != 'COMPLETED']
-    #         if job_states:
-    #             print("Wating for jobs id: {}".format(",".join(job_req.keys())))
-    #             time.sleep(60)
 
 
     def _set_custom_nodes(self, nodes_list):
@@ -683,16 +654,16 @@ class JubeRun(object):
     def job_ids(self):
         """ Returns the jobs id associated to a JubeRun"""
         if not self._job_ids:
-            if self.jube_returncode:
-                self._job_ids = self.extract_job_ids(self.result_path).values()
+            if self.jube_returncode == 0:
+                self._job_ids = self.extract_job_ids().values()
         return self._job_ids
 
 
     @property
     def exec_dir(self):
         if not self._exec_dir:
-            if self.jube_returncode:
-                self._exec_dir = self.extract_job_ids(self.result_path)
+            if self.jube_returncode == 0:
+                self._exec_dir = self.extract_job_ids()
         return self._exec_dir
 
 
@@ -705,6 +676,7 @@ class JubeRun(object):
             self._jube_returncode = self.jube_process.poll()
 
         return self._jube_returncode
+
 
     def run(self, output_dir, benchmark_path):
         """ Execute benchmark"""
