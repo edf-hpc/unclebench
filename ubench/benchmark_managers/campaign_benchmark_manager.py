@@ -39,12 +39,7 @@ class CampaignManager(object):
     def __init__(self, campaign_file, pre_results_file=None):
         """ Initialize CampaignManager object"""
         # compatibility with old Pyyaml versions
-        yaml_attrs = getattr(yaml, '__dict__', {})
-        if 'FullLoader' in yaml_attrs:
-            self.campaign = yaml.load(open(campaign_file, 'r'), Loader=yaml.FullLoader)
-        else:
-            self.campaign = yaml.load(open(campaign_file, 'r'))
-
+        self.campaign = self.campaign_parser(campaign_file)
         self.pre_results = pre_results_file
         self.benchmarks = collections.OrderedDict()
         self.exec_info = collections.OrderedDict()
@@ -55,6 +50,34 @@ class CampaignManager(object):
                                          "campaign-{}-{}".format(self.campaign['name'],
                                                                  date_campaign))
 
+
+    def campaign_parser(self, campaign_file):
+        """ Basic parser for benchmark campaign specification file"""
+
+        yaml_attrs = getattr(yaml, '__dict__', {})
+        if 'FullLoader' in yaml_attrs:
+            campaign_data = yaml.load(open(campaign_file, 'r'), Loader=yaml.FullLoader)
+        else:
+            campaign_data = yaml.load(open(campaign_file, 'r'))
+
+        platform = campaign_data['platform']
+        benchmarks = campaign_data['benchmarks']
+        platform_avail = UbenchConfig().get_platform_list()
+        benchmark_list = UbenchConfig().get_benchmark_list()
+        # checkf platform
+        if platform not in platform_avail:
+            print("\nPlatform {} is not available.\nPlatforms available {}".format(platform,
+                                                                                   platform_avail))
+            raise RuntimeError
+
+        for bench in benchmarks:
+            if bench not in benchmark_list:
+                print("\nBenchmark {} is not available.\nBenchmarks available {}".format(bench,
+                                                                                         benchmark_list))
+                raise RuntimeError
+
+        # order has to be checked as well
+        return campaign_data
 
 
     def init_campaign(self):
