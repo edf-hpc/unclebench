@@ -226,6 +226,7 @@ class CampaignManager(object):
             parameters = c_benchmarks[b_name]['parameters']
             if 'w' in parameters:
                 parameters['w'] = wlist_to_scheduler_wlist(parameters['w'])
+            parameters['custom_params'] = parameters
             self.exec_info[b_name] = b_obj.run(parameters)
 
         while self.non_finished():
