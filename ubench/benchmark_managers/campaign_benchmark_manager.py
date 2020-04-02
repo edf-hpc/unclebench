@@ -125,16 +125,18 @@ class CampaignManager(object):
 
         return benchmark_dir
 
+
     def init_job_info(self, benchmark):
         """ Initialize campaign data structure"""
         if 'num_jobs' not in self.campaign_status[benchmark]:
             j_job, _ = self.exec_info[benchmark]
             job_ids = j_job.job_ids
             self.campaign_status[benchmark]['num_jobs'] = len(job_ids)
-            self.campaign_status[benchmark]['running_jobs'] = set(job_ids)
+            self.campaign_status[benchmark]['finished_jobs'] = 0
             self.campaign_status[benchmark]['status'] = 'RUNNING'
             self.campaign_status[benchmark]['results'] = {}
 
+    # def check_new_finished_jobs()
 
     def update_campaign_status(self):
         """ Update state for each benchmark """
@@ -154,18 +156,16 @@ class CampaignManager(object):
                     self.init_job_info(b_name)
                     job_req = self.scheduler_interface.get_jobs_state(j_job.job_ids)
                     print("benchmark {} has jobs {}".format(b_name, job_req))
-                    finished_jobs = set([j_n for j_n, j_s in job_req.items() if j_s in finish_states])
-                    self.campaign_status[b_name]['running_jobs'] -= finished_jobs
+                    finished_jobs = [j_n for j_n, j_s in job_req.items() if j_s in finish_states]
 
-                    if not self.campaign_status[b_name]['running_jobs']:
-                        self.campaign_status[b_name]['status'] = 'FINISHED'
-
-                    total_jobs = self.campaign_status[b_name]['num_jobs']
-                    r_jobs = self.campaign_status[b_name]['running_jobs']
-
-                    if total_jobs > len(r_jobs) or not r_jobs:
-                        print("Generating result file")
+                    if len(finished_jobs) > self.campaign_status[b_name]['finished_jobs']:
+                        print("Generating result file for benchmark {}".format(b_name))
                         self.benchmarks[b_name].result(0)
+                        self.campaign_status[b_name]['finished_jobs'] = len(finished_jobs)
+
+
+                    if self.campaign_status[b_name]['finished_jobs'] == self.campaign_status[b_name]['num_jobs']:
+                        self.campaign_status[b_name]['status'] = 'FINISHED'
 
                     self.campaign_status[b_name]['jobs'] = []
                     for exec_dir, job_id in j_job.exec_dir.items():
@@ -216,14 +216,14 @@ class CampaignManager(object):
         for b_name, values in self.campaign_status.items():
 
             if values['jobs']:
-                for line in values['jobs']:
+                for job in values['jobs']:
                 #benchmark, jube_dir, status, job, result
                     print(print_format.format(b_name,
-                                              line['jube_dir'],
-                                              line['status'],
-                                              line['job_id'],
+                                              job['jube_dir'],
+                                              job['status'],
+                                              job['job_id'],
                                               self.campaign_status[b_name]['status'],
-                                              self.print_results(line['result'])))
+                                              self.print_results(job['result'])))
             else:
                 print(print_format.format(b_name,
                                           "",
@@ -256,6 +256,6 @@ class CampaignManager(object):
         # we loop over all benchmarks
             self.update_campaign_status()
             self.print_campaign_status()
-            time.sleep(4)
+            time.sleep(2)
 
         print("Campaign finished successfully")

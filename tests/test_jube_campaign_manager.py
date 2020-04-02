@@ -19,14 +19,14 @@
 """ Provides test API """
 # pylint: disable=line-too-long,missing-docstring,unused-variable,unused-import
 
+import os
 import pytest
 import pytest_mock
 import mock
-import os
 import fake_data
 from ubench.benchmark_managers.campaign_benchmark_manager import CampaignManager
 from ubench.benchmarking_tools_interfaces.jube_benchmarking_api import JubeBenchmarkingAPI
-import ubench.scheduler_interfaces.slurm_interface as slurmi
+
 
 MOCK_XML = ["ubench",
             "benchmarking_tools_interfaces",
@@ -42,6 +42,10 @@ MOCK_SLURM = ["ubench",
               "scheduler_interfaces",
               "slurm_interface"]
 
+
+MOCK_CM = ["ubench",
+           "benchmark_managers",
+           "campaign_benchmark_manager"]
 
 def mockxmlparser(*args):
     """Mock xmlparser"""
@@ -70,13 +74,20 @@ def mockxmlparser(*args):
 #     assert type(benchmark_object)==JubeBenchmarkingAPI
 
 def test_campaign_run(mocker):
-    mock_api= mocker.patch("fake_data.FakeAPI2.result")
 
-    mocker.patch(".".join(MOCK_SLURM+["SlurmInterface"]),
+    def mock_bench_list():
+        return ["bench_4", "bench_3", "bench_2", "bench_1"]
+
+    mock_api = mocker.patch("fake_data.FakeAPI2.result")
+
+    mocker.patch(".".join(MOCK_CM+["SlurmInterface"]),
                  side_effect=fake_data.FakeSlurm)
 
     mocker.patch(".".join(MOCK_JUBE_BENCH_API),
                  side_effect=fake_data.FakeAPI2)
+
+    mocker.patch("ubench.core.ubench_config.UbenchConfig.get_benchmark_list",
+                 side_effect=mock_bench_list)
 
     campaign = CampaignManager("tests/campaign_metadata.yaml")
     campaign.init_campaign()
