@@ -18,13 +18,15 @@
 ##############################################################################
 """ Provides DataStoreYAML class """
 
-
-import yaml
-from . import data_store
 import collections
+import yaml
 from yaml.representer import Representer
+from ubench.data_management.data_store import DataStore
 
-class DataStoreYAML(data_store.DataStore):
+yaml.add_representer(collections.defaultdict, Representer.represent_dict)
+
+
+class DataStoreYAML(DataStore):
     """ Provides methods to load and write configuration from and to YAML files
 
     Methods:
@@ -35,8 +37,7 @@ class DataStoreYAML(data_store.DataStore):
 
     def __init__(self):
         """ Class constructor """
-        data_store.DataStore.__init__(self)
-        yaml.add_representer(collections.defaultdict, Representer.represent_dict)
+
 
     def write(self, metadata, runs_info, output_file):
         """
