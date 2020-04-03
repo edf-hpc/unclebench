@@ -41,7 +41,7 @@ def _read_date(date_str):
 
 
 @six.add_metaclass(abc.ABCMeta)
-class DataStore():
+class DataStore(object):
     """ Load, write, extract data from unclebench performance results data files.
 
     Methods
@@ -114,7 +114,9 @@ class DataStore():
         return(metadata, data)
 
 
-    def file_to_panda(self, filename, benchmark_name, date_interval=None, context=(None, None)):
+    def file_to_panda(self, filename, benchmark_name,
+                      date_interval=None, context=(None, None),
+                      d_filter=None):
         """ Return a panda from a file if it is an unclebench performance data file
         with date and benchmark name correponding to those given as argument.
 
@@ -126,7 +128,22 @@ class DataStore():
         """
         # pylint: disable=too-many-locals, too-many-branches, too-many-statements
 
-        metadata, data = self.extract_data_from_file(filename, benchmark_name, date_interval)
+        def get_data(data, d_filter):
+            filter_data = {}
+            for index in data:
+                new_data = {k:v for k, v in d_filter.items() if data[index][k] == v}
+                if len(new_data) == len(d_filter):
+                    filter_data[index] = data[index]
+
+            return filter_data
+
+        if date_interval:
+            metadata, data = self.extract_data_from_file(filename, benchmark_name, date_interval)
+        elif d_filter:
+            metadata, data = self.load(filename)
+            data = get_data(data, d_filter)
+        else:
+            metadata, data = self.load(filename)
 
         if not context[0]:
             context = ([], context[1])
@@ -304,3 +321,56 @@ class DataStore():
             result_context = (None, None)
 
         return concatenated_metadata, concatenated_panda, result_context, sub_bench
+
+
+
+    def compaire_bench_runs(self, pre_result_file, post_result_file, result_filter, run_context):
+        """Compute the diff between two benchmarks results"""
+
+        _, df1, _, _ = self.file_to_panda(pre_result_file, "",
+                                          context=(run_context, None),
+                                          d_filter=result_filter)
+
+        _, df2, _, _ = self.file_to_panda(post_result_file, "",
+                                          context=(run_context, None),
+                                          d_filter=result_filter)
+
+        dfs = [df1, df2]
+
+        for index, df in enumerate(dfs):
+            df['result'] = df['result'].astype(float)
+            df.rename(columns={'result':"result{}".format(index)}, inplace=True)
+
+        merge_df = pandas.concat(dfs, axis=1)
+        merge_df = merge_df.T.drop_duplicates().T
+        merge_df['diff'] = 100*(merge_df['result0']-merge_df['result1'])/merge_df['result0']
+
+
+    def get_result_filter(self, run_selector, opts, result_file):
+        """ Returns a filter
+
+        - run_selector: dictionary it allows to select a benchmark run based
+          on a variable which value is contained in the value of a given run.
+          Example {'jube_wp_abspath' : '00000_execute' }  will select a run
+          in which 'jube_wp_abspath' has a value 'benchmark_runs/000000/00000_execute/work'
+
+        - opts: list of variables that have to be included in the filter
+
+        - file: Benchmark data file
+        """
+
+        # load file
+        _, run_info = self.load(result_file)
+
+        run = {}
+        for index, data in run_info.items():
+            # the
+            selected = {k : v for k, v in run_selector.items() if v in data[index][k]}
+            if len(selected) == len(run_selector):
+                run = data
+                break
+
+
+        columns = run['contex'] + opts
+
+        return {k :run[k] for k in columns}
