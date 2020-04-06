@@ -171,7 +171,7 @@ class DataStore(object):
         else:
             full_context = context[0]
 
-        # Check if there are sub_bench
+        # Check if there are sub_benchcolumn_headers
         result_name_column = None
         for id_exec in sorted(data.keys()):  # This guarantees the order of nodes
             result_name_column = metadata['Benchmark_name'] + '_results'
@@ -325,14 +325,16 @@ class DataStore(object):
 
 
     def compaire_bench_runs(self, pre_result_file, post_result_file, result_filter, run_context):
-        """Compute the diff between two benchmarks results"""
+        """Compute the diff between two benchmarks results
+        run_context => string
+        """
 
-        _, df1, _, _ = self.file_to_panda(pre_result_file, "",
-                                          context=(run_context, None),
+        metadata, df1, _, _ = self.file_to_panda(pre_result_file, "",
+                                          context=(None,run_context),
                                           d_filter=result_filter)
 
         _, df2, _, _ = self.file_to_panda(post_result_file, "",
-                                          context=(run_context, None),
+                                          context=(None,run_context),
                                           d_filter=result_filter)
 
         dfs = [df1, df2]
@@ -344,6 +346,14 @@ class DataStore(object):
         merge_df = pandas.concat(dfs, axis=1)
         merge_df = merge_df.T.drop_duplicates().T
         merge_df['diff'] = 100*(merge_df['result0']-merge_df['result1'])/merge_df['result0']
+
+        # we create a dictionary only with the name of the result column and its difference value
+        result_column = metadata['Benchmark_name'] + '_results'
+        result = {}
+        for record in merge_df.to_dict(orient='records'):
+            result[record[result_column]] = record['diff']
+
+        return result
 
 
     def get_result_filter(self, run_selector, opts, result_file):
@@ -361,16 +371,17 @@ class DataStore(object):
 
         # load file
         _, run_info = self.load(result_file)
-
-        run = {}
+        s_run = {}
         for index, data in run_info.items():
             # the
-            selected = {k : v for k, v in run_selector.items() if v in data[index][k]}
+            selected = {k : v for k, v in run_selector.items() if v in data[k]}
             if len(selected) == len(run_selector):
-                run = data
+                s_run = data
                 break
 
+        if not opts:
+            opts = {}
 
-        columns = run['contex'] + opts
+        columns = s_run['context_fields'] + opts.keys()
 
-        return {k :run[k] for k in columns}
+        return {k :s_run[k] for k in columns}

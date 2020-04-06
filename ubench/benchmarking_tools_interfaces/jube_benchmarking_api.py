@@ -80,7 +80,7 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         self.jube_const_params = {}
         self._jube_files = None
         self.results = {}
-
+        self.results_file = None
 
     @property
     def jube_files(self):
@@ -322,7 +322,8 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
 
 
         bench_data = data_store_yaml.DataStoreYAML()
-        bench_data.write(metadata, context, os.path.join(benchmark_rundir, 'bench_results.yaml'))
+        self.results_file = os.path.join(benchmark_rundir, 'bench_results.yaml')
+        bench_data.write(metadata, context, self.results_file)
 
         return map_dir
 

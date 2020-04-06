@@ -25,11 +25,12 @@ import os
 import re
 import json
 import time
+import hashlib
 from subprocess import Popen, PIPE
 from ClusterShell.NodeSet import NodeSet
 import ubench.config
 import ubench.utils as utils
-import hashlib
+
 
 def wlist_to_scheduler_wlist(w_list_arg):
     """ Translate ubench custom node list format to scheduler custome node list format
@@ -69,7 +70,6 @@ def memoize_disk(cache_file):
             user_c_file = "{}-{}-{}".format(cache_file,
                                             ubench.config.USER,
                                             params_id)
-            # import pdb;pdb.set_trace()
             try:
                 cache = json.load(open(user_c_file, 'r'))
 

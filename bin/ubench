@@ -136,6 +136,11 @@ parser_campaign.add_argument('-f',
                              help='File which describes benchmark campaign',
                              required=True)
 
+parser_campaign.add_argument('-r',
+                        '--reference',
+                        help=('Result referecence: '
+                              'either a Git tag or Git commit hash'))
+
 
 # Parser list
 list_help = 'List existing runs information for a given benchmark.'
@@ -290,7 +295,7 @@ if args.subparser_name == 'run':
     options_dictionary['raw_cli'] = sys.argv
     sys.exit(not commands.run(options_dictionary))
 elif args.subparser_name == 'campaign':
-    commands.campaign(args.campaign_file)
+    commands.campaign(args.campaign_file, args.reference)
 elif args.subparser_name == 'fetch':
     commands.fetch()
 elif args.subparser_name == 'result':
