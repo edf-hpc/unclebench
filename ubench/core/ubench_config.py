@@ -63,16 +63,17 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
                     ('INSTALL_DIR', 'UBENCH_BENCHMARK_DIR'), ('INSTALL_DIR', 'UBENCH_CONF_DIR'),
                     ('INSTALL_DIR', 'UBENCH_CSS_PATH'), ('INSTALL_DIR', 'UBENCH_TEMPLATES_PATH'),
                     ('WORK_DIR', 'UBENCH_RUN_DIR_BENCH'), ('WORK_DIR', 'UBENCH_RESOURCE_DIR'),
-                    ('WORK_DIR', 'UBENCH_REPORT_DIR')]
+                    ('WORK_DIR', 'UBENCH_REPORT_DIR'), ('WORK_DIR', 'UBENCH_RESULTS_DIR')]
 
         # the order of the following 4 calls define implicitly the settings priority.
         # environment defined settings will have highest priority.
+        self.results_dir = None
         self.init_default('package')
         self.init_config_sys('system config')
         self.init_config_local('local config')
         self.init_environ('environment')
         self.set_environment_vars()
-
+        self.results_dir
 
     def init_environ(self, origin):
         """ Initializes path variables with values found in ENVIRONMENT variables """
@@ -116,6 +117,14 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
             self.report_dir = os.environ.get('UBENCH_REPORT_DIR')
             self.settings_source['UBENCH_REPORT_DIR'] = {'origin' : origin,
                                                          'val' : self.report_dir}
+
+        if os.environ.get('UBENCH_RESULTS_DIR') is not None:
+            self.results_dir = os.environ.get('UBENCH_RESULTS_DIR')
+            self.settings_source['UBENCH_RESULTS_DIR'] = {'origin' : origin,
+                                                          'val' : self.results_dir}
+
+
+
 
 
     def init_config_local(self, origin):
@@ -340,3 +349,7 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
                 filtered_bench_list.append(bench_dir.lower())
 
         return filtered_bench_list
+
+    @property
+    def repo_dir(self):
+        return self.results_dir
