@@ -29,6 +29,7 @@ from subprocess import Popen, PIPE
 from ClusterShell.NodeSet import NodeSet
 import ubench.config
 import ubench.utils as utils
+import hashlib
 
 def wlist_to_scheduler_wlist(w_list_arg):
     """ Translate ubench custom node list format to scheduler custome node list format
@@ -51,7 +52,7 @@ def wlist_to_scheduler_wlist(w_list_arg):
 def memoize_disk(cache_file):
     """Memoize to disk with TTL value"""
 
-    user_c_file = "{}-{}".format(cache_file, ubench.config.USER)
+
 
     def decorator(original_func):
         """Decorator"""
@@ -63,6 +64,12 @@ def memoize_disk(cache_file):
             """ Wrapper function"""
             now = time.time()
 
+            params_id = hashlib.md5(''.join(param)).hexdigest()
+
+            user_c_file = "{}-{}-{}".format(cache_file,
+                                            ubench.config.USER,
+                                            params_id)
+            # import pdb;pdb.set_trace()
             try:
                 cache = json.load(open(user_c_file, 'r'))
 
@@ -70,7 +77,6 @@ def memoize_disk(cache_file):
                 cache = {}
 
             no_cache = True
-
             if 'date' in cache:
                 if now-cache['date'] < ubench.config.MEM_DISK_TTL:
                     no_cache = False
