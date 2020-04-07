@@ -35,7 +35,6 @@ from ubench.config import CAMPAIGN_DATE_FORMAT, BENCHMARK_API_CLASS
 from ubench.core.ubench_config import UbenchConfig
 
 
-
 class CampaignManager(object):
     """Campaign Manager for unclebench"""
 
@@ -149,12 +148,32 @@ class CampaignManager(object):
             self.campaign_status[benchmark]['status'] = 'RUNNING'
             self.campaign_status[benchmark]['results'] = {}
 
-    # def check_new_finished_jobs()
+    def get_diff_results(self, benchmark, exec_dir):
+
+        c_benchmarks = self.campaign['benchmarks']
+        st_bench = self.campaign_status[benchmark]
+        data_store = DataStoreYAML()
+
+        print("Using result file: {}".format(st_bench['post_results']))
+        result_filter = data_store.get_result_filter({'jube_wp_abspath': exec_dir},
+                                                     c_benchmarks[benchmark]['parameters'],
+                                                     st_bench['post_results'])
+
+        # we peform a comparison with reference values
+        # column_headers = c_benchmarks[b_name]['parameters']['column_headers']
+        column_headers = ""
+        result = data_store.compaire_bench_runs(st_bench['pre_results'],
+                                                st_bench['post_results'],
+                                                result_filter,
+                                                column_headers)
+
+
+        return result
 
     def update_campaign_status(self):
         """ Update state for each benchmark """
+
         finish_states = ['COMPLETED', 'FAILED', 'CANCELLED']
-        data_store = DataStoreYAML()
         for b_name, values in self.exec_info.items():
 
             if self.campaign_status[b_name]['status'] != 'FINISHED':
@@ -169,41 +188,27 @@ class CampaignManager(object):
 
                     self.init_job_info(b_name)
                     job_req = self.scheduler_interface.get_jobs_state(j_job.job_ids)
-                    print("benchmark {} has jobs {}".format(b_name, job_req))
+
+                    # print("benchmark {} has jobs {}".format(b_name, job_req))
                     finished_jobs = [j_n for j_n, j_s in job_req.items() if j_s in finish_states]
 
                     if len(finished_jobs) > self.campaign_status[b_name]['finished_jobs']:
                         print("Generating result file for benchmark {}".format(b_name))
                         self.benchmarks[b_name].result(0)
                         self.campaign_status[b_name]['finished_jobs'] = len(finished_jobs)
-
+                        self.campaign_status[b_name]['post_results'] = self.benchmarks[b_name].results_file
 
                     if self.campaign_status[b_name]['finished_jobs'] == self.campaign_status[b_name]['num_jobs']:
                         self.campaign_status[b_name]['status'] = 'FINISHED'
 
                     self.campaign_status[b_name]['jobs'] = []
+
                     for exec_dir, job_id in j_job.exec_dir.items():
 
+                        result = {}
+                        if self.campaign_status[b_name]['pre_results'] and job_id in finished_jobs:
 
-                        self.campaign_status[b_name]['post_results'] = self.benchmarks[b_name].results_file
-
-                        if self.campaign_status[b_name]['pre_results'] and self.campaign_status[b_name]['post_results']:
-
-                            # Get result filter
-                            c_benchmarks = self.campaign['benchmarks']
-                            print("Using result file: {}".format(self.campaign_status[b_name]['post_results']))
-                            result_filter = data_store.get_result_filter({'jube_wp_abspath': exec_dir},
-                                                                         c_benchmarks[b_name]['parameters'],
-                                                                         self.campaign_status[b_name]['post_results'])
-
-                            # we peform a comparison with reference values
-                            # column_headers = c_benchmarks[b_name]['parameters']['column_headers']
-                            column_headers = ""
-                            result = data_store.compaire_bench_runs(self.campaign_status[b_name]['pre_results'],
-                                                                    self.campaign_status[b_name]['post_results'],
-                                                                    result_filter,
-                                                                    column_headers)
-
+                            result = self.get_diff_results(b_name, exec_dir)
 
                         else:
                             bench_results = self.benchmarks[b_name].results
@@ -214,11 +219,13 @@ class CampaignManager(object):
                                   'status' : job_req.get(job_id, "UNKNOWN"),
                                   'job_id' : job_id,
                                   'result': result}
+
                         self.campaign_status[b_name]['jobs'].append(status)
 
 
     def print_results(self, results, print_opt=None):
         """ Handle the printing of long results"""
+
         def compact_names(results):
             """Helper function"""
             n = 4
@@ -226,7 +233,7 @@ class CampaignManager(object):
             while(len(set([k[0:n] for k in results])) != len(results)):
                 n = n+1
 
-            return {k[0:n]:num_format.format(float(v)) for k, v in results.items()}
+            return {k[0:n]:v for k, v in results.items()}
 
 
         precision = 3
@@ -240,25 +247,33 @@ class CampaignManager(object):
                 return {'val' : 'print no implemented'}
 
                 # we reduce the name of the field
-            return compact_names(results)
+            results = compact_names(results)
 
 
-        return {k:num_format.format(float(v)) for k, v in results.items()}
+        f_results = {}
+        for k, v in results.items():
+            try:
+                new_v = float(v)
+            except ValueError:
+                new_v = '0'
+
+            f_results[k] = num_format.format(float(new_v))
+
+        return f_results
+
 
     def print_campaign_status(self):
         """Print campaign status"""
         width = 20
         columns = 6
-        precision = 3
-        print("-"*width*columns)
-        std_format = "{{:^{0}s}} ".format(width)*columns
-        head_format = "{{:^{0}s}} ".format(width)*(columns+1)
-        print_format = std_format #+ num_format
+        print_format = "{{:^{0}s}} ".format(width)*columns
+
+        print("\n{}".format("-"*width*columns))
         print(print_format.format("Benchmark",
-                                  "Jube_dir",
-                                  "Status",
-                                  "Job",
                                   "Bench status",
+                                  "Jube_dir",
+                                  "Job",
+                                  "Status",
                                   "Results"))
 
         print("-"*width*columns)
@@ -273,17 +288,17 @@ class CampaignManager(object):
                 for job in values['jobs']:
                     formatted_result = self.print_results(job['result'], print_opt)
                     print(print_format.format(b_name,
-                                              job['jube_dir'],
-                                              job['status'],
-                                              job['job_id'],
                                               self.campaign_status[b_name]['status'],
+                                              job['jube_dir'],
+                                              job['job_id'],
+                                              job['status'],
                                               formatted_result))
             else:
                 print(print_format.format(b_name,
-                                          "",
-                                          "",
-                                          "",
                                           self.campaign_status[b_name]['status'],
+                                          "",
+                                          "",
+                                          "",
                                           ""))
 
 
@@ -298,6 +313,7 @@ class CampaignManager(object):
         """Run campaign workflow"""
         # we launched all benchmarks
         c_benchmarks = self.campaign['benchmarks']
+
         for b_name, b_obj in self.benchmarks.items():
             print("Executing benchmark: {}".format(b_name))
             parameters = c_benchmarks[b_name]['parameters']
@@ -306,7 +322,7 @@ class CampaignManager(object):
 
             parameters['custom_params'] = parameters
             self.exec_info[b_name] = b_obj.run(parameters)
-
+            # Let's drop ubench parameters
             c_benchmarks[b_name]['parameters'].pop('w', None)
             c_benchmarks[b_name]['parameters'].pop('custom_params', None)
 
