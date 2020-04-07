@@ -70,6 +70,11 @@ def memoize_disk(cache_file):
             user_c_file = "{}-{}-{}".format(cache_file,
                                             ubench.config.USER,
                                             params_id)
+
+            cache_file_hash = hashlib.md5(user_c_file).hexdigest()
+
+            cls.cache_files[cache_file_hash] = user_c_file
+
             try:
                 cache = json.load(open(user_c_file, 'r'))
 
@@ -97,8 +102,18 @@ def memoize_disk(cache_file):
 class SlurmInterface(object):
     """ Provides methods to execute jobs with slurm scheduler """
 
+    cache_files = {}
+
     def __init__(self):
         """ Constructor """
+
+
+    def __del__(self):
+        for f in self.cache_files.values():
+            try:
+                os.remove(f)
+            except OSError:
+                pass
 
 
     def get_available_nodes(self, slices_size=1):
