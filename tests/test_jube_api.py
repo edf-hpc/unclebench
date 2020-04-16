@@ -20,14 +20,12 @@
 # pylint: disable=line-too-long,missing-docstring,unused-variable,unused-import,unused-argument,redefined-outer-name,too-many-arguments
 
 import time
-import re
 import csv
 import pytest
-import pytest_mock
-import mock
 import ubench.benchmarking_tools_interfaces.jube_benchmarking_api as jba
-import ubench.core.ubench_config as uconfig
+from fake_data import MockFile
 import fake_data
+import os
 
 #jubebenchmarkingAPI uses the values set in test_bench_api
 MOCK_XML = ["ubench",
@@ -51,6 +49,13 @@ def mock_os_methods(mocker):
     mock_isdir = mocker.patch("os.path.isdir")
     mock_chdir = mocker.patch("os.chdir")
     mock_rmdir = mocker.patch("shutil.rmtree")
+
+
+@pytest.fixture(scope="module")
+def jube_info_files(tmpdir_factory):
+    fn = tmpdir_factory.mktemp("data")
+    fake_data.gen_jubeinfo_output(str(fn))
+    return str(fn)
 
 
 def mockxmlparser(*args):
@@ -92,9 +97,9 @@ def test_run(mocker, mock_os_methods):
     assert isinstance(j_job.jubeid, int)
 
 
-def test_bench_datagen():
-    fake_data.gen_jubeinfo_output()
-    with open('data/mock_jube_info.cvs', 'rb') as csvfile:
+def test_bench_datagen(jube_info_files):
+    file_path = os.path.join(jube_info_files, 'mock_jube_info.cvs')
+    with open(file_path, 'rb') as csvfile:
         jubereader = csv.DictReader(csvfile, delimiter='~')
         num_col = len(jubereader.fieldnames)
         for row in jubereader:
@@ -110,11 +115,12 @@ def test_bench_datagenbad():
             assert num_col == len(row)
 
 
-def test_result(mocker, mock_os_methods):
+def test_result(mocker, mock_os_methods, jube_info_files):
     """It test the generation of benchmark data.
 
     It mainly test the method _write_bench_data
     """
+    mock_file = MockFile(jube_info_files)
     # Unclebench mocks
     mocker.patch(".".join(MOCK_XML),
                  side_effect=mockxmlparser)
@@ -123,10 +129,10 @@ def test_result(mocker, mock_os_methods):
     mock_data_write = mocker.patch(".".join(MOCK_DATA+["DataStoreYAML", "write"]))
 
     # STD lib mocks
-    mocker.patch("tempfile.TemporaryFile", side_effect=fake_data.get_mock_jube_file)
+    mocker.patch("tempfile.TemporaryFile", side_effect=mock_file.jube_file)
     mocker.patch(".".join(MOCK_JAPI+["Popen"]))
     mocker.patch(".".join(MOCK_JAPI+["open"]),
-                 side_effect=fake_data.get_results_file)
+                 side_effect=mock_file.results_file)
 
     jube_api = jba.JubeBenchmarkingAPI('test', 'platform')
 

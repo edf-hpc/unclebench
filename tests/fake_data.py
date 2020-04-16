@@ -21,14 +21,21 @@
 
 import collections
 import random
+import os
 
 UConf = collections.namedtuple('Uconf', 'resource_dir run_dir benchmark_dir platform_dir')
 JubeRun = collections.namedtuple('JubeRun', 'result_path jubeid')
 
-def gen_jubeinfo_output():
+
+def gen_jubeinfo_output(temp_path):
     # generate jube info output
+    jubeinfo_mock_file = os.path.join(temp_path, "mock_jub_info.txt")
+    jubeinfo_mock_cvs = os.path.join(temp_path, "mock_jube_info.cvs")
+    benchresult_file = os.path.join(temp_path, "mock_data_results.dat")
+
     head, param, field_names, line = "", "", "", ""
     mock_vars = []
+
     for i in range(0, 10):
         mock_v = {'id': i,
                   'host': "host{}".format(i),
@@ -50,7 +57,8 @@ def gen_jubeinfo_output():
     with open("data/jube_info_template.txt", 'r') as f:
         param = f.read()
 
-    with open("data/mock_jube_info.txt", 'w') as f:
+    # output file
+    with open(jubeinfo_mock_file, 'w') as f:
         f.write(head)
         for i in order_ids:
             val = param.format(mock_vars[i]['id'],
@@ -69,7 +77,8 @@ def gen_jubeinfo_output():
     with open("data/jube_info_csv_template.csv", 'r') as f:
         line = f.read()
 
-    with open("data/mock_jube_info.cvs", 'w') as f:
+    # output file
+    with open(jubeinfo_mock_cvs , 'w') as f:
         f.write(field_names)
         for i in order_ids:
             val = line.format(mock_vars[i]['id'],
@@ -81,7 +90,7 @@ def gen_jubeinfo_output():
             f.write(val)
 
     # generate_results_data
-    with open("data/mock_data_results.dat", 'w') as f:
+    with open(benchresult_file, 'w') as f:
         f.write("nodes,host_p,comp_version,mpi_version,p_pat_min,p_pat_avg,p_pat_max\n")
         for i in sorted(order_ids):
             f.write("{},{},{},{},{},{},{}\n".format(mock_vars[i]['nodes'],
@@ -94,23 +103,27 @@ def gen_jubeinfo_output():
 
 
 
+class MockFile():
 
+    def __init__(self, root_path):
+        self.root_path = root_path
 
-def get_mock_jube_file():
-    # return open("tests/data/mock_jube_info.txt", 'r')
-    return open("data/mock_jube_info.cvs", 'r')
+    def jube_file(self):
+        file_path = os.path.join(self.root_path, 'mock_jube_info.cvs')
+        return open(file_path, 'r')
 
-def get_results_file(f_name, mode=None):
-    if 'dat' in f_name:
-        return open("data/mock_data_results.dat", 'r')
-    if 'stdout' in f_name:
-        #return empty file
-        open('/tmp/job_info', 'a').close()
-        return open("/tmp/job_info", 'r')
-    if 'ubench.log' in f_name:
-        return open("data/ubench.log", 'r')
+    def results_file(self, f_name, mode=None):
+        if 'dat' in f_name:
+            file_path = os.path.join(self.root_path, 'mock_data_results.dat' )
+            return open(file_path, 'r')
+        if 'stdout' in f_name:
+            #return empty file
+            open('/tmp/job_info', 'a').close()
+            return open("/tmp/job_info", 'r')
+        if 'ubench.log' in f_name:
+            return open("data/ubench.log", 'r')
 
-    return open("/tmp/bench_results.yaml", mode)
+        return open("/tmp/bench_results.yaml", mode)
 
 class MockPopen(object):
     """Fakes slurm commands """

@@ -1,0 +1,6 @@
+Benchmark_name  : simple
+Platform        : l470
+ID              : 0
+Date            : Fri Mar 27 15:18:05 2020
+Run_directory   : /tmp/ubench_run_dir/l470/simple/benchmark_runs/000000
+cmdline         : /home/cr3db69n/dev/unclebench/ubench-dev/bin/ubench run -p l470 -b simple
