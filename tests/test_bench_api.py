@@ -19,46 +19,15 @@
 """ Provides test API """
 
 # pylint: disable=import-error, unused-import, wrong-import-order, ungrouped-imports
-import pytest
-import mock
-import pytest_mock
-import tempbench
+
 import os
 import lxml.etree as ET
-
 from ubench.benchmarking_tools_interfaces.jube_benchmarking_api import JubeBenchmarkingAPI
-import ubench.benchmarking_tools_interfaces.jube_xml_parser as j_xml
 import ubench.core.fetcher as fetcher
-import subprocess
 import ubench.core.ubench_commands as ubench_commands
 import ubench.benchmark_managers.jube_benchmark_manager as jbm
-import ubench.core.ubench_config as uconfig
 import time
-
 from subprocess import Popen
-
-
-@pytest.fixture(scope="module")
-def init_env(pytestconfig):
-    """ It creates a temporary directory structure to
-    test JubeBenchmarkingAPI objects"""
-
-    config = {}
-    config['main_path'] = "/tmp/ubench_pytest/"
-    repository_root = os.path.join(pytestconfig.rootdir.dirname,
-                                   pytestconfig.rootdir.basename)
-
-    os.environ["UBENCH_BENCHMARK_DIR"] = os.path.join(config['main_path'],
-                                                      'benchmarks')
-    os.environ["UBENCH_PLATFORM_DIR"] = os.path.join(repository_root,
-                                                     'platform')
-
-    test_env = tempbench.Tempbench(config, repository_root)
-    test_env.copy_files()
-    os.environ["UBENCH_RUN_DIR_BENCH"] = test_env.config['run_path']
-    os.environ["UBENCH_RESOURCE_DIR"] = test_env.config['resources_path']
-    yield test_env
-    test_env.destroy_dir_structure()
 
 
 def test_init():

@@ -56,7 +56,7 @@ def test_run_empty(mocker, mocks_custom):
     std_bm = jbm.JubeBenchmarkManager('bench', 'platform')
 
     std_bm.benchmarking_api = fake_data.FakeAPI()
-    std_bm.run({'w':[], 'execute': False, 'foreground' : False})
+    std_bm.run({'w': [], 'execute': False, 'foreground': False})
 
 
 # def test_w_option(mocker, mocks_custom):
