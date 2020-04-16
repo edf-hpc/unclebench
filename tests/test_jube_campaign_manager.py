@@ -93,3 +93,26 @@ def test_campaign_run(mocker):
     campaign.init_campaign()
     campaign.run()
     mock_api.assert_called()
+
+def test_campaign_print(mocker):
+    def mock_bench_list():
+        return ["bench_4", "bench_3", "bench_2", "bench_1"]
+
+
+    mocker.patch(".".join(MOCK_JUBE_BENCH_API),
+                 side_effect=fake_data.FakeAPI2)
+
+    mocker.patch("ubench.core.ubench_config.UbenchConfig.get_benchmark_list",
+                 side_effect=mock_bench_list)
+
+    campaign = CampaignManager("tests/campaign_metadata.yaml")
+    fake_res = {'HPL[Gflop/s]': 0.23515579071134626}
+
+    formatted_s = campaign.print_results(fake_res)
+    assert formatted_s == {'HPL[Gflop/s]': '0.235'}
+    formatted_s = campaign.print_results(fake_res, "diff")
+    assert formatted_s == {'HPL[Gflop/s]': '0.235%'}
+
+    fake_res = {'HPL[Gflop/s]': ''}
+    formatted_s = campaign.print_results(fake_res)
+    assert formatted_s == {'HPL[Gflop/s]':'0.000'}

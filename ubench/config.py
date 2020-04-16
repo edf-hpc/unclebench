@@ -22,6 +22,6 @@
 import getpass
 
 USER = getpass.getuser()
-MEM_DISK_TTL = 20 # seconds
+MEM_DISK_TTL = 30 # seconds
 CAMPAIGN_DATE_FORMAT = '%Y-%m-%d_%H-%M'
 BENCHMARK_API_CLASS = "ubench.benchmarking_tools_interfaces.jube_benchmarking_api.JubeBenchmarkingAPI"

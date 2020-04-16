@@ -37,6 +37,7 @@
 
 
       <do>echo "3 5 16 30 50 86 99"</do>
+      <do>sleep 5 </do>
     </step>
 
 

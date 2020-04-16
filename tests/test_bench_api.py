@@ -40,7 +40,8 @@ from subprocess import Popen
 
 @pytest.fixture(scope="module")
 def init_env(pytestconfig):
-    """ docstring """
+    """ It creates a temporary directory structure to
+    test JubeBenchmarkingAPI objects"""
 
     config = {}
     config['main_path'] = "/tmp/ubench_pytest/"
