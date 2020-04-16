@@ -1,0 +1,47 @@
+Parameterization:
+ ID: {0}
+  binding_full_node: -n $tasks --bind-to core
+  mpi_v: 0
+  mpi_f90: mpif90
+  jube_wp_relpath: 000001/{1}_execute/work
+  cc: gcc
+  fflags: -O2
+  jube_wp_cycle: 0
+  binding_stream: --bind-to core --map-by ppr:1:socket:PE=2 -n $tasks
+  jube_step_name: execute
+  mpi_cxx: mpic++
+  module_blas: ''
+  comp_v: 0
+  jube_wp_abspath: /tmp/ubench_run_dir/l470/simple/000001/{1}_execute/work
+  host_p: {2}
+  mpi_f77: mpif77
+  stretch: unclebench
+  jube_benchmark_home: /tmp/ubench_run_dir/l470/simple
+  module_mpi: ''
+  fflags_opt: -O3 -march=native
+  jube_benchmark_name: simple
+  stretch_id: 0
+  jube_wp_envstr: ''
+  cflags: -O2
+  jube_benchmark_padid: 000001
+  blas_root: ''
+  jube_step_iterations: 1
+  jube_benchmark_rundir: /tmp/ubench_run_dir/l470/simple/benchmark_runs/000001
+  comp_version: gnu
+  jube_benchmark_start: 2020-03-27T17:39:42
+  binding_hybrid: --bind-to core --map-by ppr:1:socket:PE=2 -n $tasks
+  jube_step_cycles: 1
+  jube_wp_id: 0
+  jube_wp_envlist: ''
+  fc: gfortran
+  jube_wp_padid: {1}
+  cflags_opt: -O3 -march=native
+  mpi_version: {3}
+  module_compile: ''
+  jube_benchmark_id: 1
+  mpi_root: /usr/lib/openmpi/
+  jube_wp_iteration: 0
+  mpi_cc: mpicc
+  binding_half_node: --bind-to core --map-by ppr:1:socket:PE=2 -n $tasks
+  nodes: {4}
+  modules: {5}

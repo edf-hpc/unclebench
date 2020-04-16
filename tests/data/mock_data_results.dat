@@ -1,0 +1,12 @@
+nodes,host_p,comp_version,mpi_version,p_pat_min,p_pat_avg,p_pat_max
+1,host0,gnu,OpenMPI-0,0,0,1
+2,host1,gnu,OpenMPI-1,9,10,11
+3,host2,gnu,OpenMPI-2,18,20,21
+4,host3,gnu,OpenMPI-3,27,30,31
+4,host3,gnu,OpenMPI-3,27,30,31
+5,host4,gnu,OpenMPI-4,36,40,41
+1,host5,gnu,OpenMPI-5,45,50,51
+2,host6,gnu,OpenMPI-6,54,60,61
+3,host7,gnu,OpenMPI-7,63,70,71
+4,host8,gnu,OpenMPI-8,72,80,81
+5,host9,gnu,OpenMPI-9,81,90,91

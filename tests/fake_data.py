@@ -30,8 +30,8 @@ def gen_jubeinfo_output():
     head, param, field_names, line = "", "", "", ""
     mock_vars = []
     for i in range(0, 10):
-        mock_v = {'id' : i,
-                  'host' : "host{}".format(i),
+        mock_v = {'id': i,
+                  'host': "host{}".format(i),
                   'mpi_version': "OpenMPI-{}".format(i),
                   'nodes': i % 5 + 1,
                   'modules': "openmpi/{}".format(i),
@@ -98,17 +98,17 @@ def gen_jubeinfo_output():
 
 def get_mock_jube_file():
     # return open("tests/data/mock_jube_info.txt", 'r')
-    return open("tests/data/mock_jube_info.cvs", 'r')
+    return open("data/mock_jube_info.cvs", 'r')
 
 def get_results_file(f_name, mode=None):
     if 'dat' in f_name:
-        return open("tests/data/mock_data_results.dat", 'r')
+        return open("data/mock_data_results.dat", 'r')
     if 'stdout' in f_name:
         #return empty file
         open('/tmp/job_info', 'a').close()
         return open("/tmp/job_info", 'r')
     if 'ubench.log' in f_name:
-        return open("tests/data/ubench.log", 'r')
+        return open("data/ubench.log", 'r')
 
     return open("/tmp/bench_results.yaml", mode)
 
