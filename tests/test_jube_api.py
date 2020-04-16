@@ -52,9 +52,9 @@ def mock_os_methods(mocker):
 
 
 @pytest.fixture(scope="module")
-def jube_info_files(tmpdir_factory):
+def jube_info_files(tmpdir_factory, data_dir):
     fn = tmpdir_factory.mktemp("data")
-    fake_data.gen_jubeinfo_output(str(fn))
+    fake_data.gen_jubeinfo_output(data_dir.root, str(fn))
     return str(fn)
 
 
@@ -107,8 +107,8 @@ def test_bench_datagen(jube_info_files):
 
 
 @pytest.mark.xfail
-def test_bench_datagenbad():
-    with open('data/mock_jube_info-bad.csv', 'rb') as csvfile:
+def test_bench_datagenbad(data_dir):
+    with open(data_dir.jubeinfo_bad, 'rb') as csvfile:
         jubereader = csv.DictReader(csvfile, delimiter='~')
         num_col = len(jubereader.fieldnames)
         for row in jubereader:

@@ -27,12 +27,17 @@ UConf = collections.namedtuple('Uconf', 'resource_dir run_dir benchmark_dir plat
 JubeRun = collections.namedtuple('JubeRun', 'result_path jubeid')
 
 
-def gen_jubeinfo_output(temp_path):
+def gen_jubeinfo_output(in_dir, out_dir):
     # generate jube info output
-    jubeinfo_mock_file = os.path.join(temp_path, "mock_jub_info.txt")
-    jubeinfo_mock_cvs = os.path.join(temp_path, "mock_jube_info.cvs")
-    benchresult_file = os.path.join(temp_path, "mock_data_results.dat")
+    jubeinfo_mock_file = os.path.join(out_dir, "mock_jub_info.txt")
+    jubeinfo_mock_cvs = os.path.join(out_dir, "mock_jube_info.cvs")
+    benchresult_file = os.path.join(out_dir, "mock_data_results.dat")
 
+    #input files
+    jubeinfo_head = os.path.join(in_dir, "jube_info_head.txt")
+    jubeinfo_template = os.path.join(in_dir, "jube_info_template.txt")
+    jubeinfo_csv_fnames = os.path.join(in_dir, 'jube_info_csv_fieldnames.csv')
+    jubeinfo_csv_template = os.path.join(in_dir, 'jube_info_csv_template.csv')
     head, param, field_names, line = "", "", "", ""
     mock_vars = []
 
@@ -51,10 +56,11 @@ def gen_jubeinfo_output(temp_path):
     order_ids = [4, 1, 3, 6, 5, 3, 2, 7, 0, 8, 9]
 
     # generates old version
-    with open("data/jube_info_head.txt", 'r') as f:
+
+    with open(jubeinfo_head , 'r') as f:
         head = f.read()
 
-    with open("data/jube_info_template.txt", 'r') as f:
+    with open(jubeinfo_template, 'r') as f:
         param = f.read()
 
     # output file
@@ -71,10 +77,10 @@ def gen_jubeinfo_output(temp_path):
             f.write('\n')
 
     # generates new version
-    with open("data/jube_info_csv_fieldnames.csv", 'r') as f:
+    with open(jubeinfo_csv_fnames, 'r') as f:
         field_names = f.read()
 
-    with open("data/jube_info_csv_template.csv", 'r') as f:
+    with open(jubeinfo_csv_template, 'r') as f:
         line = f.read()
 
     # output file

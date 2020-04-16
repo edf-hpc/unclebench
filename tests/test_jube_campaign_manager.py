@@ -60,17 +60,16 @@ def run_dir(tmpdir_factory):
     os.environ["UBENCH_RUN_DIR_BENCH"] = str(fn)
 
 
-def test_init(init_env, mock_benchs, tmpdir_factory, run_dir):
+def test_init(init_env, mock_benchs, run_dir, data_dir):
     """it test object initialisation"""
-
-    campaign = CampaignManager("data/campaign_metadata.yaml")
+    campaign = CampaignManager(data_dir.campaign)
     assert campaign.campaign['name'] in campaign.campaign_dir
 
 
-def test_campaign_file(init_env, mock_benchs, run_dir):
+def test_campaign_file(init_env, mock_benchs, run_dir, data_dir):
     """it test parsing of campaign file"""
 
-    campaign = CampaignManager("data/campaign_metadata.yaml")
+    campaign = CampaignManager(data_dir.campaign)
     assert 'name' in campaign.campaign
     assert 'benchmarks' in campaign.campaign
 
@@ -79,17 +78,17 @@ def test_campaign_file(init_env, mock_benchs, run_dir):
     assert len(benchmarks)==4
 
 
-def test_campaign_init(init_env, mock_benchs, run_dir):
+def test_campaign_init(init_env, mock_benchs, run_dir, data_dir):
     """it test successful load of benchmark class"""
 
-    campaign = CampaignManager("data/campaign_metadata.yaml")
+    campaign = CampaignManager(data_dir.campaign)
     benchmarks = campaign.campaign['benchmarks']
     campaign.init_campaign()
     benchmark_object = campaign.benchmarks['bench_1']
     assert type(benchmark_object) == JubeBenchmarkingAPI
 
 
-def test_campaign_run(mocker, init_env, mock_benchs, run_dir):
+def test_campaign_run(mocker, init_env, mock_benchs, run_dir, data_dir):
 
     """it executes a fake campaign using fake classes that generate
     random job states"""
@@ -100,19 +99,19 @@ def test_campaign_run(mocker, init_env, mock_benchs, run_dir):
     mocker.patch(".".join(MOCK_JUBE_BENCH_API),
                  side_effect=fake_data.FakeAPI2)
 
-    campaign = CampaignManager("data/campaign_metadata.yaml")
+    campaign = CampaignManager(data_dir.campaign)
     campaign.init_campaign()
     campaign.run()
     mock_api.assert_called()
 
 
-def test_campaign_print(mocker, init_env, mock_benchs, run_dir):
+def test_campaign_print(mocker, init_env, mock_benchs, run_dir, data_dir):
     """it test the output of campaign execution results"""
 
     mocker.patch(".".join(MOCK_JUBE_BENCH_API),
                  side_effect=fake_data.FakeAPI2)
 
-    campaign = CampaignManager("data/campaign_metadata.yaml")
+    campaign = CampaignManager(data_dir.campaign)
     fake_res = {'HPL[Gflop/s]': 0.23515579071134626}
 
     formatted_s = campaign.print_results(fake_res)

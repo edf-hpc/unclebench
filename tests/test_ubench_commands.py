@@ -19,11 +19,7 @@
 """ Provides test API """
 
 # pylint: disable=unused-import,unused-variable,line-too-long
-import pytest
-import mock
-import pytest_mock
-import ubench.core.ubench_commands as ubench_commands
-import ubench.benchmark_managers.standard_benchmark_manager as stdbm
+from ubench.core.ubench_commands import UbenchCmd
 import fake_data
 
 BMS_MOCK = ["ubench",
@@ -56,22 +52,15 @@ def mockxmlparser(*args):
     """Mock xmlparser"""
     return fake_data.FakeXML()
 
-def test_wlist():
-    """Test translation of list of nodes"""
-
-    cmd = ubench_commands.UbenchCmd("platform", [])
-    assert cmd.translate_wlist_to_scheduler_wlist(['1', '2', '3']) == [(1, None), (2, None), (3, None)]
-    assert cmd.translate_wlist_to_scheduler_wlist(['6', 'cn184', 'cn[380,431-433]']) == [(6, None), (1, 'cn184'), (4, 'cn[380,431-433]')]
-    assert cmd.translate_wlist_to_scheduler_wlist(['6', 'cn184', 'host1']) == [(6, None), (1, 'cn184'), (1, 'host1')]
 
 def test_run_noresourcedir(mocker):
     """ Test with results result dir failing """
 
     mock_bms = mocker.patch(".".join(BMS_MOCK+["run"]))
 
-    cmd = ubench_commands.UbenchCmd("platform", [])
+    cmd = UbenchCmd("platform", [])
 
-    assert cmd.run({'w':[]}) is False
+    assert cmd.run({'w': []}) is False
 
 
 def test_run_withresourcedir(mocker):
@@ -79,17 +68,17 @@ def test_run_withresourcedir(mocker):
 
     mock_bms = mocker.patch(".".join(BMS_MOCK+["run"]))
     mock_isdir = mocker.patch("os.path.isdir")
-    cmd = ubench_commands.UbenchCmd("platform", [])
+    cmd = UbenchCmd("platform", [])
 
-    assert cmd.run({'w':[], 'file_params' :[], 'custom_params' : []}) is True
-    mock_bms.assert_called_with({'w':[],
-                                 'file_params' :[],
-                                 'custom_params' : {}})
+    assert cmd.run({'w': [], 'file_params': [], 'custom_params': []}) is True
+    mock_bms.assert_called_with({'w': [],
+                                 'file_params': [],
+                                 'custom_params': {}})
 
-    cmd.run({'w':['6', 'cn184', 'cn[380,431-433]'], 'file_params' :[], 'custom_params' : []})
+    cmd.run({'w': ['6', 'cn184', 'cn[380,431-433]'], 'file_params': [], 'custom_params': []})
     mock_bms.assert_called_with({'w':[(6, None), (1, 'cn184'), (4, 'cn[380,431-433]')],
-                                 'file_params' :[],
-                                 'custom_params' : {}})
+                                 'file_params': [],
+                                 'custom_params': {}})
 
 # pylint: disable=missing-docstring
 def test_run_wlist_parameter(mocker):
@@ -108,10 +97,10 @@ def test_run_wlist_parameter(mocker):
 
     mock_isdir = mocker.patch("os.path.isdir")
     mock_isdir = mocker.patch("os.listdir", side_effect=mock_listdir)
-    cmd = ubench_commands.UbenchCmd("platform", ["simple"])
-    cmd.run({'w':['160', 'cn184', 'cn[380,431-433]'],
-             'file_params' :[], 'custom_params' : [],
-             'foreground' : False, 'execute' : False})
+    cmd = UbenchCmd("platform", ["simple"])
+    cmd.run({'w': ['160', 'cn184', 'cn[380,431-433]'],
+             'file_params':[], 'custom_params' : [],
+             'foreground': False, 'execute' : False})
     mock_jba.assert_called_with([(160, None), (1, 'cn184'), (4, 'cn[380,431-433]')])
 
 def test_log(mocker):

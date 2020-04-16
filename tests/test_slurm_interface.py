@@ -27,6 +27,7 @@ import pytest
 import mock
 import pytest_mock
 import ubench.scheduler_interfaces.slurm_interface as slurm_i
+from ubench.scheduler_interfaces.slurm_interface import wlist_to_scheduler_wlist
 import ubench.config
 import fake_data
 
@@ -46,6 +47,13 @@ def mockpopen(args, shell, cwd, env=None, stdout=None, stderr=None, universal_ne
         return fake_data.MockPopen("squeue")
 
     return fake_data.MockPopen("sacct")
+
+def test_wlist():
+    """Test translation of list of nodes"""
+
+    assert wlist_to_scheduler_wlist(['1', '2', '3']) == [(1, None), (2, None), (3, None)]
+    assert wlist_to_scheduler_wlist(['6', 'cn184', 'cn[380,431-433]']) == [(6, None), (1, 'cn184'), (4, 'cn[380,431-433]')]
+    assert wlist_to_scheduler_wlist(['6', 'cn184', 'host1']) == [(6, None), (1, 'cn184'), (1, 'host1')]
 
 def test_emptylist():
     """ docstring """
