@@ -105,7 +105,7 @@ def test_run_wlist_parameter(mocker):
 
 def test_log(mocker):
     """ Test log command"""
-    cmd = ubench_commands.UbenchCmd("platform", [])
+    cmd = UbenchCmd("platform", [])
     mock_bms = mocker.patch(".".join(BMS_MOCK+["print_log"]))
     cmd.log(None)
     mock_bms.assert_called_with(-1)
