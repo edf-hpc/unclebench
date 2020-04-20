@@ -40,6 +40,7 @@ setup(name='ubench',
                    ' parameters on the fly without having to modify the'
                    ' benchmark or platform description files'),
       install_requires=[
+          'JUBE>=2.2.1',
           'clustershell>=1.6',
           'seaborn>=0.9.0',
           'matplotlib',
