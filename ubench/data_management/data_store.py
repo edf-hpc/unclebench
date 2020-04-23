@@ -248,7 +248,7 @@ class DataStore(object):
     def dir_to_pandas(self, data_dir, benchmark_name,
                       date_interval=None, context=(None, None),
                       result_filter=None):
-        """ Load evry data file found in "data_dir" and return a list
+        """ Load every data file found in "data_dir" and return a list
         of dictionnaries, each one containing data from a file.
 
         Args:
@@ -326,7 +326,14 @@ class DataStore(object):
 
     def compaire_bench_runs(self, pre_result_file, post_result_file, result_filter, run_context):
         """Compute the diff between two benchmarks results
-        run_context => string
+
+        Args:
+            - pre_result_file = path to pre-result benchmark file
+            - post_result_file = path to post-result benchmark file
+            - result_filter = Dictionary which contains values to choose a unique run, example:
+                              {'comp_version': 'gnu', 'mpi_version': 'OpenMPI-2.0.2'}
+            - run_context = String to indicate additional columns to take as context
+
         """
 
         metadata, df1, _, _ = self.file_to_panda(pre_result_file, "",
