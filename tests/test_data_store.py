@@ -2,7 +2,10 @@ from ubench.data_management.data_store_yaml import DataStoreYAML
 
 
 def test_result_filter(data_dir):
+    """ Test if we can get variable values for a given run.
 
+    Benchmark files are composed of several runs. This method help us to get only the value of certain
+    fields for a given run"""
     data = DataStoreYAML()
     d_filter = data.get_result_filter({'jube_wp_abspath': '000000_exec'},
                                       None,

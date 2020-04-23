@@ -56,7 +56,7 @@ def mockxmlparser(*args):
 def test_run_noresourcedir(mocker):
     """ Test with results result dir failing """
 
-    mock_bms = mocker.patch(".".join(BMS_MOCK+["run"]))
+    mocker.patch(".".join(BMS_MOCK+["run"]))
 
     cmd = UbenchCmd("platform", [])
 
@@ -65,9 +65,9 @@ def test_run_noresourcedir(mocker):
 
 def test_run_withresourcedir(mocker):
     """Test with results method with result dir success"""
-
+    mocker.patch("os.path.isdir")
     mock_bms = mocker.patch(".".join(BMS_MOCK+["run"]))
-    mock_isdir = mocker.patch("os.path.isdir")
+
     cmd = UbenchCmd("platform", [])
 
     assert cmd.run({'w': [], 'file_params': [], 'custom_params': []}) is True
@@ -80,7 +80,7 @@ def test_run_withresourcedir(mocker):
                                  'file_params': [],
                                  'custom_params': {}})
 
-# pylint: disable=missing-docstring
+
 def test_run_wlist_parameter(mocker):
     """ Test parameter wlist"""
     def mock_benchmark_list():
@@ -89,44 +89,30 @@ def test_run_wlist_parameter(mocker):
     def mock_listdir(path):
         return []
 
-    mock_uconf = mocker.patch(".".join(UCONF_MOCK+["get_benchmark_list"]),
+    mocker.patch(".".join(UCONF_MOCK+["get_benchmark_list"]),
                               side_effect=mock_benchmark_list)
-    mock_xml = mocker.patch(".".join(XML_MOCK), side_effect=mockxmlparser)
-    mock_jba = mocker.patch(".".join(JBA_MOCK+["_set_custom_nodes"]))
-    mock_bm = mocker.patch(".".join(SBM_MOCK+["_init_run_dir"]))
+    mocker.patch(".".join(XML_MOCK), side_effect=mockxmlparser)
+    mocker.patch(".".join(SBM_MOCK+["_init_run_dir"]))
+    mocker.patch("os.path.isdir")
+    mocker.patch("os.listdir", side_effect=mock_listdir)
+    mock_jba = mocker.patch(".".join(JBA_MOCK + ["_set_custom_nodes"]))
 
-    mock_isdir = mocker.patch("os.path.isdir")
-    mock_isdir = mocker.patch("os.listdir", side_effect=mock_listdir)
     cmd = UbenchCmd("platform", ["simple"])
     cmd.run({'w': ['160', 'cn184', 'cn[380,431-433]'],
              'file_params':[], 'custom_params' : [],
              'foreground': False, 'execute' : False})
+
     mock_jba.assert_called_with([(160, None), (1, 'cn184'), (4, 'cn[380,431-433]')])
+
 
 def test_log(mocker):
     """ Test log command"""
-    cmd = UbenchCmd("platform", [])
     mock_bms = mocker.patch(".".join(BMS_MOCK+["print_log"]))
+
+    cmd = UbenchCmd("platform", [])
     cmd.log(None)
     mock_bms.assert_called_with(-1)
     cmd.log([2])
     mock_bms.assert_called_with(2)
     cmd.log([2, 3])
     mock_bms.assert_called_with(3)
-
-# def test_result(mocker):
-#     """ Test log command"""
-#     cmd = ubench_commands.UbenchCmd("platform", [])
-#     mock_bms = mocker.patch(".".join(BMS_MOCK+["analyse"]))
-#     cmd.result(['last'])
-#     mock_bms.assert_called_with('last')
-#     cmd.result([2])
-#     mock_bms.assert_called_with(2)
-#     cmd.result([2, 3])
-#     mock_bms.assert_called_with(3)
-
-# def test_result_none(mocker):
-#     """Test result with None value """
-#     cmd = ubench_commands.UbenchCmd("platform", [])
-#     mock_bms = mocker.patch(".".join(BMS_MOCK+["analyse"]))
-#     cmd.result(None)

@@ -57,13 +57,3 @@ def test_run_empty(mocker, mocks_custom):
 
     std_bm.benchmarking_api = fake_data.FakeAPI()
     std_bm.run({'w': [], 'execute': False, 'foreground': False})
-
-
-# def test_w_option(mocker, mocks_custom):
-#     mock_set_w = mocker.patch(
-#         "fake_data.FakeAPI._set_custom_nodes")
-
-#     std_bm = jbm.JubeBenchmarkManager('bench', 'platform')
-#     std_bm.benchmarking_api = fake_data.FakeAPI()
-#     std_bm.run({'w':[(6, None), (1, 'cn154'), (4, 'cn[380,431-433]')], 'execute': False, 'foreground' : False})
-#     mock_set_w.assert_called_with([6, 1, 4], [None, 'cn184', 'cn[380,431-433]'])

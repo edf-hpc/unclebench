@@ -106,7 +106,7 @@ def test_campaign_run(mocker, init_env, mock_benchs, run_dir, data_dir):
 
 
 def test_campaign_print(mocker, init_env, mock_benchs, run_dir, data_dir):
-    """it test the output of campaign execution results"""
+    """it tests the output of campaign execution results"""
 
     mocker.patch(".".join(MOCK_JUBE_BENCH_API),
                  side_effect=fake_data.FakeAPI2)
@@ -114,11 +114,15 @@ def test_campaign_print(mocker, init_env, mock_benchs, run_dir, data_dir):
     campaign = CampaignManager(data_dir.campaign)
     fake_res = {'HPL[Gflop/s]': 0.23515579071134626}
 
+    # we test print of result without reference
     formatted_s = campaign.print_results(fake_res)
     assert formatted_s == {'HPL[Gflop/s]': '0.235'}
+
+    # we test print of results in case it represents a difference
     formatted_s = campaign.print_results(fake_res, "diff")
     assert formatted_s == {'HPL[Gflop/s]': '0.235%'}
 
+    # we tests print of empty results
     fake_res = {'HPL[Gflop/s]': ''}
     formatted_s = campaign.print_results(fake_res)
     assert formatted_s == {'HPL[Gflop/s]':'0.000'}

@@ -31,7 +31,7 @@ from subprocess import Popen
 
 
 def test_init():
-    """ docstring """
+    """ Checks object initialisation """
     benchmarking_api = JubeBenchmarkingAPI("", "")
     assert isinstance(benchmarking_api.benchmark_path, str)
     assert benchmarking_api.benchmark == ""
@@ -64,7 +64,7 @@ def test_bench_m():
 
 
 def test_load_bench_file():
-    """ docstring """
+    """ Test load of benchmark file"""
 
     # pylint: disable=unused-variable
     benchmarking_api = JubeBenchmarkingAPI("simple", "")
@@ -94,6 +94,7 @@ def test_write_bench_xml(init_env):
     benchmarking_api = JubeBenchmarkingAPI("simple", "")
     init_env.create_run_dir("simple", "")
     benchmarking_api.jube_files.write_bench_xml()
+
     assert os.path.exists(os.path.join(init_env.config['run_path'],
                                        "simple")) == True
 
@@ -109,6 +110,7 @@ def test_custom_nodes(init_env):
     xml_file = ET.parse(
         os.path.join(init_env.config['run_path'], "simple/simple.xml"))
     benchmark = xml_file.find('benchmark')
+
     assert benchmark.findall("parameterset[@name='custom_parameter']")
 
 
@@ -127,6 +129,7 @@ def test_result_custom_nodes(init_env):
         column for column in table.findall('column')
         if column.text == 'custom_nodes_id'
     ]
+
     assert result
 
 
@@ -141,16 +144,16 @@ def test_custom_nodes_not_in_result(init_env):
         os.path.join(init_env.config['run_path'], "simple/simple.xml"))
     benchmark = xml_file.find('benchmark')
     table = benchmark.find('result').find('table')
+
     for column in table.findall('column'):
         assert column.text != 'custom_nodes_id'
 
 
 def test_add_bench_input():
-    """ docstring """
+    """check _revision prefix are coherent"""
 
     # pylint: disable=unused-variable
 
-    #check _revision prefix are coherent
     benchmarking_api = JubeBenchmarkingAPI("simple", "")
     bench_input = benchmarking_api.jube_files.add_bench_input()
     multisource = benchmarking_api.jube_files.get_bench_multisource()
@@ -161,6 +164,7 @@ def test_add_bench_input():
     bench_config = benchmark.find("parameterset[@name='ubench_config']")
     assert bench_config.findall("parameter[@name='stretch']")
     assert bench_config.findall("parameter[@name='stretch_id']")
+
     # assert len(bench_config.findall("parameter[@name='input']")) > 0
     # assert len(bench_config.findall("parameter[@name='input_id']")) > 0
     simple_code_count = 0
@@ -206,6 +210,7 @@ def test_fetcher_dir_rev(mocker, init_env):
                               side_effect=mocksubpopen)
     mock_credentials = mocker.patch(
         "ubench.core.fetcher.Fetcher.get_credentials")
+
     fetch_bench = fetcher.Fetcher(
         resource_dir=init_env.config['resources_path'],
         benchmark_name='simple')
@@ -229,15 +234,14 @@ def test_fetcher_cmd(mocker, init_env):
     """ docstring """
     # pylint: disable=redefined-outer-name, unused-variable
 
-    scm = {
-        'type': 'svn',
-        'url': 'svn://toto.fr/trunk',
-        'revisions': ['20'],
-        'files': ['file1']
-    }
+    scm = {'type': 'svn',
+           'url': 'svn://toto.fr/trunk',
+           'revisions': ['20'],
+           'files': ['file1']}
+
+    mocker.patch("ubench.core.fetcher.Fetcher.get_credentials")
     mock_popen = mocker.patch("ubench.core.fetcher.Popen")
-    mock_credentials = mocker.patch(
-        "ubench.core.fetcher.Fetcher.get_credentials")
+
     fetch_bench = fetcher.Fetcher(
         resource_dir=init_env.config['resources_path'],
         benchmark_name='simple')
@@ -247,6 +251,7 @@ def test_fetcher_cmd(mocker, init_env):
     fetch_command = "svn export -r {0} {1}/{2} {2} --username {3} --password '' ".format(
         scm['revisions'][0], scm['url'], scm['files'][0], username)
     fetch_command += "--trust-server-cert --non-interactive --no-auth-cache"
+
     mock_popen.assert_called_with(fetch_command,
                                   cwd=os.path.join(
                                       init_env.config['resources_path'],
@@ -259,15 +264,13 @@ def test_fetcher_cmd_no_revision(mocker, init_env):
 
     # pylint: disable=redefined-outer-name, unused-variable
 
-    scm = {
-        'type': 'svn',
-        'url': 'svn://toto.fr/trunk',
-        'revisions': ['20'],
-        'files': ['file1']
-    }
+    scm = {'type': 'svn',
+           'url': 'svn://toto.fr/trunk',
+           'revisions': ['20'],
+           'files': ['file1']}
+    mocker.patch("ubench.core.fetcher.Fetcher.get_credentials")
     mock_popen = mocker.patch("ubench.core.fetcher.Popen")
-    mock_credentials = mocker.patch(
-        "ubench.core.fetcher.Fetcher.get_credentials")
+
     fetch_bench = fetcher.Fetcher(
         resource_dir=init_env.config['resources_path'],
         benchmark_name='simple')
@@ -277,6 +280,7 @@ def test_fetcher_cmd_no_revision(mocker, init_env):
     fetch_command = "svn export {0}/{1} {1} --username {2} --password '' ".format(
         scm['url'], scm['files'][0], username)
     fetch_command += "--trust-server-cert --non-interactive --no-auth-cache"
+
     mock_popen.assert_called_with(fetch_command,
                                   cwd=os.path.join(
                                       init_env.config['resources_path'],
@@ -300,6 +304,7 @@ def test_run_customp(monkeypatch, init_env):
     monkeypatch.setattr(
         "ubench.benchmark_managers.standard_benchmark_manager.StandardBenchmarkManager.run",
         mock_bm_run_bench)
+
     ubench_cmd = ubench_commands.UbenchCmd("", ["simple"])
     ubench_cmd.run(
         {'customp_list':
@@ -359,7 +364,6 @@ def tests_run_wait(init_env):
 #                                  'execute' : False,
 #                                  'w' : [],
 #                                  'test' : True})
-#     # import pdb;pdb.set_trace()
 
 
 #     time.sleep(1)

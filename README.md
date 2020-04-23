@@ -95,8 +95,14 @@ To run benchmarks locally:
 The variables 'UBENCH_RUN_DIR_BENCH' and 'UBENCH_RESOURCE_DIR' will be created automatically and they will point to directories in '/tmp/'.
 To execute unitary tests:
     
+    export PYTHONPATH=.
     pytest
 
+Some tests could take some minutes to see tests output execute:
+
+```buildoutcfg
+pytest -s
+```
 Licence
 -------
 
