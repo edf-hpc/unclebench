@@ -50,16 +50,20 @@ def wlist_to_scheduler_wlist(w_list_arg):
 
     return w_list
 
-def memoize_disk(cache_file):
-    """Memoize to disk with TTL value"""
 
+def memoize_disk(cache_file):
+    """Memoize to disk with TTL value
+    This decorator saves the return value of a method
+    into a disk file. These values will be used for
+    future calls of the method until the values expire"""
 
 
     def decorator(original_func):
-        """Decorator"""
-        # cache format:
-        # date : timestamp
-        # data : hash {}
+        """Decorator
+        Format of the cache file:
+        date: timestamp
+        data: Dict {}
+        """
 
         def new_func(cls, param):
             """ Wrapper function"""
@@ -70,7 +74,9 @@ def memoize_disk(cache_file):
             user_c_file = "{}-{}-{}".format(cache_file,
                                             ubench.config.USER,
                                             params_id)
-
+            # we generate a hash based on parameters passed on the method
+            # like that we assure that a different cachefile will be generated for each call
+            # having different parameters values
             cache_file_hash = hashlib.md5(user_c_file).hexdigest()
 
             cls.cache_files[cache_file_hash] = user_c_file
@@ -85,6 +91,7 @@ def memoize_disk(cache_file):
             if 'date' in cache:
                 if now-cache['date'] < ubench.config.MEM_DISK_TTL:
                     no_cache = False
+
 
             if no_cache:
                 data = {}
@@ -227,7 +234,7 @@ class SlurmInterface(object):
     def get_jobs_state(self, job_ids=[]):#pylint: disable=dangerous-default-value
         """Return a hash with jobs status using a list of jobs ids"""
 
-        # two commands
+        # we get the information using two commands
 
         # $ squeue -h -j -o "%.18i %.8T"
         #    175757  RUNNING

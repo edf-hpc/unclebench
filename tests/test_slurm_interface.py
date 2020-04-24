@@ -23,9 +23,7 @@ from subprocess import Popen
 import os
 import time
 import json
-import pytest
-import mock
-import pytest_mock
+import hashlib
 import ubench.scheduler_interfaces.slurm_interface as slurm_i
 from ubench.scheduler_interfaces.slurm_interface import wlist_to_scheduler_wlist
 import ubench.config
@@ -84,34 +82,35 @@ def test_job_status(mocker):
     # time.sleep(10)
 
 def test_job_status_cache(pytestconfig, mocker):
-    """ docstring """
+    """ we test memoize_disk decorator"""
 
     mock_popen = mocker.patch("ubench.scheduler_interfaces.slurm_interface.Popen",
                               side_effect=mockpopen)
 
-    interface = slurm_i.SlurmInterface()
-    jobs_info = interface.get_jobs_state(['222'])
-    exp_cmd = 'sacct -n --jobs=111.0,222.0 --format=JobId,State'
-    repository_root = os.path.join(pytestconfig.rootdir.dirname,
-                                   pytestconfig.rootdir.basename)
+    # cache files have a postfix based on the arguments used in the method's call
+    md5_id = hashlib.md5(''.join(['222'])).hexdigest()
+    cache_file = '/tmp/ubench_cache-{}-{}'.format(ubench.config.USER, md5_id)
+    # the cache file exist if the test has failed before so we clean
+    if os.path.isfile(cache_file):
+        os.remove(cache_file)
 
-    # we used cached values no commmand is called
+    # we create a fake cache file:
+    expected_results = {"175757": "RUNNING", "26382": "COMPLETED", "26938": "COMPLETED"}
+    cache_contets = {'date': time.time(), 'data': expected_results}
+    json.dump(cache_contets, open(cache_file, 'w'))
+
+    interface = slurm_i.SlurmInterface()
+
+    # we used cached values no slurm command is executed
+    jobs_info = interface.get_jobs_state(['222'])
+
     assert not mock_popen.called
-    # we load cached results
-    assert jobs_info == {'175757' : 'RUNNING', '26382': 'COMPLETED', '26938': 'COMPLETED'}
-    # we assert if cache file has been created
-    cache_file = '/tmp/ubench_cache-{}'.format(ubench.config.USER)
-    assert os.path.isfile(cache_file)
-    # # we invalidate cache
+    assert jobs_info == expected_results
+
+    # we invalidate cache
     cache = {'date': time.time()-1000}
     json.dump(cache, open(cache_file, 'w'))
     jobs_info = interface.get_jobs_state(['111', '222'])
-    exp_cmd = 'sacct -n --jobs=111.0,222.0 --format=JobId,State'
-    repository_root = os.path.join(pytestconfig.rootdir.dirname,
-                                   pytestconfig.rootdir.basename)
-    # we dont use cache
-    mock_popen.assert_called_with(exp_cmd, cwd=repository_root,
-                                  shell=True, stdout=-1, universal_newlines=True)
-
-    assert interface.get_jobs_state(['111', '222']) == {'175757' : 'RUNNING', '26382': 'COMPLETED', '26938': 'COMPLETED'}
-    delete_cache_file()
+    # slurm command has been executed
+    assert mock_popen.called
+    
