@@ -57,6 +57,8 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
         """ Class constructor """
 
         # settings_source will store the origin of each setting.
+        # this variable can later be used to search for any item
+        # in unclebench configuration.
         self.settings_source = dict()
 
         self.var = [('INSTALL_DIR', 'UBENCH_PLUGIN_DIR'), ('INSTALL_DIR', 'UBENCH_PLATFORM_DIR'),
@@ -309,7 +311,18 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
         if os.environ.get('UBENCH_RESOURCE_DIR') is None:
             os.environ['UBENCH_RESOURCE_DIR'] = self.settings_source['UBENCH_RESOURCE_DIR']['val']
 
-    def print_config(self, pad=30):  # pylint: disable=unused-argument
+    def clear_info(self):
+        """ Variables listed here will not appear in ubench `info command` """
+
+        clear_list = [
+                      'UBENCH_PUBLISH_PROTOCOL',
+                      'UBENCH_PUBLISH_SERVER',
+                      'UBENCH_PUBLISH_PATH',
+                     ]
+        for var in clear_list:
+            self.settings_source[var]['clear'] = True
+
+    def print_config(self, verbose=False, pad=30):  # pylint: disable=unused-argument
         """ Prints origin and value of variables.
 
         Procedure used to display the origin of the settings loaded
@@ -329,11 +342,19 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
         print('\n {:<{pad_var}} {:<{pad_origin}} {}'.
               format('Variable', 'Origin', 'Value', pad_var=pad_var, pad_origin=pad_origin))
         print('─'*line_length)
-        for i in self.settings_source:
-            print(' {:<{pad_var}} {:<{pad_origin}} {}'.
-                  format(i, self.settings_source[i]['origin'],
-                         self.settings_source[i]['val'],
-                         pad_var=pad_var, pad_origin=pad_origin))
+
+        sorted_keys = self.settings_source.keys()
+        sorted_keys.sort()
+
+        if verbose == False:
+            self.clear_info()
+
+        for i in sorted_keys:
+            if 'clear' not in self.settings_source[i]:
+                print(' {:<{pad_var}} {:<{pad_origin}} {}'.
+                      format(i, self.settings_source[i]['origin'],
+                             self.settings_source[i]['val'],
+                             pad_var=pad_var, pad_origin=pad_origin))
         print('─'*line_length)
         print('')
 
