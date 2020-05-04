@@ -173,3 +173,18 @@ def mkdir(dir_name, abs_path=None, err_msg=None, ok_msg=None):
         result = True
 
     return result
+
+def read_attr(file_name, attr):
+    ''' Returns attribute value from yaml file
+
+    Args:
+        file_name - yaml file absolute path
+        attr - name of attribute to fetch
+    Returns:
+        string - value of attribute
+    Example:
+        read_attr(some_file, 'Name') -> 'John'
+    '''
+    with open(file_name, 'r') as f:
+        data = yaml.safe_load(f)
+    return data[attr]
