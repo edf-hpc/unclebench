@@ -20,7 +20,6 @@
 """ Provides useful methods"""
 
 from subprocess import Popen, PIPE
-import time
 
 def run_cmd(cmd_string, cwd, env=None):
     """Wrapper for Popen with communicate method"""
