@@ -53,8 +53,10 @@ class CampaignManager(object):
         self.campaign_dir = os.path.join(UbenchConfig().run_dir,
                                          "campaign-{}-{}".format(self.campaign['name'],
                                                                  date_campaign))
-
         self.campaign_freq = campaign_freq
+        self.pub_vcs = UbenchConfig().pub_vcs
+        self.pub_local_dir = UbenchConfig().results_dir
+        self.pub_repo_str = UbenchConfig().pub_repo
 
 
     def campaign_parser(self, campaign_file):
@@ -109,7 +111,8 @@ class CampaignManager(object):
 
         platform = self.campaign['platform']
 
-        publisher = Publisher()
+        publisher = Publisher(repo_str=self.pub_repo_str, local_dir=self.pub_local_dir,
+                              vcs=self.pub_vcs)
         bench_files = publisher.get_files_from_ref(self.ref_results)
 
         for b_name, _ in c_benchmarks:

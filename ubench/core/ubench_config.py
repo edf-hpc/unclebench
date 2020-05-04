@@ -63,17 +63,18 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
                     ('INSTALL_DIR', 'UBENCH_BENCHMARK_DIR'), ('INSTALL_DIR', 'UBENCH_CONF_DIR'),
                     ('INSTALL_DIR', 'UBENCH_CSS_PATH'), ('INSTALL_DIR', 'UBENCH_TEMPLATES_PATH'),
                     ('WORK_DIR', 'UBENCH_RUN_DIR_BENCH'), ('WORK_DIR', 'UBENCH_RESOURCE_DIR'),
-                    ('WORK_DIR', 'UBENCH_REPORT_DIR'), ('WORK_DIR', 'UBENCH_RESULTS_DIR')]
+                    ('WORK_DIR', 'UBENCH_REPORT_DIR'), ('WORK_DIR', 'UBENCH_RESULTS_DIR'),
+                    ('PUBLISH', 'UBENCH_PUBLISH_VCS'), ('PUBLISH', 'UBENCH_PUBLISH_REPOSITORY'),
+                    ('PUBLISH', 'UBENCH_PUBLISH_PROTOCOL'), ('PUBLISH', 'UBENCH_PUBLISH_SERVER'),
+                    ('PUBLISH', 'UBENCH_PUBLISH_PATH')]
 
         # the order of the following 4 calls define implicitly the settings priority.
         # environment defined settings will have highest priority.
-        self.results_dir = None
         self.init_default('package')
         self.init_config_sys('system config')
         self.init_config_local('local config')
         self.init_environ('environment')
         self.set_environment_vars()
-        self.results_dir
 
     def init_environ(self, origin):
         """ Initializes path variables with values found in ENVIRONMENT variables """
@@ -117,14 +118,32 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
             self.report_dir = os.environ.get('UBENCH_REPORT_DIR')
             self.settings_source['UBENCH_REPORT_DIR'] = {'origin' : origin,
                                                          'val' : self.report_dir}
-
         if os.environ.get('UBENCH_RESULTS_DIR') is not None:
             self.results_dir = os.environ.get('UBENCH_RESULTS_DIR')
             self.settings_source['UBENCH_RESULTS_DIR'] = {'origin' : origin,
                                                           'val' : self.results_dir}
 
-
-
+        # Repository configuration
+        if os.environ.get('UBENCH_PUBLISH_VCS') is not None:
+            self.pub_vcs = os.environ.get('UBENCH_PUBLISH_VCS')
+            self.settings_source['UBENCH_PUBLISH_VCS'] = {'origin' : origin,
+                                                          'val' : self.pub_vcs}
+        if os.environ.get('UBENCH_PUBLISH_REPOSITORY') is not None:
+            self.pub_repo = os.environ.get('UBENCH_PUBLISH_REPOSITORY')
+            self.settings_source['UBENCH_PUBLISH_REPOSITORY'] = {'origin' : origin,
+                                                                 'val' : self.pub_repo}
+        if os.environ.get('UBENCH_PUBLISH_PROTOCOL') is not None:
+            self.pub_protocol = os.environ.get('UBENCH_PUBLISH_PROTOCOL')
+            self.settings_source['UBENCH_PUBLISH_PROTOCOL'] = {'origin' : origin,
+                                                               'val' : self.pub_protocol}
+        if os.environ.get('UBENCH_PUBLISH_SERVER') is not None:
+            self.pub_server = os.environ.get('UBENCH_PUBLISH_SERVER')
+            self.settings_source['UBENCH_PUBLISH_SERVER'] = {'origin' : origin,
+                                                             'val' : self.pub_server}
+        if os.environ.get('UBENCH_PUBLISH_PATH') is not None:
+            self.pub_path = os.environ.get('UBENCH_PUBLISH_PATH')
+            self.settings_source['UBENCH_PUBLISH_PATH'] = {'origin' : origin,
+                                                           'val' : self.pub_path}
 
 
     def init_config_local(self, origin):
@@ -158,7 +177,6 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
         self.benchmark_dir = '/usr/share/unclebench/benchmarks'
         self.settings_source['UBENCH_BENCHMARK_DIR'] = {'origin' : origin,
                                                         'val' : self.benchmark_dir}
-
         self.conf_dir = '/etc/unclebench'
         self.settings_source['UBENCH_CONF_DIR'] = {'origin' : origin,
                                                    'val' : self.conf_dir}
@@ -187,6 +205,12 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
         self.settings_source['UBENCH_REPORT_DIR'] = {'origin' : origin,
                                                      'val' : self.report_dir}
 
+        if os.environ.get('SCRATCHDIR') is None:
+            self.results_dir = pwd.getpwuid(os.getuid()).pw_dir + '/ubench/results'
+        else:
+            self.results_dir = os.environ.get('SCRATCHDIR') + '/ubench/results'
+        self.settings_source['UBENCH_RESULTS_DIR'] = {'origin' : origin,
+                                                       'val' : self.results_dir}
 
     def load_config(self, config_parser, origin):
         """ Loads values from ubench.conf.
@@ -241,6 +265,32 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
             self.report_dir = config_parser.get(section, 'UBENCH_REPORT_DIR')
             self.settings_source['UBENCH_REPORT_DIR'] = {'origin' : origin,
                                                          'val' : self.report_dir}
+        if config_parser.has_option(section, 'UBENCH_RESULTS_DIR'):
+            self.results_dir = config_parser.get(section, 'UBENCH_RESULTS_DIR')
+            self.settings_source['UBENCH_RESULTS_DIR'] = {'origin' : origin,
+                                                         'val' : self.results_dir}
+
+        section = 'PUBLISH'
+        if config_parser.has_option(section, 'UBENCH_PUBLISH_VCS'):
+            self.pub_vcs = config_parser.get(section, 'UBENCH_PUBLISH_VCS')
+            self.settings_source['UBENCH_PUBLISH_VCS'] = {'origin' : origin,
+                                                          'val' : self.pub_vcs}
+        if config_parser.has_option(section, 'UBENCH_PUBLISH_REPOSITORY'):
+            self.pub_repo = config_parser.get(section, 'UBENCH_PUBLISH_REPOSITORY')
+            self.settings_source['UBENCH_PUBLISH_REPOSITORY'] = {'origin' : origin,
+                                                           'val' : self.pub_repo}
+        if config_parser.has_option(section, 'UBENCH_PUBLISH_PROTOCOL'):
+            self.pub_protocol = config_parser.get(section, 'UBENCH_PUBLISH_PROTOCOL')
+            self.settings_source['UBENCH_PUBLISH_PROTOCOL'] = {'origin' : origin,
+                                                               'val' : self.pub_protocol}
+        if config_parser.has_option(section, 'UBENCH_PUBLISH_SERVER'):
+            self.pub_server = config_parser.get(section, 'UBENCH_PUBLISH_SERVER')
+            self.settings_source['UBENCH_PUBLISH_SERVER'] = {'origin' : origin,
+                                                             'val' : self.pub_server}
+        if config_parser.has_option(section, 'UBENCH_PUBLISH_PATH'):
+            self.pub_path = config_parser.get(section, 'UBENCH_PUBLISH_PATH')
+            self.settings_source['UBENCH_PUBLISH_PATH'] = {'origin' : origin,
+                                                           'val' : self.pub_path}
 
     def set_environment_vars(self):
         """ Sets proper environment variables.
@@ -349,7 +399,3 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
                 filtered_bench_list.append(bench_dir.lower())
 
         return filtered_bench_list
-
-    @property
-    def repo_dir(self):
-        return self.results_dir
