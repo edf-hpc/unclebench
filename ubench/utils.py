@@ -129,3 +129,45 @@ def trim_head(path_string, count=1):
         trim_head('/home/of/et/the/alien', 2) -> 'et/the/alien'
     '''
     return os.sep.join(path_string.split(os.sep)[count+1:])
+
+def mkdir(dir_name, abs_path=None, err_msg=None, ok_msg=None):
+    ''' Creates directory
+
+    If an absolute path is given, mkdir will append the directory `dir_name`
+    at the end of this path. Otherwise, `dir_name` is assumed to be an
+    absolute path.
+
+    `dir_name` can be a directory tree.
+
+    Args:
+        dir_name - name of the directory (or tree) to be created.
+        abs_path - location where to create the directory (or tree).
+    Returns:
+        boolean - status of operation
+    Example:
+        mkdir('/home/a') -> Will create the directory /home/a
+        mkdir('b/c', '/home') -> Will create the directory /home/b/c
+    '''
+    def print_msg(msg):
+        if abs_path is None:
+            path = dir_name
+        else:
+            path = os.path.join(abs_path, dir_name)
+        print(msg + ' : {}'.format(path))
+        
+    try:
+        if abs_path:
+            os.chdir(abs_path)
+        os.makedirs(dir_name)
+    except OSError:
+        print_msg('Unable to create directory')
+        if err_msg is not None:
+            print err_msg
+        exit(1)
+    else:
+        print_msg('Directory created')
+        if ok_msg is not None:
+            print ok_msg
+        result = True
+
+    return result
