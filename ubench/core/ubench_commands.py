@@ -36,7 +36,9 @@ import ubench.data_management.report as report
 
 from ubench.scheduler_interfaces.slurm_interface import wlist_to_scheduler_wlist
 
+from ubench import utils
 
+from ubench.data_management.publisher import Campaign, Benchmark, Publisher
 
 
 class UbenchCmd(object):
@@ -65,6 +67,13 @@ class UbenchCmd(object):
         self.benchmark_list = benchmark_list
         self.bm_set = bms.BenchmarkManagerSet(benchmark_list, platform)
 
+        # Attributs for Publisher class
+        # vcs - which vcs should be used
+        # repo_str - string to access remote repository
+        # pub_dir - directory where local copy of remote repository is found
+        self.pub_vcs = UbenchConfig().pub_vcs
+        self.pub_repo_str = UbenchConfig().pub_repo
+        self.pub_dir = UbenchConfig().results_dir
 
     def log(self, id_list): # pylint: disable=dangerous-default-value
         """ Provides information about benchmark execution
@@ -243,4 +252,33 @@ class UbenchCmd(object):
         Popen(asciidoctor_cmd, cwd=os.getcwd(), shell=True, universal_newlines=True)
 
 
-    # pylint: disable=undefined-loop-variable,too-many-locals
+    def publish(self, options):
+        ''' Guide method to Publish class functionality 
+    
+        This method will read the variables needed to execute
+        each command and then execute it.
+
+        '''
+        if options['command'] == 'campaign':
+            campaign = Campaign(local_dir=self.pub_dir, publish_dir=options['dest_dir'],
+                                campaign_dir=options['campaign_dir'], run_dir=self.run_dir)
+            campaign.publish(options['commit_msg'])
+
+        if options['command'] == 'benchmark':
+            benchmark = Benchmark(local_dir=self.pub_dir, publish_dir=options['dest_dir'],
+                                  benchmark=options['benchmark'], platform=options['platform'],
+                                  run_dir=self.run_dir)
+            benchmark.publish(options['commit_msg'])
+
+        if options['command'] == 'download':
+            if os.path.isdir(self.pub_dir):
+                print('Error: {} already exists. Please remove it or setup UBENCH_RESULTS_DIR'
+                      ' to point to another directory.'.format(self.pub_dir))
+            #import pdb ; pdb.set_trace()
+            repository = Publisher(repo_str=self.pub_repo_str, local_dir=self.pub_dir,
+                                   vcs=self.pub_vcs)
+            repository.download()
+
+        if options['command'] == 'update-remote':
+            repository = Publisher(vcs=self.pub_vcs, local_dir=self.pub_dir)
+            repository.update_remote()

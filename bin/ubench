@@ -21,7 +21,6 @@
 # pylint: disable=invalid-name
 """ Unclebench main script """
 
-
 import os
 import sys
 import argparse
@@ -31,7 +30,6 @@ import ubench.core.ubench_commands as ubench_commands  # pylint: disable=no-name
 import ubench.core.ubench_config as uconfig  # pylint: disable=no-name-in-module
 from ubench.release import __version__  # pylint: disable=no-name-in-module
 
-
 os.environ['JUBE_EXEC_SHELL'] = '/bin/bash'
 uconf = uconfig.UbenchConfig()  # Set default paths for all directories
 platform_list = uconf.get_platform_list()
@@ -40,7 +38,10 @@ default_platform = None
 platform_required = True
 
 for platform_name in platform_list:
+    # This if statement will never be true unless ubench
+    # is executed from node called gacn, eogn, etc.
     if platform_name in socket.gethostname().lower():
+        print "I've run!!"
         default_platform = platform_name
         platform_required = False
 
@@ -275,11 +276,73 @@ parser_compare.add_argument('-t',
                             default=None,
                             help='Differences under given threshold will not be printed')
 
+# Parser publish
+
+publish_help = ('Manages relation with the public repository. It can download the repository'
+                ', add or remove files, commit changes and push back to public.')
+parser_publish = subparsers.add_parser('publish', help=publish_help)
+publish_subparser = parser_publish.add_subparsers(help='Choose whether to publish a campaign or'
+                                                  'a single benchmark.', dest='command')
+publish_campaign = publish_subparser.add_parser('campaign')
+publish_campaign.add_argument('-c',
+                              required=True,
+                              dest='campaign_dir',
+                              metavar='<directory>',
+                              help='Name of the directory of the campaign to publish. This'
+                                   ' directory should be entered as it appears under the' 
+                                   ' benchmark run directory given by UBENCH_RUN_DIR_BENCH.')
+publish_campaign.add_argument('-d',
+                              dest='dest_dir',
+                              metavar='<directory>',
+                              required=True,
+                              help='Directory where to store the campaign result files.'
+                                   ' This directory will be created under the `results`'
+                                   ' directory located in the local benchmark repository.')
+publish_campaign.add_argument('-m',
+                              dest='commit_msg',
+                              metavar='<commit_msg>',
+                              required=True,
+                              help='Commit message.')
+publish_benchmark = publish_subparser.add_parser('benchmark')
+publish_benchmark.add_argument('-b',
+                               help='Name of the benchmark from which results are compared',
+                               dest='benchmark',
+                               required=True,
+                               choices=benchmark_list)
+publish_benchmark.add_argument('-p',
+                               help='Name of the test platform. This parameter ss used to'
+                                    ' search the benchmark and also to pubish it under a'
+                                    ' directory with its name',
+                               dest='platform',
+                               choices=platform_list,
+                               required=True,
+                               default=default_platform)
+publish_benchmark.add_argument('-d',
+                               dest='dest_dir',
+                               metavar='<directory>',
+                               help='Directory where to store the benchmark results file.'
+                                    ' This directory will be created under the `results`'
+                                    ' directory located in the local benchmark repository.',
+                               required=True)
+publish_benchmark.add_argument('-i',
+                               dest='run_id',
+                               metavar='<integer>',
+                               help='Benchmark run id. If not given, the last benchmark'
+                                    ' will be published, ie, the one with greater run id')
+publish_benchmark.add_argument('-m',
+                              dest='commit_msg',
+                              metavar='<commit_msg>',
+                              required=True,
+                              help='Commit message.')
+publish_clone = publish_subparser.add_parser('download')
+publish_push = publish_subparser.add_parser('update-remote')
+
 # Parser info
-parser_info = subparsers.add_parser('info',
-                                    help='Displays path settings origin.')
+parser_info = subparsers.add_parser('info', help='Displays path settings origin.')
+parser_info.add_argument('-v', '--verbose', action='store_true', help=argparse.SUPPRESS)
 
 args = parser.parse_args()
+
 
 platform_arg = ''
 benchmark_arg = ''
@@ -312,4 +375,6 @@ elif args.subparser_name == 'compare':
     commands.compare(args.input_dirs, args.benchmark_name,
                      (args.context, args.compared_context), args.threshold)
 elif args.subparser_name == 'info':
-    uconf.print_config()
+    uconf.print_config(args.verbose)
+elif args.subparser_name == 'publish':
+    commands.publish(vars(args))
