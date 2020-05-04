@@ -17,12 +17,12 @@
 #  along with UncleBench. If not, see <http://www.gnu.org/licenses/>.        #
 #                                                                            #
 ##############################################################################
-""" Provides useful methods"""
+''' Provides useful methods '''
 
 from subprocess import Popen, PIPE
 
 def run_cmd(cmd_string, cwd, env=None):
-    """Wrapper for Popen with communicate method"""
+    ''' Wrapper for Popen with communicate method '''
     cmd = Popen(cmd_string,
                 cwd=cwd,
                 shell=True,
@@ -40,7 +40,7 @@ def run_cmd(cmd_string, cwd, env=None):
     return ret_code, stdout_stream, stderr_stream
 
 def run_cmd_bg(cmd_string, cwd, env=None):
-    """Wrapper for Popen no blocking"""
+    ''' Wrapper for Popen no blocking '''
     cmd = Popen(cmd_string,
                 cwd=cwd,
                 shell=True,
