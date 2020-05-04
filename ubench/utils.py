@@ -101,3 +101,31 @@ def clean_list(dir_list):
         clean_list(['000111', 'aaabcd'] -> ['000111']
     '''
     return [x for x in dir_list if re.match(r'[0-9]{6}$', x) is not None]
+
+def trim_tail(path_string, count=1):
+    ''' Returns path after having trimmed `count` directories in the end
+
+    Args:
+        path_string
+        count - number of directories to remove
+    Returns:
+        string
+    Example:
+        trim_tail('/home/of/et', 2) -> '/home'
+    '''
+    for i in range(count):
+        path_string = os.path.split(path_string)[0]
+    return path_string
+
+def trim_head(path_string, count=1):
+    ''' Returns path after having trimmed initial `count` directories
+
+    Args:
+        path_string
+        count - number of directories to remove
+    Returns:
+        string
+    Example:
+        trim_head('/home/of/et/the/alien', 2) -> 'et/the/alien'
+    '''
+    return os.sep.join(path_string.split(os.sep)[count+1:])
