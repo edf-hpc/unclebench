@@ -19,6 +19,8 @@
 ##############################################################################
 ''' Provides useful methods '''
 
+import os
+import re
 from subprocess import Popen, PIPE
 
 def run_cmd(cmd_string, cwd, env=None):
