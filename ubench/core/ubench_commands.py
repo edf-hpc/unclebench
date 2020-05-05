@@ -22,7 +22,6 @@
 
 
 import os
-import re
 from subprocess import Popen
 import yaml
 
@@ -33,11 +32,7 @@ import ubench.benchmarking_tools_interfaces.jube_xml_parser as jube_xml_parser
 import ubench.core.fetcher as fetcher
 import ubench.data_management.comparison_writer as comparison_writer
 import ubench.data_management.report as report
-
 from ubench.scheduler_interfaces.slurm_interface import wlist_to_scheduler_wlist
-
-from ubench import utils
-
 from ubench.data_management.publisher import Campaign, Benchmark, Publisher
 
 
