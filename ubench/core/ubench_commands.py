@@ -165,6 +165,7 @@ class UbenchCmd(object):
         return True
 
     def campaign(self, campaign_file, result_ref=None):
+        ''' Executes campaign '''
         campaign = CampaignManager(campaign_file, result_ref)
         campaign.init_campaign()
         campaign.run()
