@@ -249,8 +249,8 @@ class UbenchCmd(object):
 
 
     def publish(self, options):
-        ''' Guide method to Publish class functionality 
-    
+        ''' Guide method to Publish class functionality
+
         This method will read the variables needed to execute
         each command and then execute it.
 
