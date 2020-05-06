@@ -170,6 +170,11 @@ class UbenchCmd(object):
         campaign = CampaignManager(campaign_file, result_ref)
         campaign.init_campaign()
         campaign.run()
+        import pdb ; pdb.set_trace()
+        if publish_dir is not None:
+            campaign = Campaign(local_dir=self.pub_dir, publish_dir=publish_dir,
+                                campaign_dir=campaign.campaign_dir, run_dir=self.run_dir)
+            campaign.publish(commit_msg)
 
     def fetch(self):
         """ Fetches benchmarks sources """
