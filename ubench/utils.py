@@ -156,7 +156,7 @@ def mkdir(dir_name, abs_path=None, err_msg=None, ok_msg=None):
         else:
             path = os.path.join(abs_path, dir_name)
         print(msg + ' : {}'.format(path))
-        
+
     try:
         if abs_path:
             os.chdir(abs_path)
@@ -188,3 +188,7 @@ def read_attr(file_name, attr):
     with open(file_name, 'r') as f:
         data = yaml.safe_load(f)
     return data[attr]
+
+global_msg = {
+    'err_dir_exists' : 'Please check if directory already exists and remove it before trying again'
+}
