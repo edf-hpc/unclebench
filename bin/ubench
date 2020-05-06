@@ -87,7 +87,6 @@ parser_run.add_argument('-p',
                         required=platform_required,
                         choices=platform_list,
                         default=default_platform)
-
 parser_run.add_argument('-b',
                         help=('Benchmarks to run.'
                               ' Benchmark definition files should be located in'
@@ -97,7 +96,6 @@ parser_run.add_argument('-b',
                         nargs='+',
                         required=True,
                         choices=benchmark_list)
-
 parser_run.add_argument('-w',
                         help=('Nodes on which to run benchmarks'
                               ' ex: -w 4,pocn[380,431-433]. You can also launch job'
@@ -105,56 +103,60 @@ parser_run.add_argument('-w',
                               ' ex: -w all4 to run a benchmark with 4 nodes jobs covering'
                               ' every idle node'),
                         nargs='+')
-
 parser_run.add_argument('-c',
                         '--custom-params',
                         help=('Set custom parameters. ex : --custom-params mpiv:0.'
                               ' Use ubench listparams to know which parameters are customizable'),
                         nargs='+',
                         default=[])
-
 parser_run.add_argument('-f',
                         '--file-params',
                         help='File to set custom parameters')
-
 parser_run.add_argument('-e',
                         '--execute',
                         help='Peforms only the execution step of a benchmark',
                         default=False,
                         action='store_true')
-
 parser_run.add_argument('--foreground',
                         help='Peforms only the execution step of a benchmark',
                         default=False,
                         action='store_true')
 
 
-## campaign command
-# ubench campaign -f
+# Parser for campaign
 parser_campaign = subparsers.add_parser('campaign', help=('Run benchmark campaigns'))
 parser_campaign.add_argument('-f',
                              '--campaign_file',
                              help='File which describes benchmark campaign',
                              required=True)
-
 parser_campaign.add_argument('-r',
-                        '--reference',
-                        help=('Result referecence: '
-                              'either a Git tag or Git commit hash'))
+                             '--reference',
+                             help=('Result referecence: '
+                                   'either a Git tag or Git commit hash'))
+parser_campaign.add_argument('-pub', '--publish',
+                              dest='dest_dir',
+                              metavar='<directory>',
+                              required=False,
+                              help='Directory where to store the campaign result files.'
+                                   ' This directory will be created under the `results`'
+                                   ' directory located in the local benchmark repository.')
+parser_campaign.add_argument('-msg', '--message',
+                              dest='commit_msg',
+                              metavar='<commit_msg>',
+                              required=False,
+                              help='Commit message. This argument is required if the campaign'
+                                   ' is to be published.')
 
-
-# Parser list
+# Parser for list
 list_help = 'List existing runs information for a given benchmark.'
 
 parser_list = subparsers.add_parser('list',
                                     help=list_help)
-
 parser_list.add_argument('-p',
                          help='Name of the test platform',
                          required=platform_required,
                          choices=platform_list,
                          default=default_platform)
-
 parser_list.add_argument('-b',
                          help='Benchmark names list',
                          required=True,
@@ -164,19 +166,16 @@ parser_list.add_argument('-b',
 # Parser log
 parser_log = subparsers.add_parser('log',
                                    help='Print log of a benchmark run given its ID.')
-
 parser_log.add_argument('-p',
                         help='Name of the test platform',
                         required=platform_required,
                         choices=platform_list,
                         default=default_platform)
-
 parser_log.add_argument('-b',
                         help='Benchmark names list',
                         required=True,
                         nargs='+',
                         choices=benchmark_list)
-
 parser_log.add_argument('-i',
                         help='Benchmark run IDs',
                         nargs='+')
@@ -190,13 +189,11 @@ parser_listparams.add_argument('-p',
                                required=platform_required,
                                choices=platform_list,
                                default=default_platform)
-
 parser_listparams.add_argument('-b',
                                help='Benchmark names list',
                                required=True,
                                nargs='+',
                                choices=benchmark_list)
-
 parser_listparams.add_argument('-d',
                                help='Print default parameters values',
                                default=False,
@@ -215,13 +212,11 @@ parser_result.add_argument('-p',
                            required=platform_required,
                            choices=platform_list,
                            default=default_platform)
-
 parser_result.add_argument('-b',
                            help='Benchmark names list',
                            required=True,
                            nargs='+',
                            choices=benchmark_list)
-
 parser_result.add_argument('-i',
                            help='Benchmark run IDs',
                            nargs='+')
@@ -236,7 +231,6 @@ parser_report.add_argument('-m',
                            '--metadata-file',
                            help='Metadata file containing everything needed to build the report',
                            required=True)
-
 parser_report.add_argument('-o',
                            '--output-dir',
                            help='Write report files in OUTPUT_DIR',
@@ -251,12 +245,10 @@ parser_compare.add_argument('-i',
                             nargs='+',
                             help='Directories where results are to compared',
                             required=True)
-
 parser_compare.add_argument('-b',
                             '--benchmark-name',
                             help='Name of the benchmark from which results are compared',
                             required=True)
-
 parser_compare.add_argument('-c',
                             '--context',
                             default=None,
@@ -264,25 +256,23 @@ parser_compare.add_argument('-c',
                                   ' be compared but merged in the result table'),
                             required=False,
                             nargs='+')
-
 parser_compare.add_argument('-cc',
                             '--compared-context',
                             default=None,
                             help='Field to use as context and whose value should be compared',
                             required=False)
-
 parser_compare.add_argument('-t',
                             '--threshold',
                             default=None,
                             help='Differences under given threshold will not be printed')
 
 # Parser publish
-
 publish_help = ('Manages relation with the public repository. It can download the repository'
                 ', add or remove files, commit changes and push back to public.')
 parser_publish = subparsers.add_parser('publish', help=publish_help)
 publish_subparser = parser_publish.add_subparsers(help='Choose whether to publish a campaign or'
                                                   'a single benchmark.', dest='command')
+
 publish_campaign = publish_subparser.add_parser('campaign')
 publish_campaign.add_argument('-c',
                               required=True,
@@ -303,6 +293,7 @@ publish_campaign.add_argument('-m',
                               metavar='<commit_msg>',
                               required=True,
                               help='Commit message.')
+
 publish_benchmark = publish_subparser.add_parser('benchmark')
 publish_benchmark.add_argument('-b',
                                help='Name of the benchmark from which results are compared',
@@ -334,6 +325,7 @@ publish_benchmark.add_argument('-m',
                               metavar='<commit_msg>',
                               required=True,
                               help='Commit message.')
+
 publish_clone = publish_subparser.add_parser('download')
 publish_push = publish_subparser.add_parser('update-remote')
 
@@ -342,7 +334,6 @@ parser_info = subparsers.add_parser('info', help='Displays path settings origin.
 parser_info.add_argument('-v', '--verbose', action='store_true', help=argparse.SUPPRESS)
 
 args = parser.parse_args()
-
 
 platform_arg = ''
 benchmark_arg = ''
@@ -358,7 +349,11 @@ if args.subparser_name == 'run':
     options_dictionary['raw_cli'] = sys.argv
     sys.exit(not commands.run(options_dictionary))
 elif args.subparser_name == 'campaign':
-    commands.campaign(args.campaign_file, args.reference)
+    if args.dest_dir is not None and args.commit_msg is None:
+        print('ubench : must provide commit message when publishing results, exiting')
+        exit(1)
+    commands.campaign(args.campaign_file, args.reference,
+                      args.dest_dir, args.commit_msg)
 elif args.subparser_name == 'fetch':
     commands.fetch()
 elif args.subparser_name == 'result':
