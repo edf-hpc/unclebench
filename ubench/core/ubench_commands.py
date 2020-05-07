@@ -43,6 +43,15 @@ class UbenchCmd(object):
     line is defined in this class.
 
     Attributes:
+        run_dir
+        platform
+        benchmark_list
+        bm_set
+        pub_vcs : which vcs to use
+        pub_repo_str : string used to clone repository
+        pub_dir : local repository directory
+
+    Methods:
         log
         list_parameters
         result
@@ -50,6 +59,8 @@ class UbenchCmd(object):
         fetch
         compare
         report
+        campaign
+        publish
     """
 
     def __init__(self, platform, benchmark_list=None):
@@ -63,9 +74,6 @@ class UbenchCmd(object):
         self.bm_set = bms.BenchmarkManagerSet(benchmark_list, platform)
 
         # Attributs for Publisher class
-        # vcs - which vcs should be used
-        # repo_str - string to access remote repository
-        # pub_dir - directory where local copy of remote repository is found
         self.pub_vcs = UbenchConfig().pub_vcs
         self.pub_repo_str = UbenchConfig().pub_repo
         self.pub_dir = UbenchConfig().results_dir
@@ -170,11 +178,10 @@ class UbenchCmd(object):
         campaign = CampaignManager(campaign_file, result_ref)
         campaign.init_campaign()
         campaign.run()
-        import pdb ; pdb.set_trace()
         if publish_dir is not None:
-            campaign = Campaign(local_dir=self.pub_dir, publish_dir=publish_dir,
-                                campaign_dir=campaign.campaign_dir, run_dir=self.run_dir)
-            campaign.publish(commit_msg)
+            c = Campaign(local_dir=self.pub_dir, publish_dir=publish_dir,
+                         campaign_dir=campaign.campaign_dir, run_dir=self.run_dir)
+            c.publish(commit_msg)
 
     def fetch(self):
         """ Fetches benchmarks sources """
@@ -212,17 +219,46 @@ class UbenchCmd(object):
                 elif source['protocol'] == 'local':
                     fetch_bench.local(source['files'], source['do_cmds'])
 
+    def _return_dirs(self, ref):
+        ''' Returns directory from commit hash
+
+        This function receives a reference as argument
+        which can be a directory or a commit hash.
+
+        If this function is called with a directory as its
+        argument it will return the same thing it received.
+        That is, nothing to be done. On the other hand if
+        it was called with a commit hash, it will return
+        the list of directories regarding that commit.
+
+        Args:
+            ref (string) can be a directory or a commit hash
+        Returns:
+            directory or list of directories related to commit hash
+        '''
+        if os.path.isdir(ref):
+            directory_ref = ref
+        else:
+            publisher = Publisher(repo_str=self.pub_repo_str,
+                                  local_dir=self.pub_dir, vcs=self.pub_vcs)
+            bench_files = publisher.get_files_from_ref(ref)
+            directory_ref = os.path.dirname(bench_files.values()[0])
+
+        return directory_ref
 
     # pylint: disable=no-self-use
     def compare(self, input_directories, benchmark_name, context=(None, None),
                 threshold=None):
-        """ Compare bencharks results from different directories.
+        """ Compare benchmark results from different directories.
 
         Args:
             input_directories:
             benchmark_name:
             context:
         """
+        # pylint: disable=bad-whitespace
+        input_directories = [ self._return_dirs(ref) for ref in input_directories ]
+
         cwriter = comparison_writer.ComparisonWriter(threshold)
         print("    comparing :")
         for rdir in input_directories:
