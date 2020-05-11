@@ -19,12 +19,15 @@
 ##############################################################################
 ''' Implements Publisher class '''
 
+from __future__ import print_function
+
+# Enables having file names with a single letter and using members from sub-classes
+# pylint: disable=invalid-name, no-member, super-init-not-called
+
 import re
 import os
-import yaml
 import glob
 import shutil
-from datetime import datetime as dt
 from ubench.data_management.vcs.git import Git
 from ubench.data_management.data_store_yaml import DataStoreYAML
 import ubench.utils as utils
@@ -49,7 +52,7 @@ class Publisher(object):
 
     Methods:
         publish
-        download_remote
+        download
         update_remote
         get_files_from_ref
     '''
@@ -70,28 +73,30 @@ class Publisher(object):
         self.vcs = vcs
 
     def update_remote(self):
+        ''' Updates remote repository with local commits '''
         vcs = self._return_vcs()
         vcs.copy_remote_to_local()
 
     def download(self):
+        ''' Downloads remote repository to local machine '''
         vcs = self._return_vcs()
         vcs.copy_remote_to_local()
- 
+
     def publish(self, commit_msg):
         ''' Copy, commit and push '''
         self._copy_files()
         self.vcs = self._return_vcs()
         self.vcs.add_contents_to_local_repo(self._files_to_commit(), commit_msg)
-        
+
     def get_files_from_ref(self, ref):
         ''' Returns map for each benchmark '''
         vcs = Git(self.local_dir, self.repo_str)
         files = vcs.get_files_from_tag(ref)
         b_map = {}
-        for fl in files:
+        for f in files:
             data = DataStoreYAML()
-            metadata, _ = data.load(fl)
-            b_map[metadata['Benchmark_name']] = fl
+            metadata, _ = data.load(f)
+            b_map[metadata['Benchmark_name']] = f
         return b_map
 
     def _copy_files(self):
@@ -106,8 +111,8 @@ class Publisher(object):
         ''' Returns absolute path of files to commit '''
         files = []
         for f, b in zip(self._files_to_publish(), self._benchs_to_publish()):
-             dest = os.path.join(self.local_dir, 'results', self.publish_dir, b)
-             files.append(os.path.join(dest, os.path.basename(f)))
+            dest = os.path.join(self.local_dir, 'results', self.publish_dir, b)
+            files.append(os.path.join(dest, os.path.basename(f)))
         return files
 
     def _return_vcs(self):
@@ -115,10 +120,10 @@ class Publisher(object):
         vcs = Git(utils.trim_tail(self.local_dir), self.repo_str)
         return vcs
 
-
 class Benchmark(Publisher):
     ''' Provides specific Benchmark customization '''
 
+    # pylint: disable=too-many-arguments
     def __init__(self, local_dir, publish_dir, benchmark, platform, run_dir, run_id=None):
         ''' Constructor '''
         self.local_dir = local_dir
@@ -129,16 +134,16 @@ class Benchmark(Publisher):
         self.run_dir = run_dir
 
     def _files_to_publish(self):
-         ''' Returns absolute path of bench_results.yaml file in benchmark context
-    
-         If no run id is specified, it will return the last execution found,
-         the execution with greatest run_id. '''
-         if self.run_id == None:
-             self.run_id = utils.get_bench_rundir(self.run_dir, self.platform, self.benchmark)
-         path = os.path.join(self.run_dir, self.platform, self.benchmark, 'benchmark_runs',
-                             self.run_id, self.results_fname)
-         file_list = glob.glob(path)
-         return file_list
+        ''' Returns absolute path of bench_results.yaml file in benchmark context
+
+        If no run id is specified, it will return the last execution found,
+        the execution with greatest run_id. '''
+        if self.run_id is None:
+            self.run_id = utils.get_bench_rundir(self.run_dir, self.platform, self.benchmark)
+        path = os.path.join(self.run_dir, self.platform, self.benchmark, 'benchmark_runs',
+                            self.run_id, self.results_fname)
+        file_list = glob.glob(path)
+        return file_list
 
     def _benchs_to_publish(self):
         ''' For compliance with publish method. This step not needed at the current
@@ -167,7 +172,7 @@ class Campaign(Publisher):
     def _files_to_publish(self):
         ''' Returns absolute path of bench_results.yaml files in campaign context '''
         path = os.path.join(self.run_dir, self.campaign_dir, '*', 'benchmark_runs',
-                             '000000', self.results_fname)
+                            '000000', self.results_fname)
         file_list = glob.glob(path)
         return file_list
 
