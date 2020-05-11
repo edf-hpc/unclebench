@@ -75,7 +75,7 @@ class Publisher(object):
     def update_remote(self):
         ''' Updates remote repository with local commits '''
         vcs = self._return_vcs()
-        vcs.copy_remote_to_local()
+        vcs.update_remote()
 
     def download(self):
         ''' Downloads remote repository to local machine '''
