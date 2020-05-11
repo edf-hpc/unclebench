@@ -312,7 +312,7 @@ class UbenchCmd(object):
             if os.path.isdir(self.pub_dir):
                 print('Error: {} already exists. Please remove it or setup UBENCH_RESULTS_DIR'
                       ' to point to another directory.'.format(self.pub_dir))
-            #import pdb ; pdb.set_trace()
+                exit(1)
             repository = Publisher(repo_str=self.pub_repo_str, local_dir=self.pub_dir,
                                    vcs=self.pub_vcs)
             repository.download()
