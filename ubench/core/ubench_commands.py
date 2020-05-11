@@ -297,6 +297,14 @@ class UbenchCmd(object):
         each command and then execute it.
 
         '''
+        if (self.pub_vcs == 'undefined' or self.pub_repo_str == 'undefined'
+          or self.pub_dir == 'undefined'):
+            print('Some or all of the parameters needed by the publish method are missing.\n'
+                  'Please fill in the following parameters using ubench.conf'
+                  ' file or environment variables: UBENCH_PUBLISH_VCS,'
+                  ' UBENCH_PUBLISH_REPOSITORY, UBENCH_RESULTS_DIR')
+            exit(1)
+
         if options['command'] == 'campaign':
             campaign = Campaign(local_dir=self.pub_dir, publish_dir=options['dest_dir'],
                                 campaign_dir=options['campaign_dir'], run_dir=self.run_dir)

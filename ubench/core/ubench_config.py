@@ -214,6 +214,23 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
         self.settings_source['UBENCH_RESULTS_DIR'] = {'origin' : origin,
                                                        'val' : self.results_dir}
 
+        # Repository configuration
+        self.pub_vcs = 'undefined'
+        self.settings_source['UBENCH_PUBLISH_VCS'] = {'origin' : origin,
+                                                      'val' : self.pub_vcs}
+        self.pub_repo = 'undefined'
+        self.settings_source['UBENCH_PUBLISH_REPOSITORY'] = {'origin' : origin,
+                                                             'val' : self.pub_repo}
+        self.pub_protocol = 'undefined'
+        self.settings_source['UBENCH_PUBLISH_PROTOCOL'] = {'origin' : origin,
+                                                           'val' : self.pub_protocol}
+        self.pub_server = 'undefined'
+        self.settings_source['UBENCH_PUBLISH_SERVER'] = {'origin' : origin,
+                                                         'val' : self.pub_server}
+        self.pub_path = 'undefined'
+        self.settings_source['UBENCH_PUBLISH_PATH'] = {'origin' : origin,
+                                                       'val' : self.pub_path}
+
     def load_config(self, config_parser, origin):
         """ Loads values from ubench.conf.
 
