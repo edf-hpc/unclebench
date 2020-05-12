@@ -34,6 +34,7 @@ import ubench.data_management.comparison_writer as comparison_writer
 import ubench.data_management.report as report
 from ubench.scheduler_interfaces.slurm_interface import wlist_to_scheduler_wlist
 from ubench.data_management.publisher import Campaign, Benchmark, Publisher
+import ubench.utils as utils
 
 
 class UbenchCmd(object):
@@ -321,8 +322,8 @@ class UbenchCmd(object):
                 print('Error: {} already exists. Please remove it or setup UBENCH_RESULTS_DIR'
                       ' to point to another directory.'.format(self.pub_dir))
                 exit(1)
-            repository = Publisher(repo_str=self.pub_repo_str, local_dir=self.pub_dir,
-                                   vcs=self.pub_vcs)
+            repository = Publisher(repo_str=self.pub_repo_str, vcs=self.pub_vcs,
+                                   local_dir=utils.trim_tail(self.pub_dir))
             repository.download()
 
         if options['command'] == 'update-remote':

@@ -117,7 +117,7 @@ class Publisher(object):
 
     def _return_vcs(self):
         ''' Return VCS instance '''
-        vcs = Git(utils.trim_tail(self.local_dir), self.repo_str)
+        vcs = Git(self.local_dir, self.repo_str)
         return vcs
 
 class Benchmark(Publisher):
