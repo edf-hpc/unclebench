@@ -89,12 +89,12 @@ class StandardVCS(object):
         raise NotImplementedError('Error: method not found')
 
     @abc.abstractmethod
-    def add_command(self):
+    def add_command(self, files):
         ''' Abstract method for adding contents to the repository '''
         raise NotImplementedError('Error: method not found')
 
     @abc.abstractmethod
-    def commit_command(self, file_list, commit_msg):
+    def commit_command(self, commit_msg):
         ''' Abstract method for commiting changes to the repository '''
         raise NotImplementedError('Error: method not found')
 

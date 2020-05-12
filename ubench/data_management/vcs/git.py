@@ -19,28 +19,32 @@
 ##############################################################################
 """ Implements Version Control System API abstract class """
 
-import os
-import ubench.utils as utils
 from ubench.data_management.vcs.standard_vcs import StandardVCS
 
 class Git(StandardVCS):
+    ''' Implements interface with Git VCS '''
 
     def push_command(self):
+        ''' Return Git push command '''
         cmd = 'git push'
         return cmd
 
     def clone_command(self):
+        ''' Return Git clone command '''
         cmd = 'git clone' + ' ' + self.repo_str
         return cmd
 
     def add_command(self, files):
+        ''' Return Git add command '''
         cmd = 'git add' + ' ' + ' '.join(files)
         return cmd
 
     def commit_command(self, commit_msg):
+        ''' Return Git commit command '''
         cmd = 'git commit -m \'{}\''.format(commit_msg)
         return cmd
 
     def show_command(self, tag):
+        ''' Return Git show command '''
         cmd = 'git show {} --pretty=\'\' --name-only'.format(tag)
         return cmd
