@@ -43,6 +43,12 @@ Ubench provides the following commands:
     ubench-listparams
         List customizable parameters of a benchmark.
 
+    ubench-campaign
+        Execute set of benchmarks based in a campaign file.
+
+    ubench-publish
+        Publish benchmarks in repository.
+
 # SEE ALSO
 
-ubench-fetch(1), ubench-run(1), ubench-result(1), ubench-list(1), ubench-log(1), ubench-compare(1), ubench-report(1), ubench-listparams(1)
+ubench-fetch(1), ubench-run(1), ubench-result(1), ubench-list(1), ubench-log(1), ubench-compare(1), ubench-report(1), ubench-listparams(1), ubench-campaign(1), ubench-publish(1)
