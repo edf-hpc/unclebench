@@ -277,37 +277,37 @@ publish_campaign = publish_subparser.add_parser('campaign')
 publish_campaign.add_argument('-c',
                               required=True,
                               dest='campaign_dir',
-                              metavar='<directory>',
+                              metavar='<campaign-dir>',
                               help='Name of the directory of the campaign to publish. This'
                                    ' directory should be entered as it appears under the' 
                                    ' benchmark run directory given by UBENCH_RUN_DIR_BENCH.')
 publish_campaign.add_argument('-d',
                               dest='dest_dir',
-                              metavar='<directory>',
+                              metavar='<publish-dir>',
                               required=True,
                               help='Directory where to store the campaign result files.'
                                    ' This directory will be created under the `results`'
                                    ' directory located in the local benchmark repository.')
 publish_campaign.add_argument('-m',
                               dest='commit_msg',
-                              metavar='<commit_msg>',
+                              metavar='<commit-msg>',
                               required=True,
                               help='Commit message.')
 
 publish_benchmark = publish_subparser.add_parser('benchmark')
-publish_benchmark.add_argument('-b',
-                               help='Name of the benchmark from which results are compared',
-                               dest='benchmark',
-                               required=True,
-                               choices=benchmark_list)
 publish_benchmark.add_argument('-p',
-                               help='Name of the test platform. This parameter ss used to'
-                                    ' search the benchmark and also to pubish it under a'
-                                    ' directory with its name',
+                               help='Name of the test platform.',
                                dest='platform',
                                choices=platform_list,
                                required=True,
                                default=default_platform)
+publish_benchmark.add_argument('-b',
+                               help='Name of the benchmark to publish. This parameter is used'
+                                    ' to search the benchmark and also to publish it under a'
+                                    ' directory with its name.',
+                               dest='benchmark',
+                               required=True,
+                               choices=benchmark_list)
 publish_benchmark.add_argument('-d',
                                dest='dest_dir',
                                metavar='<directory>',
