@@ -51,7 +51,7 @@ class CampaignManager(object):
         self.scheduler_interface = SlurmInterface()
         date_campaign = datetime.now().strftime(CAMPAIGN_DATE_FORMAT)
         self.campaign_dir = os.path.join(UbenchConfig().run_dir,
-                                         "campaign-{}-{}".format(self.campaign['name'],
+                                         'campaign-{}-{}'.format(self.campaign['name'],
                                                                  date_campaign))
         self.campaign_freq = campaign_freq
         self.pub_vcs = UbenchConfig().pub_vcs
@@ -72,16 +72,16 @@ class CampaignManager(object):
         benchmarks = campaign_data['benchmarks']
         platform_avail = UbenchConfig().get_platform_list()
         benchmark_list = UbenchConfig().get_benchmark_list()
-        # checkf platform
+        # check platform
         if platform not in platform_avail:
-            print("\nPlatform {} is not available.\nPlatforms available {}".format(platform,
-                                                                                   platform_avail))
+            print('\nPlatform {} is not available.'
+                  '\nPlatforms available {}'.format(platform, platform_avail))
             raise RuntimeError
 
         for bench in benchmarks:
             if bench not in benchmark_list:
-                print("\nBenchmark {} is not available.\nBenchmarks available {}".format(bench,
-                                                                                         benchmark_list))
+                print('\nBenchmark {} is not available.'
+                      '\nBenchmarks available {}'.format(bench, benchmark_list))
                 raise RuntimeError
 
         # order has to be checked as well
@@ -93,7 +93,7 @@ class CampaignManager(object):
         try:
             os.makedirs(self.campaign_dir)
         except (OSError) as e:
-            print("Error: Campaign directory exist!!")
+            print('Error: Campaign directory exist!!')
             print(e)
             raise
 
@@ -116,7 +116,7 @@ class CampaignManager(object):
         bench_files = publisher.get_files_from_ref(self.ref_results)
 
         for b_name, _ in c_benchmarks:
-            print("Initializing benchmark {}".format(b_name))
+            print('Initializing benchmark {}'.format(b_name))
             benchmark_dir = self._init_bench_dir(b_name)
             self.benchmarks[b_name] = benchmark_api(b_name, platform)
             self.benchmarks[b_name].benchmark_path = benchmark_dir
@@ -131,12 +131,12 @@ class CampaignManager(object):
 
         benchmark_dir = os.path.join(self.campaign_dir, benchmark)
         src_dir = os.path.join(UbenchConfig().benchmark_dir, benchmark)
-        print("---- Copying {} to {}".format(src_dir, benchmark_dir))
+        print('---- Copying {} to {}'.format(src_dir, benchmark_dir))
         try:
             copytree(src_dir, benchmark_dir, symlinks=True)
         except OSError:
-            print("---- {} description files are already present in " \
-                  "run directory and will be overwritten.".format(benchmark))
+            print('---- {} description files are already present in ' \
+                  'run directory and will be overwritten.'.format(benchmark))
 
         return benchmark_dir
 
@@ -157,14 +157,14 @@ class CampaignManager(object):
         st_bench = self.campaign_status[benchmark]
         data_store = DataStoreYAML()
 
-        print("Using result file: {}".format(st_bench['post_results']))
+        print('Using result file: {}'.format(st_bench['post_results']))
         result_filter = data_store.get_result_filter({'jube_wp_abspath': exec_dir},
                                                      c_benchmarks[benchmark]['parameters'],
                                                      st_bench['post_results'])
 
         # we peform a comparison with reference values
         # column_headers = c_benchmarks[b_name]['parameters']['column_headers']
-        column_headers = ""
+        column_headers = ''
         result = data_store.compaire_bench_runs(st_bench['pre_results'],
                                                 st_bench['post_results'],
                                                 result_filter,
@@ -196,7 +196,7 @@ class CampaignManager(object):
                     finished_jobs = [j_n for j_n, j_s in job_req.items() if j_s in finish_states]
 
                     if len(finished_jobs) > self.campaign_status[b_name]['finished_jobs']:
-                        print("Generating result file for benchmark {}".format(b_name))
+                        print('Generating result file for benchmark {}'.format(b_name))
                         self.benchmarks[b_name].result(0)
                         self.campaign_status[b_name]['finished_jobs'] = len(finished_jobs)
                         self.campaign_status[b_name]['post_results'] = self.benchmarks[b_name].results_file
@@ -219,7 +219,7 @@ class CampaignManager(object):
 
 
                         status = {'jube_dir' : exec_dir,
-                                  'status' : job_req.get(job_id, "UNKNOWN"),
+                                  'status' : job_req.get(job_id, 'UNKNOWN'),
                                   'job_id' : job_id,
                                   'result': result}
 
@@ -241,9 +241,9 @@ class CampaignManager(object):
 
         precision = 3
         if print_opt:
-            num_format = "{{:.{}f}}%".format(precision)
+            num_format = '{{:.{}f}}%'.format(precision)
         else:
-            num_format = "{{:.{}f}}".format(precision)
+            num_format = '{{:.{}f}}'.format(precision)
 
         if len(results) > 1:
             if {k : v for k, v in results.items() if type(v) == list}:
@@ -269,17 +269,17 @@ class CampaignManager(object):
         """Print campaign status"""
         width = 20
         columns = 6
-        print_format = "{{:^{0}s}} ".format(width)*columns
+        print_format = '{{:^{0}s}} '.format(width)*columns
 
-        print("\n{}".format("-"*width*columns))
-        print(print_format.format("Benchmark",
-                                  "Bench status",
-                                  "Jube_dir",
-                                  "Job",
-                                  "Status",
-                                  "Results"))
+        print('\n{}'.format('-'*width*columns))
+        print(print_format.format('Benchmark',
+                                  'Bench status',
+                                  'Jube_dir',
+                                  'Job',
+                                  'Status',
+                                  'Results'))
 
-        print("-"*width*columns)
+        print('-'*width*columns)
 
         for b_name, values in self.campaign_status.items():
 
@@ -299,10 +299,10 @@ class CampaignManager(object):
             else:
                 print(print_format.format(b_name,
                                           self.campaign_status[b_name]['status'],
-                                          "",
-                                          "",
-                                          "",
-                                          ""))
+                                          '',
+                                          '',
+                                          '',
+                                          ''))
 
 
     def non_finished(self):
@@ -318,7 +318,7 @@ class CampaignManager(object):
         c_benchmarks = self.campaign['benchmarks']
 
         for b_name, b_obj in self.benchmarks.items():
-            print("Executing benchmark: {}".format(b_name))
+            print('Executing benchmark: {}'.format(b_name))
             parameters = c_benchmarks[b_name]['parameters']
             if 'w' in parameters:
                 parameters['w'] = wlist_to_scheduler_wlist(parameters['w'])
@@ -336,4 +336,4 @@ class CampaignManager(object):
             self.print_campaign_status()
             time.sleep(self.campaign_freq)
 
-        print("Campaign finished successfully")
+        print('Campaign finished successfully')
