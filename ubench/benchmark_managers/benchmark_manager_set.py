@@ -29,6 +29,10 @@ class BenchmarkManagerSet(benm.BenchmarkManager):
     """ Composite class that manages multiple BenchmarkManager.
 
     Attributes:
+
+        benchmark_manager_list
+
+    Methods:
         run
         list_parameters
         set_parameter

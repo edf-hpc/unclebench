@@ -323,9 +323,12 @@ class DataStore(object):
         return concatenated_metadata, concatenated_panda, result_context, sub_bench
 
 
-
     def compaire_bench_runs(self, pre_result_file, post_result_file, result_filter, run_context):
         """Compute the diff between two benchmarks results
+
+        Each bench result is read into a dataframe. Each row in the dataframe
+        corresponds to a single KPI. There are two dataframes (previous run + current run).
+        Both dataframes are merged and the difference column is computed.
 
         Args:
             - pre_result_file = path to pre-result benchmark file
@@ -334,6 +337,8 @@ class DataStore(object):
                               {'comp_version': 'gnu', 'mpi_version': 'OpenMPI-2.0.2'}
             - run_context = String to indicate additional columns to take as context
 
+        Returns:
+            - { metric : observed difference }
         """
 
         metadata, df1, _, _ = self.file_to_panda(pre_result_file, "",
@@ -346,15 +351,20 @@ class DataStore(object):
 
         dfs = [df1, df2]
 
+        # result values are stored as object and must be converted to float
+        # column result is renamed to match execution
+        # actions are done inplace
+        # IMB fails here since result contains a list and not a single value
         for index, df in enumerate(dfs):
             df['result'] = df['result'].astype(float)
-            df.rename(columns={'result':"result{}".format(index)}, inplace=True)
+            df.rename(columns={'result':'result{}'.format(index)}, inplace=True)
 
+        # merge_df will contain both bench results + difference
         merge_df = pandas.concat(dfs, axis=1)
         merge_df = merge_df.T.drop_duplicates().T
         merge_df['diff'] = 100*(merge_df['result0']-merge_df['result1'])/merge_df['result0']
 
-        # we create a dictionary only with the name of the result column and its difference value
+        # create dictionary { metric : difference }
         result_column = metadata['Benchmark_name'] + '_results'
         result = {}
         for record in merge_df.to_dict(orient='records'):
@@ -367,7 +377,7 @@ class DataStore(object):
         """ Returns a filter
 
         - run_selector: dictionary it allows to select a benchmark run based
-          on a variable which value is contained in the value of a given run.
+          on a variable whose value is contained in the value of a given run.
           Example {'jube_wp_abspath' : '00000_execute' }  will select a run
           in which 'jube_wp_abspath' has a value 'benchmark_runs/000000/00000_execute/work'
 
@@ -380,7 +390,6 @@ class DataStore(object):
         _, run_info = self.load(result_file)
         s_run = {}
         for index, data in run_info.items():
-            # the
             selected = {k : v for k, v in run_selector.items() if v in data[k]}
             if len(selected) == len(run_selector):
                 s_run = data

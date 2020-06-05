@@ -89,7 +89,16 @@ class Publisher(object):
         self.vcs.add_contents_to_local_repo(self._files_to_commit(), commit_msg)
 
     def get_files_from_ref(self, ref):
-        ''' Returns map for each benchmark '''
+        ''' Returns benchmark results
+
+        Returns path to bench_results.yaml for every benchmark
+        listed in given commit.
+
+        Args:
+            reference to commit
+        Returns:
+            { benchmark : 'path/to/bench_results.yaml' }
+        '''
         vcs = Git(self.local_dir, self.repo_str)
         files = vcs.get_files_from_tag(ref)
         b_map = {}

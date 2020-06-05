@@ -339,9 +339,7 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
             output_file (str): path of a file where to write the array.
                                If not set the array is printed on stdout.
         """
-
         result_array = self.result_array
-
 
         self.result_array = result_array
         if output_file:

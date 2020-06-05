@@ -18,7 +18,7 @@
 #                                                                            #
 ##############################################################################
 # pylint: disable=superfluous-parens, fixme, invalid-name
-""" Define UbenchCmd class """
+''' Define UbenchCmd class '''
 
 
 import os
@@ -38,7 +38,7 @@ import ubench.utils as utils
 
 
 class UbenchCmd(object):
-    """ Implements Unclebench commands.
+    ''' Implements Unclebench commands.
 
     Each Unclebench command that can be calld from the command
     line is defined in this class.
@@ -62,10 +62,10 @@ class UbenchCmd(object):
         report
         campaign
         publish
-    """
+    '''
 
     def __init__(self, platform, benchmark_list=None):
-        """ Class constructor """
+        ''' Class constructor '''
 
         self.run_dir = os.path.join(UbenchConfig().run_dir, platform)
         self.platform = platform
@@ -80,12 +80,12 @@ class UbenchCmd(object):
         self.pub_dir = UbenchConfig().results_dir
 
     def log(self, id_list): # pylint: disable=dangerous-default-value
-        """ Provides information about benchmark execution
+        ''' Provides information about benchmark execution
 
         Args:
             id_list (optional): by default, it will print information on last
                                 execution for the instance benchmark and platform.
-        """
+        '''
         if id_list is None:
             id_list = [-1]
 
@@ -94,13 +94,13 @@ class UbenchCmd(object):
 
 
     def list_parameters(self, default_values=False):
-        """ Lists benchmark parameters """
+        ''' Lists benchmark parameters '''
 
         self.bm_set.list_parameters(default_values)
 
 
     def result(self, id_list): # pylint: disable=dangerous-default-value
-        """ Prints benchmark results """
+        ''' Prints benchmark results '''
 
         if id_list is None:
             id_list = ['last']
@@ -113,21 +113,20 @@ class UbenchCmd(object):
 
 
     def listb(self):
-        """ Lists runs information"""
+        ''' Lists runs information '''
 
         self.bm_set.list_runs()
 
 
     def run(self, opt_dict={}):  # pylint: disable=dangerous-default-value
-        """  Run benchmark
+        '''  Run benchmark
 
         Args:
             dict_options:
 
         Returns:
             Bool: True if an error is raised, False otherwise
-        """
-
+        '''
 
         if opt_dict['w']:
 
@@ -185,17 +184,17 @@ class UbenchCmd(object):
             c.publish(commit_msg)
 
     def fetch(self):
-        """ Fetches benchmarks sources """
+        ''' Fetches benchmarks sources '''
 
         for benchmark_name in self.benchmark_list:
             benchmark_dir = os.path.join(UbenchConfig().benchmark_dir, benchmark_name)
             benchmark_files = [file_b for file_b in os.listdir(benchmark_dir)
-                               if file_b.endswith(".xml")]
+                               if file_b.endswith('.xml')]
             jube_xml_files = jube_xml_parser.JubeXMLParser(benchmark_dir, benchmark_files)
             multisource = jube_xml_files.get_bench_multisource()
 
             if multisource is None:
-                print("ERROR !! : Multisource information for benchmark not found")
+                print('ERROR !! : Multisource information for benchmark not found')
                 exit(1)
 
             fetch_bench = fetcher.Fetcher(resource_dir=UbenchConfig().resource_dir,
@@ -250,43 +249,43 @@ class UbenchCmd(object):
     # pylint: disable=no-self-use
     def compare(self, input_directories, benchmark_name, context=(None, None),
                 threshold=None):
-        """ Compare benchmark results from different directories.
+        ''' Compare benchmark results from different directories.
 
         Args:
             input_directories:
             benchmark_name:
             context:
-        """
+        '''
         # pylint: disable=bad-whitespace
         input_directories = [ self._return_dirs(ref) for ref in input_directories ]
 
         cwriter = comparison_writer.ComparisonWriter(threshold)
-        print("    comparing :")
+        print('    comparing :')
         for rdir in input_directories:
-            print("    - "+rdir)
-        print("")
+            print('    - '+rdir)
+        print('')
         cwriter.print_comparison(benchmark_name, input_directories, context)
 
 
     def report(self, metadata_file, output_dir):
-        """ Build a performance report.
+        ''' Build a performance report.
 
         Args:
             metadata_file: file containing parameters for report build
             outpit_dir: where to store the report
-        """
-        bench_template = os.path.join(UbenchConfig().templates_path, "bench.html")
-        compare_template = os.path.join(UbenchConfig().templates_path, "compare.html")
-        report_template = os.path.join(UbenchConfig().templates_path, "report.html")
+        '''
+        bench_template = os.path.join(UbenchConfig().templates_path, 'bench.html')
+        compare_template = os.path.join(UbenchConfig().templates_path, 'compare.html')
+        report_template = os.path.join(UbenchConfig().templates_path, 'report.html')
         perf_report = report.Report(metadata_file, bench_template,
                                     compare_template, report_template)
-        report_name = "ubench_performance_report"
+        report_name = 'ubench_performance_report'
 
-        print(("    Writing report {} in {} directory".format(report_name+".html", output_dir)))
+        print(('    Writing report {} in {} directory'.format(report_name+'.html', output_dir)))
         perf_report.write(output_dir, report_name)
 
         asciidoctor_cmd = ('asciidoctor -a stylesheet=' + UbenchConfig().stylesheet_path
-                           + " " + os.path.join(os.getcwd(), output_dir, report_name + ".asc"))
+                           + ' ' + os.path.join(os.getcwd(), output_dir, report_name + '.asc'))
 
         Popen(asciidoctor_cmd, cwd=os.getcwd(), shell=True, universal_newlines=True)
 
