@@ -2,7 +2,7 @@
 
 # NAME
 
-ubench-publish-download - Doawloads repository to local machine
+ubench-publish-download - Downloads repository to local machine
 
 # SYNOPSIS
 
