@@ -12,7 +12,7 @@ ubench-publish - Publish results to repository
 
 # DESCRIPTION
 
-*ubench publish* enables Unclebench to publish benchmark results to repository.
+*ubench publish* publishes benchmark results to a VCS repository.
 
 # AVAILABLE COMMANDS
 

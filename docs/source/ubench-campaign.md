@@ -15,8 +15,8 @@ ubench-campaign -  Run benchmarks campaigns
 # DESCRIPTION
 
 
-*ubench campaign*  execute benchmarks campaigns described in the campaign file.
-The execution will create a directory `campaign-$NAME-$DATE` under the directory defined in
+*ubench campaign*  executes benchmark campaigns described in the campaign file.
+The execution will create a directory `campaign-$NAME-$DATE` under the directory defined by
 `UBENCH_RUN_DIR_BENCH` variable.
 
 # OPTIONS
