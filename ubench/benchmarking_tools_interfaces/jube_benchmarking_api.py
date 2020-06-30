@@ -285,7 +285,6 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         Returns:
             (dict) mapping between Jube execution directories and result values
         '''
-
         outpath = self.jube_files.get_bench_outputdir()
         benchmark_rundir = self.get_bench_rundir(benchmark_id, outpath)
         context_names, context = self._get_execution_context(benchmark_id)
@@ -295,6 +294,11 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         map_dir = {}
         for exec_id, values in context.items():
             key_results = hashlib.md5(''.join([values[n] for n in common_fields]))
+
+            key = key_results.hexdigest()
+            if key not in results:
+                results[key] = 'failed'
+
             context[exec_id]['results_bench'] = results[key_results.hexdigest()]
             context[exec_id]['context_fields'] = common_fields
             exec_dir = "{}_execute".format(values['jube_wp_id'].zfill(6))
