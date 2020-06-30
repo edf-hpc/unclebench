@@ -1,29 +1,15 @@
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
-##############################################################################
-#  This file is part of the UncleBench benchmarking tool.                    #
-#        Copyright (C) 2020 EDF SA                                           #
-#                                                                            #
-#  UncleBench is free software: you can redistribute it and/or modify        #
-#  it under the terms of the GNU General Public License as published by      #
-#  the Free Software Foundation, either version 3 of the License, or         #
-#  (at your option) any later version.                                       #
-#                                                                            #
-#  UncleBench is distributed in the hope that it will be useful,             #
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of            #
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the              #
-#  GNU General Public License for more details.                              #
-#                                                                            #
-#  You should have received a copy of the GNU General Public License         #
-#  along with UncleBench. If not, see <http://www.gnu.org/licenses/>.        #
-#                                                                            #
-##############################################################################
-''' Implements Progress Bar class '''
-
+#
+#       line feed chr(13) ... \n ...  brings the typewriter to the next line
+# carriage return chr(10) ... \r ...  brings the typewriter to the beginning of the line
+#              tab chr(9) ... \t ...  moves the typewriter to the next tab stop
+#
+import os
 import time
 import sys
 import subprocess
 
-# pylint: disable=invalid-name,multiple-statements
 class Progress(object):
     ''' Progress bar
 
@@ -42,7 +28,7 @@ class Progress(object):
 
     def __init__(self, msg=None, pause=0.03):
         self.msg = msg
-        self.bar_char = '|'
+        self.bar = '|'
         self.pause = pause
         self.ltr = '▶'
         self.rtl = '◀'
@@ -55,8 +41,18 @@ class Progress(object):
    #        ╲  ╱                          ╲  ╱        #
 
 
+    def blink(self):
+        ''' Prints blinking message '''
+        self._set_fcolor(2)
+        self._set_cursor_invisible()
+        while True:
+            self._print_message()
+            time.sleep(2)
+            self._clear_message()
+            time.sleep(0.5)
+
     def running_period(self, size):
-        ''' Prints wating message on screen '''
+        ''' Prints running dots after message '''
         sys.stdout.write(self.msg) ; sys.stdout.flush()
         while True:
             self._point_sleep(size)
@@ -67,15 +63,15 @@ class Progress(object):
     def flash_chars(self):
         ''' Shows one char at a time '''
         while True:
-            self._erase_forward(len(self.msg))
-            self._move_backwards(len(self.msg))
+            self.erase_forward(len(self.msg))
+            self.move_backwards(len(self.msg))
             for i, c in enumerate(self.msg):
                 txt = ' ' * i + c + ' ' * (len(self.msg) - i)
                 sys.stdout.write(txt) ; sys.stdout.flush()
                 time.sleep(0.5)
-                self._move_backwards(len(self.msg)+1)
+                self.move_backwards(len(self.msg)+1)
 
-    def back_and_forward(self, bar_size, neon_size):
+    def back_and_forward(self, bar_size, neon_size, full=True):
         ''' Simulate a progress bar '''
         _, cols = self._get_terminal_size()
         while True:
@@ -108,6 +104,20 @@ class Progress(object):
         sys.stdout.write(' ' * n)
         sys.stdout.flush()
 
+    def _print_message(self):
+        ''' Prints message and brings back cursor to start of message '''
+        self._erase_forward(len(self.msg))
+        self._move_backwards(len(self.msg))
+        sys.stdout.write(self.msg)
+        sys.stdout.flush()
+        self._move_backwards(len(self.msg))
+
+    def _clear_message(self):
+        ''' Moves cursor n steps backwards '''
+        self._erase_forward(len(self.msg))
+        self._move_backwards(len(self.msg))
+        sys.stdout.flush()
+
     def _point_sleep(self, n):
         ''' Prints a period and sleeps
         for 1 second (repeat n times) '''
@@ -116,28 +126,37 @@ class Progress(object):
             sys.stdout.flush()
             time.sleep(self.pause)
 
-    def _left_to_right(self, bar, neon, term_size):
+    def _left_to_right(self, bar, neon, term_size=0):
         time = range(bar - neon)
         for moment in time:
-            progress = '[' + ' ' * moment + self.ltr * neon + ' ' * (bar - neon - moment) + \
-                       ']' + ' ' * (term_size - bar - 2)
+            progress = '[' + ' ' * moment + self.ltr * neon + ' ' * (bar - neon - moment) + ']' + ' ' * (term_size - bar - 2)
             yield progress
 
     def _right_to_left(self, bar, neon, term_size):
         time = range(bar - neon)
         for moment in time:
-            progress = '[' + ' ' * (bar - neon - moment) + self.rtl * neon + ' ' * moment + \
-                       ']' + ' ' * (term_size - bar - 2)
+            progress = '[' + ' ' * (bar - neon - moment) + self.rtl * neon + ' ' * moment + ']' + ' ' * (term_size - bar - 2)
             yield progress
 
     def _get_terminal_size(self):
         ''' Return terminal size '''
-        p = subprocess.Popen("stty size", stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE, shell=True)
+        p = subprocess.Popen("stty size", stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
         output, err = p.communicate()
         p_status = p.wait()
         return int(output.rstrip().split()[0]), int(output.rstrip().split()[1])
 
+    def _set_fcolor(self, color):
+        ''' Set terminal foreground color '''
+        command = "tput setaf" + " " + str(color)
+        os.system(command)
+        return 0
+
+    def _set_cursor_invisible(self):
+        ''' Set cursor invisible '''
+        os.system("tput civis")
+        return 0
+
 if __name__ == '__main__':
-    progress = Progress()
-    progress.back_and_forward(30, 7)
+    progress = Progress(" RUNNING")
+    #progress.back_and_forward(30, 7)
+    progress.blink()

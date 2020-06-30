@@ -285,17 +285,16 @@ class CampaignManager(object):
 
     def _run_progress_bar(self):
         ''' Shows progress bar '''
-        usr_msg = mp.Process(target=Progress.back_and_forward, args=(Progress(),30,7, ))
+        usr_msg = mp.Process(target=Progress.blink, args=(Progress(msg=" RUNNING"),))
         usr_msg.start()
         time.sleep(self.campaign_freq)
         usr_msg.terminate()
         usr_msg.join()
-        Progress._move_backwards(Progress(), 320)
-        Progress._erase_forward(Progress(), 80)
+        os.system('tput sgr0')
 
     def run(self):
         ''' Run campaign workflow '''
-        # we launch all benchmarks
+        # Launch all benchmarks
         c_benchmarks = self.campaign['benchmarks']
 
         for b_name, b_obj in self.benchmarks.items():
@@ -306,7 +305,7 @@ class CampaignManager(object):
 
             parameters['custom_params'] = parameters
             self.exec_info[b_name] = b_obj.run(parameters)
-            # Let's drop ubench parameters
+            # Drop ubench parameters
             c_benchmarks[b_name]['parameters'].pop('w', None)
             c_benchmarks[b_name]['parameters'].pop('custom_params', None)
 
@@ -315,7 +314,6 @@ class CampaignManager(object):
             self.print_campaign_status()
             self._run_progress_bar()
 
-        sys.stdout.write('\033[F')
         print('\nEnd : {}\n'.format(datetime.now().time().strftime('%H:%M:%S')))
 
         # If -r option was passed at the command line show difference using
@@ -347,7 +345,7 @@ class CampaignManager(object):
             else:
                 table_rows += 1
 
-        # Print table header (only first time)
+        # Print table header (first time only)
         if self.results_table['update'] == 0:
             print('\nStart : {}'.format(datetime.now().time().strftime('%H:%M:%S')))
             print('\n{}'.format('-'*width*columns))
@@ -358,9 +356,9 @@ class CampaignManager(object):
                                       'Status'))
             print('-'*width*columns)
 
-        # Delete table rows (not frist time)
+        # Delete table rows (does not delete table header)
         if self.results_table['update'] > 0:
-            sys.stdout.write("\033[F"*self.results_table['rows'])
+            sys.stdout.write("\033[F"*(self.results_table['rows']+2))
 
         # Print table rows
         for b_name, values in self.campaign_status.items():
@@ -378,6 +376,6 @@ class CampaignManager(object):
                                           '',
                                           ''))
 
-        print('')
+        print(' ' * 20)
         self.results_table['update'] += 1
-        self.results_table['rows'] = table_rows + 1
+        self.results_table['rows'] = table_rows - 1
