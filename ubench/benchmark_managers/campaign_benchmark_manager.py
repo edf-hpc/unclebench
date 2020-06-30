@@ -17,7 +17,8 @@
 #  along with UncleBench. If not, see <http://www.gnu.org/licenses/>.        #
 #                                                                            #
 ##############################################################################
-# pylint: disable=invalid-name
+# pylint: disable=invalid-name, superfluous-parens, too-many-instance-attributes
+# pylint: disable=no-member, no-self-use, redefined-builtin
 ''' Define CampaignManager class '''
 
 import sys
@@ -27,8 +28,8 @@ from datetime import datetime
 from shutil import copytree
 from pydoc import locate
 import collections
-import yaml
 import multiprocessing as mp
+import yaml
 
 from ubench.scheduler_interfaces.slurm_interface import (wlist_to_scheduler_wlist,
                                                          SlurmInterface)

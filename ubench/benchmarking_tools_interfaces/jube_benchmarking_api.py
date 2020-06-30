@@ -32,10 +32,12 @@ import ubench.utils as utils
 import ubench.data_management.data_store_yaml as data_store_yaml
 from ubench.core.ubench_config import UbenchConfig
 from ubench.benchmarking_tools_interfaces.benchmarking_api import BenchmarkingAPI
-from . import jube_xml_parser
 import ubench.scheduler_interfaces.slurm_interface as slurmi
+from . import jube_xml_parser
 
-#pylint: disable=superfluous-parens
+#pylint: disable=superfluous-parens, too-many-instance-attributes, super-init-not-called
+#pylint: disable=arguments-differ, invalid-name, redefined-variable-type, no-self-use
+#pylint: disable=attribute-defined-outside-init
 class JubeBenchmarkingAPI(BenchmarkingAPI):
     ''' Jube benchmarking API class implements abstract class benchmarkingAPI
     to use Jube backend.
