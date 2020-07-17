@@ -320,7 +320,7 @@ class CampaignManager(object):
         # If -r option was passed at the command line show difference using
         # ubench compare otherwise show benchmark result using ubench result
         for bench in self.benchmarks.keys():
-            print bench
+            print(bench)
             if self.campaign_status[bench]['pre_results']:
                 bench_dirs = [self.campaign_status[bench]['pre_results'],
                               self.campaign_status[bench]['post_results']]

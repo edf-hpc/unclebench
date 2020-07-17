@@ -361,7 +361,7 @@ class UbenchConfig(object):  # pylint: disable=too-many-instance-attributes
         print('─'*line_length)
 
         sorted_keys = self.settings_source.keys()
-        sorted_keys.sort()
+        sorted_keys=sorted(sorted_keys)
 
         if verbose == False:
             self.clear_info()

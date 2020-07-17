@@ -59,5 +59,6 @@ setup(name='ubench',
                 'ubench.benchmark_managers',
                 'ubench.benchmarking_tools_interfaces',
                 'ubench.data_management',
+                'ubench.data_management.vcs',
                 'ubench.scheduler_interfaces'],
       zip_safe=False)

@@ -398,6 +398,6 @@ class DataStore(object):
         if not opts:
             opts = {}
 
-        columns = s_run['context_fields'] + opts.keys()
+        columns = s_run['context_fields'] + list(opts.keys())
 
         return {k :s_run[k] for k in columns}

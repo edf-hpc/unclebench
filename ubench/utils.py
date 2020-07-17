@@ -87,7 +87,7 @@ def get_bench_rundir(base_path, platform, benchmark, benchmark_id=None, fill=6):
         else:
             path_id = benchmark_id
     else:
-        print 'Could not find benchmarks directory'
+        print('Could not find benchmarks directory')
         exit(1)
 
     return os.path.join(abs_path, str(path_id).zfill(fill))
@@ -164,12 +164,12 @@ def mkdir(dir_name, abs_path=None, err_msg=None, ok_msg=None):
     except OSError:
         print_msg('Unable to create directory')
         if err_msg is not None:
-            print err_msg
+            print(err_msg)
         exit(1)
     else:
         print_msg('Directory created')
         if ok_msg is not None:
-            print ok_msg
+            print(ok_msg)
         result = True
 
     return result

@@ -41,7 +41,7 @@ for platform_name in platform_list:
     # This if statement will never be true unless ubench
     # is executed from node called gacn, eogn, etc.
     if platform_name in socket.gethostname().lower():
-        print "I've run!!"
+        print("I've run!!")
         default_platform = platform_name
         platform_required = False
 
