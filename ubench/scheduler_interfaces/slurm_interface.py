@@ -69,7 +69,7 @@ def memoize_disk(cache_file):
             """ Wrapper function"""
             now = time.time()
 
-            params_id = hashlib.md5(''.join(param)).hexdigest()
+            params_id = hashlib.md5(''.join(param).encode('utf-8')).hexdigest()
 
             user_c_file = "{}-{}-{}".format(cache_file,
                                             ubench.config.USER,
@@ -77,7 +77,7 @@ def memoize_disk(cache_file):
             # we generate a hash based on parameters passed on the method
             # like that we assure that a different cachefile will be generated for each call
             # having different parameters values
-            cache_file_hash = hashlib.md5(user_c_file).hexdigest()
+            cache_file_hash = hashlib.md5(user_c_file.encode('utf-8')).hexdigest()
 
             cls.cache_files[cache_file_hash] = user_c_file
 

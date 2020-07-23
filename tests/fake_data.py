@@ -114,7 +114,7 @@ class MockFile():
     def __init__(self, root_path):
         self.root_path = root_path
 
-    def jube_file(self):
+    def jube_file(self,mode=None):
         file_path = os.path.join(self.root_path, 'mock_jube_info.cvs')
         return open(file_path, 'r')
 

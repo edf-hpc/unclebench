@@ -20,6 +20,7 @@
 ''' Jube benchmarking API module '''
 
 import os
+import sys
 import re
 import csv
 import tempfile
@@ -34,6 +35,8 @@ from ubench.core.ubench_config import UbenchConfig
 from ubench.benchmarking_tools_interfaces.benchmarking_api import BenchmarkingAPI
 import ubench.scheduler_interfaces.slurm_interface as slurmi
 from . import jube_xml_parser
+
+PY3_OR_LATER = sys.version_info[0] >= 3
 
 #pylint: disable=superfluous-parens, too-many-instance-attributes, super-init-not-called
 #pylint: disable=arguments-differ, invalid-name, redefined-variable-type, no-self-use
@@ -295,7 +298,7 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         common_fields = [n for n in context_names if n in field_names]
         map_dir = {}
         for exec_id, values in context.items():
-            key_results = hashlib.md5(''.join([values[n] for n in common_fields]))
+            key_results = hashlib.md5(''.join([values[n] for n in common_fields]).encode('utf-8'))
 
             key = key_results.hexdigest()
             if key not in results:
@@ -395,7 +398,8 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         jube_cmd = 'jube info ./{0} --id {1} --step execute -p -c \"{2}\"'.format(outpath,
                                                                                   benchmark_id,
                                                                                   separator)
-        cmd_output = tempfile.TemporaryFile()
+                                                                                  
+        cmd_output = tempfile.TemporaryFile(mode='w+t') if PY3_OR_LATER else tempfile.TemporaryFile()
         result_from_jube = Popen(jube_cmd, cwd=self.benchmark_path,
                                  shell=True, stdout=cmd_output,
                                  universal_newlines=True)
@@ -435,7 +439,7 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
 
             for row in reader:
 
-                md5 = hashlib.md5(''.join([row[n] for n in context_names if n in field_names]))
+                md5 = hashlib.md5(''.join([row[n] for n in context_names if n in field_names]).encode('utf-8'))
                 key = md5.hexdigest()
                 values = {k:v for k, v in row.items() if k in result_fields}
                 results[key] = values

@@ -99,7 +99,7 @@ def test_run(mocker, mock_os_methods):
 
 def test_bench_datagen(jube_info_files):
     file_path = os.path.join(jube_info_files, 'mock_jube_info.cvs')
-    with open(file_path, 'rb') as csvfile:
+    with open(file_path, 'r') as csvfile:
         jubereader = csv.DictReader(csvfile, delimiter='~')
         num_col = len(jubereader.fieldnames)
         for row in jubereader:
@@ -108,7 +108,7 @@ def test_bench_datagen(jube_info_files):
 
 @pytest.mark.xfail
 def test_bench_datagenbad(data_dir):
-    with open(data_dir.jubeinfo_bad, 'rb') as csvfile:
+    with open(data_dir.jubeinfo_bad, 'r') as csvfile:
         jubereader = csv.DictReader(csvfile, delimiter='~')
         num_col = len(jubereader.fieldnames)
         for row in jubereader:
@@ -138,7 +138,12 @@ def test_result(mocker, mock_os_methods, jube_info_files):
 
     jube_api.result(0)
     metadata, context, r_file = mock_data_write.call_args.args
-
+    print(metadata)
+    print("="*45)
+    print(context)
+    print("="*45)
+    print(r_file)
+    print("="*45)
     assert '1' in context
     assert 'results_bench' in context['1']
     assert context['1']['results_bench'] == {'p_pat_min': '9', 'p_pat_max': '11', 'p_pat_avg': '10'}

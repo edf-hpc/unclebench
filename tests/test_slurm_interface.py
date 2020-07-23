@@ -88,7 +88,7 @@ def test_job_status_cache(pytestconfig, mocker):
                               side_effect=mockpopen)
 
     # cache files have a postfix based on the arguments used in the method's call
-    md5_id = hashlib.md5(''.join(['222'])).hexdigest()
+    md5_id = hashlib.md5(''.join(['222']).encode('utf-8')).hexdigest()
     cache_file = '/tmp/ubench_cache-{}-{}'.format(ubench.config.USER, md5_id)
     # the cache file exist if the test has failed before so we clean
     if os.path.isfile(cache_file):
