@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 #  This file is part of the UncleBench benchmarking tool.                    #
-#        Copyright (C) 2019 EDF SA                                           #
+#        Copyright (C) 2020 EDF SA                                           #
 #                                                                            #
 #  UncleBench is free software: you can redistribute it and/or modify        #
 #  it under the terms of the GNU General Public License as published by      #
@@ -19,5 +19,5 @@
 ##############################################################################
 """ Provides release information"""
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
 __author__ = 'EDF CCN HPC'
