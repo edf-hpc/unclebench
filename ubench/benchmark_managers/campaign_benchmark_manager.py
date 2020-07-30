@@ -292,6 +292,7 @@ class CampaignManager(object):
         usr_msg.terminate()
         usr_msg.join()
         os.system('tput sgr0')
+        os.system('tput cnorm')
 
     def run(self):
         ''' Run campaign workflow '''
