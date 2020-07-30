@@ -63,7 +63,7 @@ class Progress(object):
         self._set_cursor_invisible()
         while True:
             self._print_message()
-            time.sleep(2)
+            time.sleep(4)
             self._clear_message()
             time.sleep(0.5)
 
