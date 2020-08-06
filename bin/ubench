@@ -57,9 +57,9 @@ parser.add_argument('-v',
 subparsers = parser.add_subparsers(dest='subparser_name')
 
 # Parser for fetch
-fetch_help = ('Downloads benchmark sources and test cases'
-              ' from benchmark defined location to /scratch/<user>/Ubench/resource'
-              ' (customizable with UBENCH_RESOURCE_DIR environment variable).')
+fetch_help = 'Downloads benchmark sources and test cases from benchmark defined' + '\n' + \
+             'location to /scratch/<user>/Ubench/resource and customizable with' + '\n' + \
+             'UBENCH_RESOURCE_DIR environment variable.'
 
 parser_fetch = subparsers.add_parser('fetch',
                                      help=fetch_help)
@@ -74,8 +74,8 @@ parser_fetch.add_argument('-b',
                           required=True)
 
 # Parser for run
-run_help = ('Execute benchmarks in /scratch/<user>/Ubench/benchmarks directory '
-            '(can be customized with UBENCH_RUN_DIR_BENCH directory)')
+run_help = 'Execute benchmarks in /scratch/<user>/Ubench/benchmarks directory' + '\n' + \
+           'This path can be customized using UBENCH_RUN_DIR_BENCH directory.'
 
 parser_run = subparsers.add_parser('run', help=run_help)
 
@@ -200,12 +200,11 @@ parser_listparams.add_argument('-d',
                                action='store_true')
 
 # Parser result
-parser_result = subparsers.add_parser('result',
-                                      help=('Print raw results array from a benchmark run.'
-                                            ' To be found benchmark runs must be located in'
-                                            ' /sratch/<user>/Ubench/benchmarks directory but'
-                                            ' this path can be customized with'
-                                            ' UBENCH_RUN_DIR_BENCH environment variable'))
+result_help = 'Print raw results array from a specific benchmark run. Benchmarks\n' + \
+              'must be placed in /scratch/<user>/Ubench/benchmarks directory but\n' + \
+              'this path can be customized with UBENCH_RUN_DIR_BENCH environment\n' + \
+              'variable.'
+parser_result = subparsers.add_parser('result', help=result_help)
 
 parser_result.add_argument('-p',
                            help='Name of the test platform',
@@ -267,11 +266,15 @@ parser_compare.add_argument('-t',
                             help='Differences under given threshold will not be printed')
 
 # Parser publish
-publish_help = ('Manages relation with the public repository. It can download the repository'
-                ', add or remove files, commit changes and push back to public.')
+publish_help = 'Manages the repository where benchmarks results files are stored.\n' + \
+               'It downloads the repository, add or remove files, commits changes\n' + \
+               'and pushes everything back to remote.'
+
 parser_publish = subparsers.add_parser('publish', help=publish_help)
-publish_subparser = parser_publish.add_subparsers(help='Choose whether to publish a campaign or'
-                                                  'a single benchmark.', dest='command')
+publish_subparser = parser_publish.add_subparsers(help='Choose whether to publish a campaign'
+                                                  ' or a single benchmark, download distant'
+                                                  ' repository and update everything in the'
+                                                  ' end.', dest='command')
 
 publish_campaign = publish_subparser.add_parser('campaign')
 publish_campaign.add_argument('-c',
