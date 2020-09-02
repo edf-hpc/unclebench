@@ -102,6 +102,9 @@ def test_campaign_run(mocker, init_env, mock_benchs, run_dir, data_dir):
     campaign = CampaignManager(data_dir.campaign)
     campaign.init_campaign()
     campaign.run()
+    import sys
+    # This unit test works properly only on python 3.6 and later versions 
+    if sys.version_info[0:2]<=(3,5): return
     mock_api.assert_called()
 
 #====> todo print_campaign_status test

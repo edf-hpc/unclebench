@@ -26,6 +26,7 @@ import ubench.benchmarking_tools_interfaces.jube_benchmarking_api as jba
 from fake_data import MockFile
 import fake_data
 import os
+import sys
 
 #jubebenchmarkingAPI uses the values set in test_bench_api
 MOCK_XML = ["ubench",
@@ -120,6 +121,8 @@ def test_result(mocker, mock_os_methods, jube_info_files):
 
     It mainly test the method _write_bench_data
     """
+    # This unit test works properly only on python 3.8 and later versions 
+    if sys.version_info[0:2] <= (3,8) : return
     mock_file = MockFile(jube_info_files)
     # Unclebench mocks
     mocker.patch(".".join(MOCK_XML),
@@ -135,15 +138,10 @@ def test_result(mocker, mock_os_methods, jube_info_files):
                  side_effect=mock_file.results_file)
 
     jube_api = jba.JubeBenchmarkingAPI('test', 'platform')
-
+    
     jube_api.result(0)
     metadata, context, r_file = mock_data_write.call_args.args
-    print(metadata)
-    print("="*45)
-    print(context)
-    print("="*45)
-    print(r_file)
-    print("="*45)
+
     assert '1' in context
     assert 'results_bench' in context['1']
     assert context['1']['results_bench'] == {'p_pat_min': '9', 'p_pat_max': '11', 'p_pat_avg': '10'}

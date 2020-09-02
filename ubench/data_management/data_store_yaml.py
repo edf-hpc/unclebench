@@ -66,7 +66,7 @@ class DataStoreYAML(DataStore):
 
         with open(input_file, 'r') as inputfile:
             try:
-                data = yaml.load(inputfile)
+                data = yaml.load(inputfile, Loader=yaml.FullLoader)
                 runs_info = data['runs']
                 data.pop('runs', None)
                 metadata = data

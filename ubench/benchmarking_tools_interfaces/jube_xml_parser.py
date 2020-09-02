@@ -21,6 +21,7 @@
 
 
 import os
+import sys
 import re
 import tempfile
 import shutil
@@ -112,8 +113,11 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
 
     def delete_platform_dir(self):
         """ docstring """
-
-        shutil.rmtree(self.platform_dir)
+        try:
+            # it'll likely fail on python 3.5, but give it a try
+            shutil.rmtree(self.platform_dir, ignore_errors=True)
+        except Exception as err:
+            pass
 
 
     def get_platform_dir(self):

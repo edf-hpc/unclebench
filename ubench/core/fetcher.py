@@ -361,5 +361,5 @@ class Fetcher(object):
         except urllib.error.HTTPError as err:  # pylint: disable=unused-variable
             raise
         else:
-            file_dest = open(destfile_path, 'w+')
+            file_dest = open(destfile_path, 'wb+')
             file_dest.write(file_src.read())
