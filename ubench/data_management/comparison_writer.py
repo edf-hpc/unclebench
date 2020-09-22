@@ -86,7 +86,7 @@ class ComparisonWriter(object):
             # column_headers are not numeric, probably a limited number
             # of possibility, use it as row labels for facets.
             x_data = row_headers[0]
-            row_label = column_headers
+            row_label = None
 
         if len(sub_bench_list) > 1:
             # If benchmark is composed of sub benchmarks
@@ -110,7 +110,7 @@ class ComparisonWriter(object):
             if len(row_headers) > 1:
                 hue_label = row_headers[-1]
             else:
-                hue_label = None
+                hue_label = column_headers
             col_label = None
 
         # pylint: disable=logging-format-interpolation
