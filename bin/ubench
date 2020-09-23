@@ -142,10 +142,11 @@ parser_campaign.add_argument('-pub', '--publish',
                                    ' directory located in the local benchmark repository.')
 parser_campaign.add_argument('-msg', '--message',
                               dest='commit_msg',
-                              metavar='<commit_msg>',
+                              metavar='<commit-msg>',
                               required=False,
                               help='Commit message. This argument is required if the campaign'
-                                   ' is to be published.')
+                                   ' is to be published. The commit message is a string argument'
+                                   ' and should be entered between quotes.')
 
 # Parser for list
 list_help = 'List existing runs information for a given benchmark.'
@@ -280,22 +281,23 @@ publish_campaign = publish_subparser.add_parser('campaign')
 publish_campaign.add_argument('-c',
                               required=True,
                               dest='campaign_dir',
-                              metavar='<campaign-dir>',
+                              metavar='<directory>',
                               help='Name of the directory of the campaign to publish. This'
                                    ' directory should be entered as it appears under the' 
                                    ' benchmark run directory given by UBENCH_RUN_DIR_BENCH.')
-publish_campaign.add_argument('-d',
+publish_campaign.add_argument('-pub',
                               dest='dest_dir',
-                              metavar='<publish-dir>',
+                              metavar='<directory>',
                               required=True,
                               help='Directory where to store the campaign result files.'
                                    ' This directory will be created under the `results`'
                                    ' directory located in the local benchmark repository.')
-publish_campaign.add_argument('-m',
+publish_campaign.add_argument('-msg',
                               dest='commit_msg',
                               metavar='<commit-msg>',
                               required=True,
-                              help='Commit message.')
+                              help='Commit message. The commit message is a string argument'
+                                   ' and should be entered between quotes.')
 
 publish_benchmark = publish_subparser.add_parser('benchmark')
 publish_benchmark.add_argument('-p',
@@ -311,23 +313,24 @@ publish_benchmark.add_argument('-b',
                                dest='benchmark',
                                required=True,
                                choices=benchmark_list)
-publish_benchmark.add_argument('-d',
+publish_benchmark.add_argument('-pub',
                                dest='dest_dir',
                                metavar='<directory>',
                                help='Directory where to store the benchmark results file.'
-                                    ' This directory will be created under the `results`'
-                                    ' directory located in the local benchmark repository.',
+                                    ' It will be created under the `results` directory'
+                                    ' located in the local performance repository.',
                                required=True)
+publish_benchmark.add_argument('-msg',
+                              dest='commit_msg',
+                              metavar='<commit-msg>',
+                              required=True,
+                              help='Commit message. The commit message is a string argument'
+                                   ' and should be entered between quotes.')
 publish_benchmark.add_argument('-i',
                                dest='run_id',
                                metavar='<integer>',
                                help='Benchmark run id. If not given, the last benchmark'
-                                    ' will be published, ie, the one with greater run id')
-publish_benchmark.add_argument('-m',
-                              dest='commit_msg',
-                              metavar='<commit_msg>',
-                              required=True,
-                              help='Commit message.')
+                                    ' will be published, ie, the one with greater run id.')
 
 publish_clone = publish_subparser.add_parser('download')
 publish_push = publish_subparser.add_parser('update-remote')
