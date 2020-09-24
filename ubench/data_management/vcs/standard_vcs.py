@@ -57,7 +57,7 @@ class StandardVCS(object):
             msg = 'Error when executing command: {}'.format(self.push_command())
             raise RuntimeError(msg)
         else:
-            print('Cloning remote repository using Git')
+            print('Updating remote repository using Git')
 
     def add_contents_to_local_repo(self, file_list, commit_msg=None):
         ''' Executes both add and commit operations '''
