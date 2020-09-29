@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jube>
+
+    <include-path>
+	<path> $UBENCH_PLATFORM_DIR </path>
+    </include-path>
+    <include from="platforms.xml" path="include-path"/>
+
+    <multisource>
+      <source protocol="https">
+        <url>https://github.com/axboe/fio/archive/</url>
+        <file>fio-fio-2.16.tar.gz</file>
+      </source>
+
+      <!-- comment the above source and uncomment the following section and use if the cluster can not access git -->
+   <!-- <source protocol="local" >
+       <file>/mnt/.tgvdv2/projets/projets.002/ccnhpc.066/Benchmarks/master.zip</file>
+   </source> -->
+
+   </multisource>
+    
+    <benchmark name="fIO" outpath="benchmark_runs">
+	<comment>fIO benchmarks</comment>
+	
+	<fileset name="source">
+	    <link> $UBENCH_RESOURCE_DIR/fio/fio-fio-2.16.tar.gz</link>
+	    <prepare>tar xf fio-fio-2.16.tar.gz </prepare>
+	</fileset>
+	
+	<parameterset name="variant_set">
+        <parameter name="size_index">1</parameter>
+        <parameter name="type_index">0,1</parameter>
+		<parameter name="job_index" >1</parameter>
+		<parameter name="file_index" >0</parameter>
+		<parameter name="dir_index" >0</parameter>
+		
+		
+        <parameter name="type_io" mode="python">
+		["read","write"][$type_index]
+		<!-- ["read/write","read","write"][$type_index] -->
+	    </parameter>
+        
+		<parameter name="type_arg" mode="python" type="string">
+		["r","w"][$type_index]
+		<!-- ["rw","r","w"][$type_index] -->
+		</parameter>
+
+		<parameter name="file_end" mode="python" type="string">
+		["","x",][$file_index]
+		</parameter>
+
+		<parameter name="dir_name" mode="python" type="string">
+		["","fileDir","x fileDir"][$dir_index]
+		</parameter>
+
+		<parameter name="concurent_acces" mode="python" type="string">
+			["no","yes"][1 if '$dir_name'=='' and '$file_end'=='x'  else 0]
+		</parameter>
+		<!-- <parameter name="tableR" mode="python">
+		[$type_arg == "r"]
+		</parameter>
+
+		<parameter name="tableW" mode="python">
+		$type_arg == "w"
+		</parameter>
+
+		<parameter name="tableRW" mode="python">
+		$type_arg == "rw"
+		</parameter> -->
+        
+		<parameter name="size" mode="python" type="string">
+		["1G","5G","10G"][$size_index]
+	    </parameter>
+		
+		<parameter name="job_num" mode="python" type="string">
+		["2","4","8"][$job_index]
+		</parameter>
+        
+
+ 	    <parameter name="variant_NB">
+		192
+	    </parameter>
+	    
+	    <parameter name="memory_proportion">
+		0.1
+	    </parameter>
+
+	    <!-- Choose N to avoid exceeding memory_proportion of available memory -->
+	    <parameter name="variant_Ntemp" mode="python" type="float" separator="??" >
+		(${memory_proportion}*${nodes}*(${GB_per_node})*1e9/8) ** 0.5		
+	    </parameter>
+	    
+ 	    <parameter name="variant_N" mode="python" type="int" separator="??" >
+		int( round( ${variant_Ntemp} / ${variant_NB} ) * ${variant_NB})
+	    </parameter>
+	    
+	</parameterset>
+
+	<parameterset name="compiler_opts">
+	    <parameter name="variant_v">0</parameter>
+
+	  	<parameter name="arch" type="string">
+	    	${comp_version}
+	  	</parameter>
+
+	</parameterset>
+	
+	<!-- =====================  Compile  ===================== -->
+	<step name="compile" export="true">
+	    	    
+	    <!-- Choose compiler and MPI versions -->
+	    <use from="platform.xml"> compiler_set </use>
+	    <use from="platform.xml"> mpi_set </use>
+
+	    <use> compiler_opts </use>
+	    
+	    <!-- substitute compiler in makefile -->
+	    <use>source</use>
+	    
+	    <!-- Load environment -->
+	    <do> module purge </do>
+	    <do> module load $module_compile $module_mpi $module_blas </do>
+
+	    <do work_dir="fio-fio-2.16">
+			./configure --prefix=$HOME/.local/temp-fio
+			make -j 8
+	    </do>
+
+	</step>
+
+	<!-- ====================  Execute  ===================== -->
+	
+	<fileset name="binaries">
+	    <link rel_path_ref="internal" directory="compile/fio-fio-2.16/" name="xfio">
+			fio
+	    </link>
+		<link>fio.sh</link>
+	</fileset>
+
+	<parameterset name="system_parameters" init_with="platform.xml">
+	    <parameter name="nodes" type="int">1</parameter>
+	    <parameter name="taskspernode" mode="python" type="int">1</parameter>
+	    <parameter name="threadspertask" type="int">1</parameter>
+	    <parameter name="executable">sh fio.sh ${type_arg} ${size} ${job_num} ${file_end}  ${dir_name}</parameter>
+	    <parameter name="modules">$module_compile $module_mpi $module_blas</parameter>
+	    <parameter name="timelimit">02:00:00</parameter>
+	</parameterset>
+
+	<parameterset name="execute_set" init_with="platform.xml">
+
+	    <parameter name="args_starter" separator="??">
+		${binding_full_node}
+	    </parameter>
+	    
+	</parameterset>
+	
+	<step name="execute" depend="compile">
+	  
+	  <use from="platform.xml">cluster_specs</use>
+	  <use>binaries</use>
+
+	  <use>execute_set</use>
+	  <use>system_parameters</use>
+	  <use>variant_set</use>
+
+	 
+
+	  <use from="platform.xml">jobfiles</use>
+	  <use from="platform.xml">execute_sub</use>
+
+	  <!--<do> ./pq_script.py $tasks </do>-->
+	  <do done_file="$done_file">$submit $submit_script</do>
+	 	  
+	</step>
+	
+	<!-- =====================  Analyze  ===================== -->
+
+      <patternset name="pattern">
+      <!-- <pattern name="hostname" type="string">
+	      .*testDDR-${jube_pat_wrd}:
+	  </pattern> -->
+	  <!-- ======================== Read Analyzer  ======================== -->
+	  <!-- <pattern name="read_time" type="int" unit="msec">
+	      .*read.+runt=\s+${jube_pat_int}
+	  </pattern>
+	  <pattern name="read_io" type="float" unit="MB">
+	      .*read.+io=${jube_pat_fp}
+	  </pattern>
+	  <pattern name="read_bw" type="int" unit="KB/s">
+	      .*read.+bw=${jube_pat_int}
+	  </pattern>
+	  <pattern name="read_iops" type="int">
+	      .*read.+iops=${jube_pat_int}
+	  </pattern> -->
+      <!-- ======================== Write Analyzer  ======================== -->
+	  <!-- <pattern name="write_time" type="int" unit="msec">
+	      .*write.+runt=\s+${jube_pat_int}
+	  </pattern>
+	  <pattern name="write_io" type="float" unit="MB">
+	      .*write.+io=${jube_pat_fp}
+	  </pattern>
+	  <pattern name="write_bw" type="int" unit="KB/s">
+	      .*write.+bw=${jube_pat_int}
+	  </pattern>
+	  <pattern name="write_iops" type="int">
+	      .*write.+iops=${jube_pat_int}
+	  </pattern> -->
+
+	  <!-- ======================== General Analyzer  ======================== -->
+		<pattern name="elapsed_time" type="int" unit="msec">
+			\swrite.+runt=\s+${jube_pat_int}|\sread.+runt=\s+${jube_pat_int} 
+		</pattern>
+		<pattern name="io" type="float" unit="MB">
+			\swrite.+io=${jube_pat_fp}|\sread.+io=${jube_pat_fp}
+		</pattern>
+		<pattern name="bw" type="int" unit="KB/s">
+			\swrite.+bw=${jube_pat_int}|\sread.+bw=${jube_pat_int}
+		</pattern>
+		<pattern name="iops" type="int">
+			\swrite.+iops=${jube_pat_int}|\sread.+iops=${jube_pat_int}
+		</pattern>
+		<pattern name="node_list" type="string">
+			^Nodes=${jube_pat_wrd}
+		</pattern>
+	  </patternset>
+	  
+
+
+      <analyzer name="analyse">
+	  <use>pattern</use>
+	  <analyse step="execute"><file>job.out</file></analyse>
+      </analyzer>
+
+      <!-- =====================  Result  ===================== -->
+	
+      <result>
+	  <use>analyse</use>
+
+	  <table name="result" style="csv" sort="nodes">
+		  <column>type_io</column>
+		  <column>concurent_acces</column>
+		  <column>nodes</column>
+		  <column>node_list</column>
+		  <column>size</column>
+		  <column>job_num</column>
+          <column>io</column>
+          <column>bw</column>
+          <column>iops</column>
+          <column>elapsed_time</column>
+	      <column>modules</column>
+	  </table>
+
+	  <!-- <step name="clean_up" depend="execute">
+	  		<do>rm -rvf $SCRATCHDIR/ubench/fileDir/ > clean.out</do>
+	  </step> -->
+
+	  <!-- <table name="result" style="csv" sort="nodes">
+          <column>type</column>
+	      <column>nodes</column>
+          <column>read_io_min</column>
+          <column>read_bw_min</column>
+          <column>read_iops_min</column>
+          <column>read_time_max</column>
+	      <column>write_io_min</column>
+          <column>write_bw_min</column>
+		  <column>write_iops_min</column>
+		  <column>write_time_max</column>
+	      <column>modules</column>
+	  </table> -->
+	  <!-- <table name="result_w" style="csv" sort="nodes" filter="$type_arg == 'w' ">
+          <column>type</column>
+	      <column>nodes</column>
+	      <column>write_io</column>
+          <column>write_bw</column>
+		  <column>write_iops</column>
+		  <column>write_time_avg</column>
+	      <column>modules</column>
+	  </table> -->
+      </result>
+    </benchmark>
+</jube>
