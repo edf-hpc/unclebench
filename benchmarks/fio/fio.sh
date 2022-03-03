@@ -42,7 +42,7 @@ if [ "$#" -ge 1 ]; then
     arg=$1
     size=${2:-1G}
     jobs=${3:-4}
-    fileDir=${5-"fileDir"}
+    fileDir=${5:-"$SCRATCHDIR/fileDir"}
     host=${4:-"$(hostname)"}
     filename="testDDR-$host"
     filenameW="testDDW-$host"
@@ -66,8 +66,7 @@ if [ "$#" -ge 1 ]; then
         exec_fio $filenameW "write" $size $fileDir $jobs
     fi
 
-    [ -z "$5" ] && rm -vf $fileDir/
-    #  > clean.out
+    # [ -z "$5" ] && rm -vf $fileDir/$filename* > clean.out
     echo
     echo "...done."
     echo "=====================================================   End FIO Benchmark  ====================================================="

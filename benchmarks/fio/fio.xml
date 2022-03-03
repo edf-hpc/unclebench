@@ -50,7 +50,7 @@
 		</parameter>
 
 		<parameter name="dir_name" mode="python" type="string">
-		["","fileDir","x fileDir"][$dir_index]
+		["","fileDir","fileDir x"][$dir_index]
 		</parameter>
 
 		<parameter name="concurent_acces" mode="python" type="string">
@@ -168,7 +168,6 @@
 	  <use from="platform.xml">jobfiles</use>
 	  <use from="platform.xml">execute_sub</use>
 
-	  <!--<do> ./pq_script.py $tasks </do>-->
 	  <do done_file="$done_file">$submit $submit_script</do>
 	 	  
 	</step>
@@ -176,37 +175,6 @@
 	<!-- =====================  Analyze  ===================== -->
 
       <patternset name="pattern">
-      <!-- <pattern name="hostname" type="string">
-	      .*testDDR-${jube_pat_wrd}:
-	  </pattern> -->
-	  <!-- ======================== Read Analyzer  ======================== -->
-	  <!-- <pattern name="read_time" type="int" unit="msec">
-	      .*read.+runt=\s+${jube_pat_int}
-	  </pattern>
-	  <pattern name="read_io" type="float" unit="MB">
-	      .*read.+io=${jube_pat_fp}
-	  </pattern>
-	  <pattern name="read_bw" type="int" unit="KB/s">
-	      .*read.+bw=${jube_pat_int}
-	  </pattern>
-	  <pattern name="read_iops" type="int">
-	      .*read.+iops=${jube_pat_int}
-	  </pattern> -->
-      <!-- ======================== Write Analyzer  ======================== -->
-	  <!-- <pattern name="write_time" type="int" unit="msec">
-	      .*write.+runt=\s+${jube_pat_int}
-	  </pattern>
-	  <pattern name="write_io" type="float" unit="MB">
-	      .*write.+io=${jube_pat_fp}
-	  </pattern>
-	  <pattern name="write_bw" type="int" unit="KB/s">
-	      .*write.+bw=${jube_pat_int}
-	  </pattern>
-	  <pattern name="write_iops" type="int">
-	      .*write.+iops=${jube_pat_int}
-	  </pattern> -->
-
-	  <!-- ======================== General Analyzer  ======================== -->
 		<pattern name="elapsed_time" type="int" unit="msec">
 			\swrite.+runt=\s+${jube_pat_int}|\sread.+runt=\s+${jube_pat_int} 
 		</pattern>
@@ -227,55 +195,29 @@
 
 
       <analyzer name="analyse">
-	  <use>pattern</use>
-	  <analyse step="execute"><file>job.out</file></analyse>
+		<use>pattern</use>
+		<analyse step="execute"><file>job.out</file></analyse>
       </analyzer>
 
       <!-- =====================  Result  ===================== -->
 	
-      <result>
-	  <use>analyse</use>
+	<result>
+	<use>analyse</use>
 
-	  <table name="result" style="csv" sort="nodes">
-		  <column>type_io</column>
-		  <column>concurent_acces</column>
-		  <column>nodes</column>
-		  <column>node_list</column>
-		  <column>size</column>
-		  <column>job_num</column>
-          <column>io</column>
-          <column>bw</column>
-          <column>iops</column>
-          <column>elapsed_time</column>
-	      <column>modules</column>
-	  </table>
+	<table name="result" style="csv" sort="nodes">
+		<column>type_io</column>
+		<column>concurent_acces</column>
+		<column>nodes</column>
+		<column>node_list</column>
+		<column>size</column>
+		<column>job_num</column>
+		<column>io</column>
+		<column>bw</column>
+		<column>iops</column>
+		<column>elapsed_time</column>
+		<column>modules</column>
+	</table>
 
-	  <!-- <step name="clean_up" depend="execute">
-	  		<do>rm -rvf $SCRATCHDIR/ubench/fileDir/ > clean.out</do>
-	  </step> -->
-
-	  <!-- <table name="result" style="csv" sort="nodes">
-          <column>type</column>
-	      <column>nodes</column>
-          <column>read_io_min</column>
-          <column>read_bw_min</column>
-          <column>read_iops_min</column>
-          <column>read_time_max</column>
-	      <column>write_io_min</column>
-          <column>write_bw_min</column>
-		  <column>write_iops_min</column>
-		  <column>write_time_max</column>
-	      <column>modules</column>
-	  </table> -->
-	  <!-- <table name="result_w" style="csv" sort="nodes" filter="$type_arg == 'w' ">
-          <column>type</column>
-	      <column>nodes</column>
-	      <column>write_io</column>
-          <column>write_bw</column>
-		  <column>write_iops</column>
-		  <column>write_time_avg</column>
-	      <column>modules</column>
-	  </table> -->
-      </result>
+	</result>
     </benchmark>
 </jube>
