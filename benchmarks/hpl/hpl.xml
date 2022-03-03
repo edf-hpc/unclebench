@@ -54,6 +54,30 @@
 		int( round( ${variant_Ntemp} / ${variant_NB} ) * ${variant_NB})
             </parameter>
 
+            <parameter name="SWAP" mode="python" type="int">
+		64
+            </parameter>
+
+            <parameter name="DEPTHs" mode="python" type="int">
+		1
+            </parameter>
+
+            <parameter name="BCASTs" mode="python" type="int">
+		1
+            </parameter>
+
+            <parameter name="RFACTs" mode="python" type="int">
+		1
+            </parameter>
+
+            <parameter name="NDIVs" mode="python" type="int">
+		2
+            </parameter>
+
+            <parameter name="NBMINs" mode="python" type="int">
+		4
+            </parameter>
+
 	</parameterset>
 
 	<parameterset name="compiler_opts">
@@ -100,6 +124,12 @@
             <sub source="#NNS#" dest="$variant_N"/>
             <sub source="#NNBS#" dest="1"/>
             <sub source="#NBS#" dest="$variant_NB"/>
+            <sub source="#NBMINs#" dest="$NBMINs"/>
+            <sub source="#NDIVs#" dest="$NDIVs"/>
+            <sub source="#RFACTs#" dest="$RFACTs"/>
+            <sub source="#BCASTs#" dest="$BCASTs"/>
+            <sub source="#DPTH#" dest="$DEPTHs"/>
+            <sub source="#SWAP#" dest="$SWAP"/>
 	</substituteset>
 
 	<parameterset name="system_parameters" init_with="platform.xml">
