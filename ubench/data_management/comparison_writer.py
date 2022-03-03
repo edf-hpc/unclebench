@@ -117,14 +117,26 @@ class ComparisonWriter(object):
         logging.debug('row_label: {}\n col_label: {}\n hue_label: {}\n x_data: {}\n'
                       .format(row_label, col_label, hue_label, x_data))
 
+        ymin=-40
+        ymax=40
+        df_toplot.loc[df_toplot[df_toplot.columns[-1]] > ymax, df_toplot.columns[-1]] = ymax
+        df_toplot.loc[df_toplot[df_toplot.columns[-1]] < ymin, df_toplot.columns[-1]] = ymin
+
         # Build FacetGrid graph
         facetg = sns.FacetGrid(data=df_toplot, row=row_label,
                                col=col_label, hue=hue_label, height=5,
-                               aspect=1.2, sharex=True, sharey=False)
+                               aspect=1.2, sharex=True, sharey=False,ylim=(ymin, ymax))
+
+        # xmin, xmax = plt.xlim()
+        limit=10
+        facetg.map(plt.axhline, y= limit, ls='-.', c='red')
+        # facetg.map(plt.text,x=0.5,y=6,s="+5%",c='black',bbox=dict(facecolor='white', alpha=0.5))
+        facetg.map(plt.axhline, y=-limit, ls='-.', c='red')
+        # facetg.map(plt.text,x=0.5,y=-6,s="-5%",c='black',bbox=dict(facecolor='white', alpha=0.5))
 
         # Choose base 2 log scale as this axis often represents bytes or
         # number of nodes
-        plt.xscale('symlog', basex=2)
+        plt.xscale('symlog', base=2)
 
         facetg = facetg.map(plt.grid, linewidth=0.5,linestyle=':',color='k')
         facetg = facetg.map(plt.scatter, x_data, df_toplot.columns[-1]).add_legend()
