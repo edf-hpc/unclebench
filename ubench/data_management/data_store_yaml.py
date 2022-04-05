@@ -24,7 +24,7 @@ from yaml.representer import Representer
 from ubench.data_management.data_store import DataStore
 
 yaml.add_representer(collections.defaultdict, Representer.represent_dict)
-
+yaml.add_representer(collections.OrderedDict, Representer.represent_dict)
 
 class DataStoreYAML(DataStore):
     """ Provides methods to load and write configuration from and to YAML files
