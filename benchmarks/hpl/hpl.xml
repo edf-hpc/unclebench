@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <jube>
 
-    <include-path>
-        <path> $UBENCH_PLATFORM_DIR </path>
-    </include-path>
-    <include from="platforms.xml" path="include-path"/>
+      <include-path>
+            <path> $UBENCH_PLATFORM_DIR </path>
+      </include-path>
+      <include from="platforms.xml" path="include-path"/>
 
-    <multisource>
-	<source protocol="https" name="hpl">
-	    <url>http://www.netlib.org/benchmark/</url>
-	    <file>/hpl/hpl-2.2.tar.gz</file>
-	</source>
-    </multisource>
+      <multisource>
+            <source protocol="https" name="hpl">
+                  <url>http://www.netlib.org/benchmark/</url>
+                  <file>/hpl/hpl-2.2.tar.gz</file>
+            </source>
+      </multisource>
 
     <benchmark name="hpl" outpath="benchmark_runs">
 	<comment>HPL benchmarks</comment>
@@ -26,9 +26,9 @@
 	<parameterset name="container_parameters">
             <parameter name="container_image">none</parameter>
             <parameter name="container_exec_command" mode="python">
-		["",
-		"singularity exec ${container_image}"][0 if '$container_image'=='none' else 1]
-	    </parameter>
+                  ["",
+                  "singularity exec ${container_image}"][0 if '$container_image'=='none' else 1]
+            </parameter>
 	</parameterset>
 
 	<parameterset name="variant_set">
@@ -190,6 +190,7 @@
             <table name="result" style="csv" sort="nodes">
 		<column>nodes</column>
 		<column>HPL</column>
+            <column>mpi_version</column>
 		<column>modules</column>
 		<column>container_image</column>
             </table>
