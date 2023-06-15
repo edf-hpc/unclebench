@@ -117,10 +117,14 @@ class ComparisonWriter(object):
         logging.debug('row_label: {}\n col_label: {}\n hue_label: {}\n x_data: {}\n'
                       .format(row_label, col_label, hue_label, x_data))
 
-        ymin=-40
-        ymax=40
-        df_toplot.loc[df_toplot[df_toplot.columns[-1]] > ymax, df_toplot.columns[-1]] = ymax
-        df_toplot.loc[df_toplot[df_toplot.columns[-1]] < ymin, df_toplot.columns[-1]] = ymin
+        ymin=-30
+        ymax=30
+        try:
+                df_toplot.loc[df_toplot[df_toplot.columns[-1]] > ymax, df_toplot.columns[-1]] = ymax
+                df_toplot.loc[df_toplot[df_toplot.columns[-1]] < ymin, df_toplot.columns[-1]] = ymin
+        except (TypeError) as e:
+                print(e)
+                print(df_toplot[df_toplot.columns[-1]])
 
         # Build FacetGrid graph
         facetg = sns.FacetGrid(data=df_toplot, row=row_label,
@@ -128,15 +132,18 @@ class ComparisonWriter(object):
                                aspect=1.2, sharex=True, sharey=False,ylim=(ymin, ymax))
 
         # xmin, xmax = plt.xlim()
-        limit=10
-        facetg.map(plt.axhline, y= limit, ls='-.', c='red')
+        limit=5
+        facetg.map(plt.axhline, y= limit, ls=(0, (3, 5, 1, 5)), c='orange')
         # facetg.map(plt.text,x=0.5,y=6,s="+5%",c='black',bbox=dict(facecolor='white', alpha=0.5))
-        facetg.map(plt.axhline, y=-limit, ls='-.', c='red')
+        facetg.map(plt.axhline, y=-limit, ls=(0, (3, 5, 1, 5)), c='orange')
         # facetg.map(plt.text,x=0.5,y=-6,s="-5%",c='black',bbox=dict(facecolor='white', alpha=0.5))
 
         # Choose base 2 log scale as this axis often represents bytes or
         # number of nodes
-        plt.xscale('symlog', base=2)
+        try:
+            plt.xscale('symlog', basex=2)
+        except (TypeError) as e:
+            ax.set_xscale('symlog', base=2)
 
         facetg = facetg.map(plt.grid, linewidth=0.5,linestyle=':',color='k')
         facetg = facetg.map(plt.scatter, x_data, df_toplot.columns[-1]).add_legend()
