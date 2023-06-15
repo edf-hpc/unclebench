@@ -241,8 +241,12 @@ class DataStore(object):
                     if result_name_column:
                         report_info[result_name_column].append(key)
 
+        df_report_info = pandas.DataFrame(report_info)
+        # Case where the bench has too many iterations
+        if int(value['jube_step_iterations']) >= 10:
+            df_report_info = df_report_info.drop_duplicates()
         # Return a tuple
-        return (metadata, pandas.DataFrame(report_info), context, result_name_column)
+        return (metadata, df_report_info, context, result_name_column)
 
 
     def dir_to_pandas(self, data_dir, benchmark_name,
