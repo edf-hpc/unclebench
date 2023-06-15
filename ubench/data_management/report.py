@@ -91,7 +91,11 @@ class Report:
         """
         with open(metadata_file, 'r') as mfile:
             try:
-                self.metadata = yaml.load(mfile, Loader=yaml.FullLoader)
+                yaml_attrs = getattr(yaml, '__dict__', {})
+                if 'FullLoader' in yaml_attrs:
+                    self.metadata = yaml.load(mfile, Loader=yaml.FullLoader)
+                else:
+                    self.metadata = yaml.safe_load(mfile)
             except Exception as e:
                 print("Cannot load metadata file:"+str(e))
 
