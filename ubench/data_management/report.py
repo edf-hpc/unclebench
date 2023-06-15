@@ -261,7 +261,7 @@ class Report:
             exit
 
         perf_array_list, sub_bench_list \
-            = self._get_perf_array(bench_dataframe, context_out, sub_bench)
+            = self._get_perf_array(bench_dataframe, context_out, benchmark_name, sub_bench)
 
         if sub_bench_list[0] == None:
             sub_bench_list[0] = benchmark_name
@@ -473,7 +473,7 @@ class Report:
                                     array_line_tmp, perf_array)
 
 
-    def _get_perf_array(self, report_df, context, sub_bench_field=None):
+    def _get_perf_array(self, report_df, context, benchmark_name=None, sub_bench_field=None):
         """
         Get a result array from a pand dataframe, a context and an optional
         sub_bench_field.
@@ -488,6 +488,11 @@ class Report:
 
         units = None #TODO
         perf_array_list = []
+
+        for bench in self.metadata['contexts']:
+            if benchmark_name in bench and 'results_filter' in bench[benchmark_name]:
+                sub_bench_list = bench[benchmark_name]['results_filter']
+
         for sub_bench in sub_bench_list:
             perf_array_list.append([])
             sub_bench_df = report_df
