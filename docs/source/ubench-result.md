@@ -8,7 +8,7 @@ ubench-result -  Print result of a benchmark run
 # SYNOPSIS
 
 
-    ubench result -p <platform> -b <bench> -i <run_id>
+    ubench result -p <platform> -b <bench> -i <run_id> -o <output_file>
 
     ubench result -h
 
@@ -32,6 +32,9 @@ ubench-result -  Print result of a benchmark run
 
 # -i <bench_id>
   Id of the benchmarks whose results should be printed
+
+# -o <output_file>
+  Name of the file to output results in wiki syntax to, instead of the terminal
 
 # ENVIRONMENT
 

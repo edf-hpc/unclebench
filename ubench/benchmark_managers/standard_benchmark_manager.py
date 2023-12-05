@@ -343,13 +343,14 @@ class StandardBenchmarkManager(benm.BenchmarkManager):
 
         self.result_array = result_array
         if output_file:
-            output_file.write('[options="header"]\n')
-            output_file.write('|=== \n')
-            for row in self.result_array:
-                output_file.write('|')
-                output_file.write('|'.join(row).replace('\n', ''))
-                output_file.write('\n')
-            output_file.write('|=== \n')
+            with open(output_file[0].decode(), 'a') as f:
+                for row in self.result_array:
+                    f.write('|-\n')
+                    f.write('! scope="row" | '+time.strftime('%Y-%m-%d')+'\n')
+                    f.write('| ')
+                    f.write(' || '.join(row).replace('\n', ''))
+                    f.write('\n\n')
+                f.write('|}\n')
         else:
             # Print formatted array on stdout
             max_width = []

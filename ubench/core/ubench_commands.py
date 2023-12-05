@@ -99,7 +99,7 @@ class UbenchCmd(object):
         self.bm_set.list_parameters(default_values)
 
 
-    def result(self, id_list): # pylint: disable=dangerous-default-value
+    def result(self, id_list, output_file=None): # pylint: disable=dangerous-default-value
         ''' Prints benchmark results '''
 
         if id_list is None:
@@ -109,7 +109,7 @@ class UbenchCmd(object):
             self.bm_set.result(idb)
             # self.bm_set.analyse(idb)
             # self.bm_set.extract_results(idb)
-            self.bm_set.print_result_array()
+            self.bm_set.print_result_array(output_file)
 
 
     def listb(self):

@@ -220,6 +220,10 @@ parser_result.add_argument('-b',
 parser_result.add_argument('-i',
                            help='Benchmark run IDs',
                            nargs='+')
+parser_result.add_argument('-o',
+                           '--output-file',
+                           help='Output file',
+                           nargs='+')
 
 # Parser report
 report_help = 'Build a performance report from benchmark result directories.'
@@ -363,7 +367,7 @@ elif args.subparser_name == 'campaign':
 elif args.subparser_name == 'fetch':
     commands.fetch()
 elif args.subparser_name == 'result':
-    commands.result(args.i)
+    commands.result(args.i, args.output_file)
 elif args.subparser_name == 'log':
     commands.log(id_list=args.i)
 elif args.subparser_name == 'list':
