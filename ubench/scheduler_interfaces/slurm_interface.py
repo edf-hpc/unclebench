@@ -251,30 +251,41 @@ class SlurmInterface(object):
             return {}
 
         squeue_rex = re.compile(r'^\s+(\d+)\s+(\w+)')
-        sacct_rex = re.compile(r'^\s*(\d+)\.0\s+(\w+)')
+        sacct_rex = re.compile(r'^\s*(\d+)\s+(\w+)')
+        sacct_rex_0 = re.compile(r'^\s*(\d+)\.0\s+(\w+)')
         squeue_cmd = "squeue -h -j {} -o \"%.18i %.8T\"".format(",".join(job_ids))
         job_ids_0 = [job_id+'.0' for job_id in job_ids]
-        sacct_cmd = "sacct -n --jobs={} --format=JobId,State".format(",".join(job_ids_0))
+        sacct_cmd = "sacct -n --jobs={} --format=JobId,State".format(",".join(job_ids))
+        sacct_cmd_0 = "sacct -n --jobs={} --format=JobId,State".format(",".join(job_ids_0))
         try_count = 0
         while True:
             job_info = {}
 
             s_process = Popen(squeue_cmd, cwd=os.getcwd(), shell=True,
                               stdout=PIPE, universal_newlines=True)
-
             for line in s_process.stdout:
                 match = squeue_rex.match(line)
                 if match:
                     groups = match.groups()
                     job_info[groups[0]] = groups[1]
 
-            s_process = Popen(sacct_cmd, cwd=os.getcwd(), shell=True,
+            s_process = Popen(sacct_cmd_0, cwd=os.getcwd(), shell=True,
                               stdout=PIPE, universal_newlines=True)
             for line in s_process.stdout:
-                match = sacct_rex.match(line)
+                match = sacct_rex_0.match(line)
                 if match:
                     groups = match.groups()
                     job_info[groups[0]] = groups[1]
+
+            # fallback on sacct with job_ids if missing jobs
+            if len(job_info) < len(job_ids):
+                s_process = Popen(sacct_cmd, cwd=os.getcwd(), shell=True,
+                                stdout=PIPE, universal_newlines=True)
+                for line in s_process.stdout:
+                    match = sacct_rex.match(line)
+                    if match:
+                        groups = match.groups()
+                        job_info[groups[0]] = groups[1]
 
             # we garantee information for every job
             if len(job_info) == len(job_ids) or try_count > 3:
