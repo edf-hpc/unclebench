@@ -372,6 +372,9 @@ class JubeBenchmarkingAPI(BenchmarkingAPI):
         cvs_data = csv.reader(stdout)
 
         with open(os.path.join(benchmark_runpath, 'result/ubench_results.dat'), 'w') as result_file:
+            # cancel Jube transposition for bench_results.yaml
+            if jube_xml_config.get_result_transpose():
+                cvs_data = [list(x) for x in zip(*cvs_data)]
             cvs_writer = csv.writer(result_file)
             for row in cvs_data:
                 cvs_writer.writerow(row)

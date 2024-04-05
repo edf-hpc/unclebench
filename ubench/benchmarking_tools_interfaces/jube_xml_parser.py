@@ -912,3 +912,15 @@ class JubeXMLConfig(object):
             if node.get('style') == "csv":
                 cvs_file_name = node.get("name")
                 return cvs_file_name
+
+
+    def get_result_transpose(self):
+        """ docstring """
+
+        config_xml_file = self.config_xml
+        for node in config_xml_file.getiterator('table'):
+            if node.get('transpose') is not None:
+                transpose = node.get('transpose').strip().lower() == "true"
+            else:
+                transpose = False
+        return transpose
