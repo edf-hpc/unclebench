@@ -636,7 +636,7 @@ class JubeXMLParser(object):  # pylint: disable=too-many-public-methods, too-man
             for step in steps:  # not empty
                 present_params = []
                 for use in step.findall('use'):
-                    present_params.append(use.text)
+                    present_params.append(use.text.strip())
 
                 for name in ['ubench_config', 'ubench_files']:
                     use = ET.Element('use')
